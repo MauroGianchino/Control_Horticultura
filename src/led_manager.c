@@ -9,10 +9,10 @@
 #include "sdkconfig.h"
 
 #include "../include/led_manager.h"
+#include "../include/board_def.h"
 //--------------------MACROS Y DEFINES------------------------------------------
 //------------------------------------------------------------------------------
-#define BUILT_IN_LED GPIO_NUM_2
-
+#define DEBUG_MODULE 1
 //------------------- DECLARACION DE DATOS LOCALES -----------------------------
 //------------------------------------------------------------------------------
 
@@ -30,18 +30,24 @@ static void led_manager_task(void* arg);
 //------------------------------------------------------------------------------
 static void config_led_device_up(void)
 {
-    gpio_set_direction(BUILT_IN_LED, GPIO_MODE_OUTPUT);
+    gpio_set_direction(DEVICE_ON_LED, GPIO_MODE_OUTPUT);
 }
 //------------------------------------------------------------------------------
 static void led_manager_task(void* arg)
 {
+    const char *LED_MANAGER_TASK_TAG = "LED_MANAGER_TASK_TAG";
+
     while(1)
     {
-        gpio_set_level(BUILT_IN_LED, 1);
-        printf("set_led_pin_on\n");
+        gpio_set_level(DEVICE_ON_LED, 1);
+#ifdef DEBUG_MODULE
+        ESP_LOGI(LED_MANAGER_TASK_TAG, "set_led_pin_on");
+#endif
         vTaskDelay(1000 / portTICK_PERIOD_MS);
-        gpio_set_level(BUILT_IN_LED, 0);
-        printf("set_led_pin_off\n");
+        gpio_set_level(DEVICE_ON_LED, 0);
+#ifdef DEBUG_MODULE
+        ESP_LOGI(LED_MANAGER_TASK_TAG, "set_led_pin_off");
+#endif
         vTaskDelay(1000 / portTICK_PERIOD_MS);
     }
 }
