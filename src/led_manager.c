@@ -4,6 +4,7 @@
 
 #include "freertos/FreeRTOS.h"
 #include "freertos/task.h"
+#include "freertos/queue.h"
 #include "driver/gpio.h"
 #include "esp_log.h"
 #include "sdkconfig.h"
@@ -13,12 +14,41 @@
 //--------------------MACROS Y DEFINES------------------------------------------
 //------------------------------------------------------------------------------
 #define DEBUG_MODULE 1
+
+#define QUEUE_ELEMENT_QUANTITY 10
+//------------------- TYPEDEF --------------------------------------------------
+//------------------------------------------------------------------------------
+typedef enum{
+    CMD_UNDEFINED = 0,
+    DEVICE_POWER_ON = 1,
+    PWM_MANUAL_OFF = 2,
+    PWM_MANUAL_ON = 3,
+    PWM_AUTO = 4,
+    PWM_RAMPA = 5,
+    TRIAC_ON = 6,
+    TRIAC_OFF = 7,
+    TRIAC_AUTO = 8,
+    RELE_VEGE_ON = 9,
+    RELE_VEGE_OFF = 10,
+    WIFI_AP_MODE = 11,
+    WIFI_STA_MODE = 12,
+    WIFI_NET_PROBLEM = 13,
+}led_event_cmds_t;
+
+typedef struct{
+    led_event_cmds_t cmd;
+}led_event_t;
 //------------------- DECLARACION DE DATOS LOCALES -----------------------------
 //------------------------------------------------------------------------------
-
+static QueueHandle_t led_manager_queue;
+static led_event_t led_event;
 //------------------- DECLARACION DE FUNCIONES LOCALES -------------------------
 //------------------------------------------------------------------------------
-static void config_led_device_up(void);
+static void config_led_power_up(void);
+static void config_led_pwm_status(void);
+static void config_led_rele_vege_status_up(void);
+static void config_led_wifi_status(void);
+
 static void led_manager_task(void* arg);
 //------------------- DEFINICION DE DATOS LOCALES ------------------------------
 //------------------------------------------------------------------------------
@@ -28,12 +58,75 @@ static void led_manager_task(void* arg);
 
 //------------------- DEFINICION DE FUNCIONES LOCALES --------------------------
 //------------------------------------------------------------------------------
-static void config_led_device_up(void)
+static void config_led_power_up(void)
 {
     gpio_set_direction(DEVICE_ON_LED, GPIO_MODE_OUTPUT);
 }
 //------------------------------------------------------------------------------
+static void config_led_pwm_status(void)
+{
+    gpio_set_direction(PWM_OUTPUT_STATUS_LED, GPIO_MODE_OUTPUT);
+}
+//------------------------------------------------------------------------------
+static void config_led_rele_vege_status_up(void)
+{
+    gpio_set_direction(RELE_VEGE_STATUS_LED, GPIO_MODE_OUTPUT);
+}
+//------------------------------------------------------------------------------
+static void config_led_wifi_status(void)
+{
+    gpio_set_direction(WIFI_STATUS_1_LED, GPIO_MODE_OUTPUT);
+    gpio_set_direction(WIFI_STATUS_2_LED, GPIO_MODE_OUTPUT);
+}
+//------------------------------------------------------------------------------
 static void led_manager_task(void* arg)
+{
+    //const char *LED_MANAGER_TASK_TAG = "LED_MANAGER_TASK_TAG";
+
+    while(1)
+    {
+        if(xQueueReceive(led_manager_queue, &led_event, portMAX_DELAY ) == pdTRUE)
+        {
+            switch(led_event.cmd)
+            {
+                case  CMD_UNDEFINED:
+                    break;
+                case DEVICE_POWER_ON:
+                    gpio_set_level(DEVICE_ON_LED, 1);
+                    break;
+                case PWM_MANUAL_OFF:
+                    break;
+                case PWM_MANUAL_ON:
+                    break;
+                case PWM_AUTO:
+                    break;
+                case PWM_RAMPA:
+                    break;
+                case TRIAC_ON:
+                    break;
+                case TRIAC_OFF:
+                    break;
+                case TRIAC_AUTO:
+                    break;
+                case RELE_VEGE_ON:
+                    break;
+                case RELE_VEGE_OFF:
+                    break;
+                case WIFI_AP_MODE:
+                    break;
+                case WIFI_STA_MODE:
+                    break;
+                case WIFI_NET_PROBLEM:
+                    break;
+                default:
+                    break;
+            }
+        }
+
+    }
+}
+//------------------------------------------------------------------------------
+/*static void led_manager_task(void* arg)
 {
     const char *LED_MANAGER_TASK_TAG = "LED_MANAGER_TASK_TAG";
 
@@ -50,13 +143,18 @@ static void led_manager_task(void* arg)
 #endif
         vTaskDelay(1000 / portTICK_PERIOD_MS);
     }
-}
+}*/
 //------------------- DEFINICION DE FUNCIONES EXTERNAS -------------------------
 //------------------------------------------------------------------------------
 void led_manager_init(void)
 {
-    config_led_device_up();
+    config_led_power_up();
+    config_led_pwm_status();
+    config_led_rele_vege_status_up();
+    config_led_wifi_status();
 
+    led_manager_queue = xQueueCreate(QUEUE_ELEMENT_QUANTITY, sizeof(led_event_t));
+    
     xTaskCreate(led_manager_task, "led_manager_task", 2048, NULL, 10, NULL);
 }
 //---------------------------- END OF FILE -------------------------------------

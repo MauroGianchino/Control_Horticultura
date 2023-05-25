@@ -5,7 +5,12 @@
 
 //------------------- MACROS Y DEFINES -----------------------------------------
 //------------------------------------------------------------------------------
-#define DEVICE_ON_LED GPIO_NUM_2
+#define DEVICE_ON_LED GPIO_NUM_2 // device on led
+#define PWM_OUTPUT_STATUS_LED GPIO_NUM_4
+#define TRIAC_OUTPUT_STATUS_LED GPIO_NUM_5
+#define RELE_VEGE_STATUS_LED GPIO_NUM_13
+#define WIFI_STATUS_1_LED GPIO_NUM_14
+#define WIFI_STATUS_2_LED GPIO_NUM_15
 //------------------- TYPEDEF --------------------------------------------------
 //------------------------------------------------------------------------------
 
