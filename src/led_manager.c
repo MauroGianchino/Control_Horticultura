@@ -15,7 +15,7 @@
 //------------------------------------------------------------------------------
 #define DEBUG_MODULE 1
 
-#define QUEUE_ELEMENT_QUANTITY 10
+#define QUEUE_ELEMENT_QUANTITY 20
 //------------------- TYPEDEF --------------------------------------------------
 //------------------------------------------------------------------------------
 typedef enum{
@@ -82,6 +82,8 @@ static void config_led_wifi_status(void)
 static void led_manager_task(void* arg)
 {
     //const char *LED_MANAGER_TASK_TAG = "LED_MANAGER_TASK_TAG";
+
+    led_manager_power_up();
 
     while(1)
     {
@@ -156,6 +158,123 @@ void led_manager_init(void)
     led_manager_queue = xQueueCreate(QUEUE_ELEMENT_QUANTITY, sizeof(led_event_t));
     
     xTaskCreate(led_manager_task, "led_manager_task", 2048, NULL, 10, NULL);
+}
+//------------------------------------------------------------------------------
+void led_manager_power_up(void)
+{
+    led_event_t ev;
+
+    ev.cmd = DEVICE_POWER_ON;
+
+    xQueueSend(led_manager_queue, &ev, 10);
+}
+//------------------------------------------------------------------------------
+void led_manager_pwm_manual_off(void)
+{
+    led_event_t ev;
+
+    ev.cmd = PWM_MANUAL_OFF;
+
+    xQueueSend(led_manager_queue, &ev, 10);
+}
+//------------------------------------------------------------------------------
+void led_manager_pwm_manual_on(void)
+{
+    led_event_t ev;
+
+    ev.cmd = PWM_MANUAL_ON;
+
+    xQueueSend(led_manager_queue, &ev, 10);
+}
+//------------------------------------------------------------------------------
+void led_manager_pwm_auto(void)
+{
+    led_event_t ev;
+
+    ev.cmd = PWM_AUTO;
+
+    xQueueSend(led_manager_queue, &ev, 10);
+}
+//------------------------------------------------------------------------------
+void led_manager_pwm_rampa(void)
+{
+    led_event_t ev;
+
+    ev.cmd = PWM_RAMPA;
+
+    xQueueSend(led_manager_queue, &ev, 10);
+}
+//------------------------------------------------------------------------------
+void led_manager_triac_on(void)
+{
+    led_event_t ev;
+
+    ev.cmd = TRIAC_ON;
+
+    xQueueSend(led_manager_queue, &ev, 10);
+}
+//------------------------------------------------------------------------------
+void led_manager_pwm_triac_off(void)
+{
+    led_event_t ev;
+
+    ev.cmd = TRIAC_OFF;
+
+    xQueueSend(led_manager_queue, &ev, 10);
+}
+//------------------------------------------------------------------------------
+void led_manager_triac_off(void)
+{
+    led_event_t ev;
+
+    ev.cmd = TRIAC_OFF;
+
+    xQueueSend(led_manager_queue, &ev, 10);
+}
+//------------------------------------------------------------------------------
+void led_manager_rele_vege_on(void)
+{
+    led_event_t ev;
+
+    ev.cmd = RELE_VEGE_ON;
+
+    xQueueSend(led_manager_queue, &ev, 10);
+}
+//------------------------------------------------------------------------------
+void led_manager_rele_vege_off(void)
+{
+    led_event_t ev;
+
+    ev.cmd = RELE_VEGE_OFF;
+
+    xQueueSend(led_manager_queue, &ev, 10);
+}
+//------------------------------------------------------------------------------
+void led_manager_wifi_ap_mode(void)
+{
+    led_event_t ev;
+
+    ev.cmd = WIFI_AP_MODE;
+
+    xQueueSend(led_manager_queue, &ev, 10);
+}
+//------------------------------------------------------------------------------
+void led_manager_wifi_sta_mode(void)
+{
+    led_event_t ev;
+
+    ev.cmd = WIFI_STA_MODE;
+
+    xQueueSend(led_manager_queue, &ev, 10);
+}
+//------------------------------------------------------------------------------
+void led_manager_wifi_net_problem(void)
+{
+    led_event_t ev;
+
+    ev.cmd = WIFI_NET_PROBLEM;
+
+    xQueueSend(led_manager_queue, &ev, 10);
 }
 //---------------------------- END OF FILE -------------------------------------
 //------------------------------------------------------------------------------
