@@ -49,6 +49,18 @@ static void config_led_pwm_status(void);
 static void config_led_rele_vege_status_up(void);
 static void config_led_wifi_status(void);
 
+static void set_power_on_indicator(void);
+static void set_pwm_auto_indicator(void);
+static void set_pwm_manual_off_indicator(void);
+static void set_triac_auto_indicator(void);
+static void set_triac_manual_off_indicator(void);
+static void set_rele_vege_on_indicator(void);
+static void set_rele_vege_off_indicator(void);
+
+static void set_wifi_ap_mode_indicator(void);
+static void set_wifi_sta_mode_indicator(void);
+static void set_wifi_net_problem_indicator(void);
+
 static void led_manager_task(void* arg);
 //------------------- DEFINICION DE DATOS LOCALES ------------------------------
 //------------------------------------------------------------------------------
@@ -79,6 +91,59 @@ static void config_led_wifi_status(void)
     gpio_set_direction(WIFI_STATUS_2_LED, GPIO_MODE_OUTPUT);
 }
 //------------------------------------------------------------------------------
+static void set_power_on_indicator(void)
+{
+    gpio_set_level(DEVICE_ON_LED, 1);
+}
+//------------------------------------------------------------------------------
+static void set_pwm_auto_indicator(void)
+{
+    gpio_set_level(PWM_OUTPUT_STATUS_LED, 1);
+}
+//------------------------------------------------------------------------------
+static void set_pwm_manual_off_indicator(void)
+{
+    gpio_set_level(PWM_OUTPUT_STATUS_LED, 0);
+}
+//------------------------------------------------------------------------------
+static void set_triac_auto_indicator(void)
+{
+    gpio_set_level(TRIAC_OUTPUT_STATUS_LED, 1);
+}
+//------------------------------------------------------------------------------
+static void set_triac_manual_off_indicator(void)
+{
+    gpio_set_level(TRIAC_OUTPUT_STATUS_LED, 0);
+}
+//------------------------------------------------------------------------------
+static void set_rele_vege_on_indicator(void)
+{
+    gpio_set_level(RELE_VEGE_STATUS_LED, 1);
+}
+//------------------------------------------------------------------------------
+static void set_rele_vege_off_indicator(void)
+{
+    gpio_set_level(RELE_VEGE_STATUS_LED, 0);
+}
+//------------------------------------------------------------------------------
+static void set_wifi_ap_mode_indicator(void)
+{
+    gpio_set_level(WIFI_STATUS_1_LED, 1);
+    gpio_set_level(WIFI_STATUS_2_LED, 0);
+}
+//------------------------------------------------------------------------------
+static void set_wifi_sta_mode_indicator(void)
+{
+    gpio_set_level(WIFI_STATUS_1_LED, 0);
+    gpio_set_level(WIFI_STATUS_2_LED, 1);
+}
+//------------------------------------------------------------------------------
+static void set_wifi_net_problem_indicator(void)
+{
+    gpio_set_level(WIFI_STATUS_1_LED, 1);
+    gpio_set_level(WIFI_STATUS_2_LED, 1);
+}
+//------------------------------------------------------------------------------
 static void led_manager_task(void* arg)
 {
     //const char *LED_MANAGER_TASK_TAG = "LED_MANAGER_TASK_TAG";
@@ -94,37 +159,45 @@ static void led_manager_task(void* arg)
                 case  CMD_UNDEFINED:
                     break;
                 case DEVICE_POWER_ON:
-                    gpio_set_level(DEVICE_ON_LED, 1);
+                    set_power_on_indicator();
                     break;
                 case PWM_MANUAL_OFF:
+                    set_pwm_manual_off_indicator();
                     break;
                 case PWM_MANUAL_ON:
                     break;
                 case PWM_AUTO:
+                    set_pwm_auto_indicator();
                     break;
                 case PWM_RAMPA:
                     break;
                 case TRIAC_ON:
                     break;
                 case TRIAC_OFF:
+                    set_triac_manual_off_indicator();
                     break;
                 case TRIAC_AUTO:
+                    set_triac_auto_indicator();
                     break;
                 case RELE_VEGE_ON:
+                    set_rele_vege_on_indicator();
                     break;
                 case RELE_VEGE_OFF:
+                    set_rele_vege_off_indicator();
                     break;
                 case WIFI_AP_MODE:
+                    set_wifi_ap_mode_indicator();
                     break;
                 case WIFI_STA_MODE:
+                    set_wifi_sta_mode_indicator();
                     break;
                 case WIFI_NET_PROBLEM:
+                    set_wifi_net_problem_indicator();
                     break;
                 default:
                     break;
             }
         }
-
     }
 }
 //------------------------------------------------------------------------------
