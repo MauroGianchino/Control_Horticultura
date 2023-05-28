@@ -23,6 +23,7 @@ void led_manager_pwm_auto(void);
 void led_manager_pwm_rampa(void);
 void led_manager_triac_on(void);
 void led_manager_triac_off(void);
+void led_manager_triac_auto(void);
 void led_manager_rele_vege_on(void);
 void led_manager_rele_vege_off(void);
 void led_manager_wifi_ap_mode(void);
