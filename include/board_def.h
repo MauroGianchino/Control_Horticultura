@@ -19,6 +19,15 @@
 #define VEGE_STATUS_BUTTON GPIO_NUM_27
 #define SIMUL_POTE_POSITIVE_BUTTON GPIO_NUM_33
 #define SIMUL_POTE_NEGATIVE_BUTTON GPIO_NUM_32
+// DIGITAL OUTPUT FOR PERIPHERALS
+#define TRIAC_OUTPUT GPIO_NUM_25
+#define RELE_OUTPUT GPIO_NUM_14
+//#define ADC_POTE_INPUT 
+//#define PWM_OUTPUT 
+// I2C
+#define I2C_SDA GPIO_NUM_21
+#define I2C_SCL GPIO_NUM_22
+//#define DISPLAY_RESET 
 //------------------- TYPEDEF --------------------------------------------------
 //------------------------------------------------------------------------------
 
