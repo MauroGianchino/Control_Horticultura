@@ -1,3 +1,4 @@
+// NOTAS: No se puede printear ni loguear desde una ISR se reinicia el ESP32.
 //--------------------INCLUDES--------------------------------------------------
 //------------------------------------------------------------------------------
 #include <stdio.h>
@@ -23,6 +24,8 @@
 //------------------------------------------------------------------------------
 typedef enum{
     CMD_UNDEFINED,
+    WIFI_BUTTON_PUSHED,
+    WIFI_BUTTON_PUSHED_3_SEC,
 }cmds_t;
 
 typedef struct{
@@ -69,21 +72,21 @@ static void config_wifi_mode_button(void)
 static void IRAM_ATTR wifi_mode_button_interrupt(void *arg) 
 {
     TickType_t current_time = xTaskGetTickCountFromISR();
+    button_events_t ev;
 
     if(current_time - push_init_time_wifi_button >= pdMS_TO_TICKS(TIEMPO_PULSADO_MS)) 
     {
         // Se ha mantenido pulsado durante más de 3 segundos
-        gpio_set_level(GPIO_NUM_4, 1);
-        gpio_set_level(GPIO_NUM_5, 0);
-
+        ev.cmd = WIFI_BUTTON_PUSHED_3_SEC;
     }
     else if((current_time - push_init_time_wifi_button >= pdMS_TO_TICKS(TIEMPO_ANTIRREBOTE_MS)))
     {
-        gpio_set_level(GPIO_NUM_4, 0);
-        gpio_set_level(GPIO_NUM_5, 1);
+        // Se ha mantenido pulsado menos de 3 segundos 
+        // Paso correctamente el antirrebote
+        ev.cmd = WIFI_BUTTON_PUSHED;
     }
-
     push_init_time_wifi_button = current_time;
+    xQueueSendFromISR(button_manager_queue, &ev, pdFALSE);
 }
 //------------------------------------------------------------------------------
 void button_event_manager_task(void * pvParameters)
@@ -97,6 +100,14 @@ void button_event_manager_task(void * pvParameters)
             switch(button_events.cmd)
             {
                 case CMD_UNDEFINED:
+                    break;
+                case WIFI_BUTTON_PUSHED:
+                    //gpio_set_level(GPIO_NUM_4, 1);
+                    //gpio_set_level(GPIO_NUM_5, 0);
+                    break;
+                case WIFI_BUTTON_PUSHED_3_SEC:
+                    //gpio_set_level(GPIO_NUM_4, 0);
+                    //gpio_set_level(GPIO_NUM_5, 1);
                     break;
                 default:
                 break;
