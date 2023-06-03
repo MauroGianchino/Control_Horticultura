@@ -42,7 +42,6 @@ typedef struct{
 //--------------------DECLARACION DE DATOS INTERNOS-----------------------------
 //------------------------------------------------------------------------------
 static QueueHandle_t button_manager_queue;
-static button_events_t button_events;
 
 static TickType_t push_init_time_wifi_button;
 static TickType_t push_init_time_pwm_button;
@@ -206,14 +205,15 @@ static void IRAM_ATTR simul_pote_neg_button_interrupt(void *arg)
 //------------------------------------------------------------------------------
 void button_event_manager_task(void * pvParameters)
 {
-    //bool state = 0;
+    button_events_t button_ev;
+
     config_buttons_isr();
 
     while(true)
     {
-        if(xQueueReceive(button_manager_queue, &button_events, portMAX_DELAY) == pdTRUE)
+        if(xQueueReceive(button_manager_queue, &button_ev, portMAX_DELAY) == pdTRUE)
         {
-            switch(button_events.cmd)
+            switch(button_ev.cmd)
             {
                 case CMD_UNDEFINED:
                     break;
@@ -269,7 +269,7 @@ void button_manager_init(void)
     button_manager_queue = xQueueCreate(QUEUE_ELEMENT_QUANTITY, sizeof(button_events_t));
 
     xTaskCreate(button_event_manager_task, "button_event_manager_task", 
-               configMINIMAL_STACK_SIZE, NULL, configMAX_PRIORITIES-2, NULL);             
+               configMINIMAL_STACK_SIZE, NULL, configMAX_PRIORITIES, NULL);             
 }
 //--------------------FIN DEL ARCHIVO-------------------------------------------
 //------------------------------------------------------------------------------
