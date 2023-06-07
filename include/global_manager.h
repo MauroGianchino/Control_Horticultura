@@ -35,5 +35,10 @@ void global_manager_init(void);
 void global_manager_set_pwm_mode_off(void);
 void global_manager_set_pwm_mode_manual_on(void);
 void global_manager_set_pwm_mode_auto(void);
+void global_manager_set_triac_mode_off(void);
+void global_manager_set_pwm_triac_manual_on(void);
+void global_manager_set_triac_mode_auto(void);
+void global_manager_set_rele_vege_status_off(void);
+void global_manager_set_rele_vege_status_on(void);
 //------------------- FIN DEL ARCHIVO ------------------------------------------
 #endif /* GLOBAL_MANAGER_H__ */
