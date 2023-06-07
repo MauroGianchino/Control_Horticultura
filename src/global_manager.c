@@ -24,6 +24,11 @@ typedef enum{
     PWM_MANUAL_ON = 1,
     PWM_OFF = 2,
     PWM_AUTO = 3,
+    TRIAC_MANUAL_ON = 4,
+    TRIAC_OFF = 5,
+    TRIAC_AUTO = 6,
+    RELE_VEGE_ON = 7,
+    RELE_VEGE_OFF = 8,
 }global_event_cmds_t;
 
 typedef struct{
@@ -66,6 +71,21 @@ static void global_manager_task(void* arg)
                 case PWM_AUTO:
                     led_manager_pwm_auto();
                     break;
+                case TRIAC_MANUAL_ON:
+                    led_manager_triac_on();
+                    break;
+                case TRIAC_OFF:
+                    led_manager_triac_off();
+                    break;
+                case TRIAC_AUTO:
+                    led_manager_triac_auto();
+                    break;
+                case RELE_VEGE_ON:
+                    led_manager_rele_vege_on();
+                    break;
+                case RELE_VEGE_OFF:
+                    led_manager_rele_vege_off();
+                    break;
                 default:
                     break;
             }
@@ -100,6 +120,41 @@ void global_manager_set_pwm_mode_auto(void)
 {
     global_event_t ev;
     ev.cmd = PWM_AUTO;
+    xQueueSend(global_manager_queue, &ev, 10);
+}
+//------------------------------------------------------------------------------
+void global_manager_set_triac_mode_off(void)
+{
+    global_event_t ev;
+    ev.cmd = TRIAC_OFF;
+    xQueueSend(global_manager_queue, &ev, 10);
+}
+//------------------------------------------------------------------------------
+void global_manager_set_pwm_triac_manual_on(void)
+{
+    global_event_t ev;
+    ev.cmd = TRIAC_MANUAL_ON;
+    xQueueSend(global_manager_queue, &ev, 10);
+}
+//------------------------------------------------------------------------------
+void global_manager_set_triac_mode_auto(void)
+{
+    global_event_t ev;
+    ev.cmd = TRIAC_AUTO;
+    xQueueSend(global_manager_queue, &ev, 10);
+}
+//------------------------------------------------------------------------------
+void global_manager_set_rele_vege_status_off(void)
+{
+    global_event_t ev;
+    ev.cmd = RELE_VEGE_OFF;
+    xQueueSend(global_manager_queue, &ev, 10);
+}
+//------------------------------------------------------------------------------
+void global_manager_set_rele_vege_status_on(void)
+{
+    global_event_t ev;
+    ev.cmd = RELE_VEGE_ON;
     xQueueSend(global_manager_queue, &ev, 10);
 }
 //---------------------------- END OF FILE -------------------------------------

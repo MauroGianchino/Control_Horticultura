@@ -218,6 +218,8 @@ void button_event_manager_task(void * pvParameters)
     button_events_t button_ev;
     
     output_mode_t pwm_status = MANUAL_OFF;
+    output_mode_t triac_status = MANUAL_OFF;
+    rele_output_status_t rele_vege_status = RELE_OFF;
 
     config_buttons_isr();
 
@@ -238,7 +240,6 @@ void button_event_manager_task(void * pvParameters)
                     gpio_set_level(GPIO_NUM_5, 1);
                     break;
                 case PWM_BUTTON_PUSHED:
-                    
                     if(pwm_status == MANUAL_OFF)
                     {
                         //printf("PWM BUTTON PUSHED MANUAL OFF\n");
@@ -258,16 +259,32 @@ void button_event_manager_task(void * pvParameters)
                     pwm_status = MANUAL_OFF;
                     break;
                 case TRIAC_BUTTON_PUSHED:
-                    //gpio_set_level(GPIO_NUM_4, 1);
-                    //gpio_set_level(GPIO_NUM_5, 0);
+                    if(triac_status == MANUAL_OFF)
+                    {
+                        global_manager_set_triac_mode_off();
+                        triac_status = AUTOMATIC;
+                    }
+                    else if(triac_status == AUTOMATIC)
+                    {
+                        global_manager_set_triac_mode_auto();
+                        triac_status = MANUAL_OFF;
+                    }
                     break;
                 case TRIAC_BUTTON_PUSHED_3_SEC:
-                    //gpio_set_level(GPIO_NUM_4, 0);
-                    //gpio_set_level(GPIO_NUM_5, 1);
+                    global_manager_set_pwm_triac_manual_on();
+                    triac_status = MANUAL_OFF;
                     break;
                 case VEGE_BUTTON_PUSHED:
-                    //gpio_set_level(GPIO_NUM_4, 1);
-                    //gpio_set_level(GPIO_NUM_5, 0);
+                    if(rele_vege_status == RELE_OFF)
+                    {
+                        global_manager_set_rele_vege_status_off();
+                        rele_vege_status = RELE_ON;
+                    }
+                    else if(rele_vege_status == RELE_ON)
+                    {
+                        global_manager_set_rele_vege_status_on();
+                        rele_vege_status = RELE_OFF;
+                    }
                     break;
                 case SIMUL_POTE_POS_BUTTON_PUSHED:
                     //gpio_set_level(GPIO_NUM_4, state);
