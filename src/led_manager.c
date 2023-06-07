@@ -45,7 +45,7 @@ typedef struct{
 }led_event_t;
 //------------------- DECLARACION DE DATOS LOCALES -----------------------------
 //------------------------------------------------------------------------------
-static QueueHandle_t led_manager_queue;
+QueueHandle_t led_manager_queue;
 
 static esp_timer_handle_t timer_pwm;
 static esp_timer_handle_t timer_triac;
@@ -245,8 +245,6 @@ static void led_manager_task(void* arg)
                     set_power_on_indicator();
                     break;
                 case PWM_MANUAL_OFF:
-                    esp_timer_stop(timer_pwm_rampa);
-                    esp_timer_stop(timer_pwm);
                     set_pwm_manual_off_indicator();
                     break;
                 case PWM_MANUAL_ON:

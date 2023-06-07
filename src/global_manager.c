@@ -11,6 +11,7 @@
 #include "sdkconfig.h"
 
 #include "../include/global_manager.h"
+#include "../include/led_manager.h"
 //--------------------MACROS Y DEFINES------------------------------------------
 //------------------------------------------------------------------------------
 #define DEBUG_MODULE 1
@@ -20,7 +21,9 @@
 //------------------------------------------------------------------------------
 typedef enum{
     CMD_UNDEFINED = 0,
-
+    PWM_MANUAL_ON = 1,
+    PWM_OFF = 2,
+    PWM_AUTO = 3,
 }global_event_cmds_t;
 
 typedef struct{
@@ -54,6 +57,15 @@ static void global_manager_task(void* arg)
             {
                 case  CMD_UNDEFINED:
                     break;
+                case PWM_MANUAL_ON:
+                    led_manager_pwm_manual_on();
+                    break;
+                case PWM_OFF:
+                    led_manager_pwm_manual_off();
+                    break; 
+                case PWM_AUTO:
+                    led_manager_pwm_auto();
+                    break;
                 default:
                     break;
             }
@@ -66,8 +78,29 @@ void global_manager_init(void)
 {
     global_manager_queue = xQueueCreate(QUEUE_ELEMENT_QUANTITY, sizeof(global_event_t));
     
-    xTaskCreate(global_manager_task, "global_manager_task", configMINIMAL_STACK_SIZE*2, 
+    xTaskCreate(global_manager_task, "global_manager_task", configMINIMAL_STACK_SIZE*4, 
         NULL, configMAX_PRIORITIES-1, NULL);
+}
+//------------------------------------------------------------------------------
+void global_manager_set_pwm_mode_off(void)
+{
+    global_event_t ev;
+    ev.cmd = PWM_OFF;
+    xQueueSend(global_manager_queue, &ev, 10);
+}
+//------------------------------------------------------------------------------
+void global_manager_set_pwm_mode_manual_on(void)
+{
+    global_event_t ev;
+    ev.cmd = PWM_MANUAL_ON;
+    xQueueSend(global_manager_queue, &ev, 10);
+}
+//------------------------------------------------------------------------------
+void global_manager_set_pwm_mode_auto(void)
+{
+    global_event_t ev;
+    ev.cmd = PWM_AUTO;
+    xQueueSend(global_manager_queue, &ev, 10);
 }
 //---------------------------- END OF FILE -------------------------------------
 //------------------------------------------------------------------------------
