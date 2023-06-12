@@ -5,6 +5,14 @@
 
 //------------------- MACROS Y DEFINES -----------------------------------------
 //------------------------------------------------------------------------------
+// #define ANALOG_POTE
+#ifndef ANALOG_POTE
+    #define DIGITAL_POTE 
+#endif
+
+#define MAX_PERCENTAGE_POWER_VALUE 100
+#define MIN_PERCENTAGE_POWER_VALUE 0
+
 // LED DEFINITIONS
 #define DEVICE_ON_LED GPIO_NUM_19 
 #define PWM_OUTPUT_STATUS_LED GPIO_NUM_4
@@ -29,6 +37,9 @@
 #define I2C_SCL GPIO_NUM_22
 
 #define DISPLAY_RESET GPIO_NUM_13
+
+
+
 //------------------- TYPEDEF --------------------------------------------------
 //------------------------------------------------------------------------------
 

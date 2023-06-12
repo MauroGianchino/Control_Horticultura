@@ -220,6 +220,7 @@ void button_event_manager_task(void * pvParameters)
     output_mode_t pwm_status = MANUAL_OFF;
     output_mode_t triac_status = MANUAL_OFF;
     rele_output_status_t rele_vege_status = RELE_OFF;
+    uint8_t pwm_percent_power = 0;
 
     config_buttons_isr();
 
@@ -287,11 +288,22 @@ void button_event_manager_task(void * pvParameters)
                     }
                     break;
                 case SIMUL_POTE_POS_BUTTON_PUSHED:
-                    //gpio_set_level(GPIO_NUM_4, state);
-                    //state = !state;
+                    #ifdef DIGITAL_POTE
+                        if(pwm_percent_power < MAX_PERCENTAGE_POWER_VALUE)
+                        {
+                            pwm_percent_power++;
+                            global_manager_set_pwm_power_value(pwm_percent_power);
+                        }                
+                    #endif
                     break;
                 case SIMUL_POTE_NEG_BUTTON_PUSHED:
-                    
+                    #ifdef DIGITAL_POTE
+                        if(pwm_percent_power > MIN_PERCENTAGE_POWER_VALUE)
+                        {
+                            pwm_percent_power--;
+                            global_manager_set_pwm_power_value(pwm_percent_power);
+                        }   
+                    #endif            
                     break;
                 default:
                 break;
