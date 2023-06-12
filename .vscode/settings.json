@@ -5,6 +5,7 @@
         "freertos.h": "c",
         "sdkconfig.h": "c",
         "esp_log.h": "c",
-        "led_manager.h": "c"
+        "led_manager.h": "c",
+        "board_def.h": "c"
     }
 }

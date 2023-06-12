@@ -24,6 +24,7 @@ typedef struct{
     output_mode_t pwm_mode;
     output_mode_t triac_mode;
     rele_output_status_t rele_vege_status;
+    uint8_t pwm_percent_power;
 }nv_info_t;
 //------------------- DECLARACION DE DATOS EXTERNOS ----------------------------
 //------------------------------------------------------------------------------
@@ -40,5 +41,6 @@ void global_manager_set_pwm_triac_manual_on(void);
 void global_manager_set_triac_mode_auto(void);
 void global_manager_set_rele_vege_status_off(void);
 void global_manager_set_rele_vege_status_on(void);
+void global_manager_set_pwm_power_value(uint8_t power_percentage_value);
 //------------------- FIN DEL ARCHIVO ------------------------------------------
 #endif /* GLOBAL_MANAGER_H__ */

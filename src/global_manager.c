@@ -1,6 +1,7 @@
 //--------------------INCLUDES--------------------------------------------------
 //------------------------------------------------------------------------------
 #include <stdio.h>
+#include <assert.h>
 
 #include "freertos/FreeRTOS.h"
 #include "freertos/task.h"
@@ -10,6 +11,7 @@
 #include "esp_timer.h"
 #include "sdkconfig.h"
 
+#include "../include/board_def.h"
 #include "../include/global_manager.h"
 #include "../include/led_manager.h"
 //--------------------MACROS Y DEFINES------------------------------------------
@@ -29,10 +31,12 @@ typedef enum{
     TRIAC_AUTO = 6,
     RELE_VEGE_ON = 7,
     RELE_VEGE_OFF = 8,
+    SET_PWM_POWER = 9,
 }global_event_cmds_t;
 
 typedef struct{
     global_event_cmds_t cmd;
+    uint8_t value;
 }global_event_t;
 //------------------- DECLARACION DE DATOS LOCALES -----------------------------
 //------------------------------------------------------------------------------
@@ -53,7 +57,7 @@ static void global_manager_task(void* arg);
 static void global_manager_task(void* arg)
 {
     global_event_t global_ev;
-
+    nv_info_t global_info;
     while(1)
     {
         if(xQueueReceive(global_manager_queue, &global_ev, portMAX_DELAY ) == pdTRUE)
@@ -63,28 +67,42 @@ static void global_manager_task(void* arg)
                 case  CMD_UNDEFINED:
                     break;
                 case PWM_MANUAL_ON:
+                    global_info.pwm_mode = MANUAL_ON;
                     led_manager_pwm_manual_on();
                     break;
                 case PWM_OFF:
+                    global_info.pwm_mode = MANUAL_OFF;
                     led_manager_pwm_manual_off();
                     break; 
                 case PWM_AUTO:
+                    global_info.pwm_mode = AUTOMATIC;
                     led_manager_pwm_auto();
                     break;
                 case TRIAC_MANUAL_ON:
+                    global_info.triac_mode = MANUAL_ON;
                     led_manager_triac_on();
                     break;
                 case TRIAC_OFF:
+                    global_info.triac_mode = MANUAL_OFF;
                     led_manager_triac_off();
                     break;
                 case TRIAC_AUTO:
+                    global_info.triac_mode = AUTOMATIC;
                     led_manager_triac_auto();
                     break;
                 case RELE_VEGE_ON:
+                    global_info.rele_vege_status = RELE_ON;
                     led_manager_rele_vege_on();
                     break;
                 case RELE_VEGE_OFF:
+                    global_info.rele_vege_status = RELE_OFF;
                     led_manager_rele_vege_off();
+                    break;
+                case SET_PWM_POWER:
+                    global_info.pwm_percent_power = global_ev.value;
+                    #ifdef DEBUG_MODULE
+                        printf("PORCENTAJE POTENCIA PWM: %d", global_info.pwm_percent_power);
+                    #endif
                     break;
                 default:
                     break;
@@ -155,6 +173,15 @@ void global_manager_set_rele_vege_status_on(void)
 {
     global_event_t ev;
     ev.cmd = RELE_VEGE_ON;
+    xQueueSend(global_manager_queue, &ev, 10);
+}
+//------------------------------------------------------------------------------
+void global_manager_set_pwm_power_value(uint8_t power_percentage_value)
+{
+    global_event_t ev;
+    assert(power_percentage_value <= MAX_PERCENTAGE_POWER_VALUE);
+    ev.cmd = SET_PWM_POWER;
+    ev.value = power_percentage_value;
     xQueueSend(global_manager_queue, &ev, 10);
 }
 //---------------------------- END OF FILE -------------------------------------
