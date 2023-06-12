@@ -6,6 +6,11 @@
         "sdkconfig.h": "c",
         "esp_log.h": "c",
         "led_manager.h": "c",
-        "board_def.h": "c"
+        "board_def.h": "c",
+        "esp_timer.h": "c",
+        "esp_adc_cal.h": "c",
+        "adc.h": "c",
+        "adc_continuous.h": "c",
+        "adc_oneshot.h": "c"
     }
 }

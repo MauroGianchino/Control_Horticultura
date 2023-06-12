@@ -220,7 +220,9 @@ void button_event_manager_task(void * pvParameters)
     output_mode_t pwm_status = MANUAL_OFF;
     output_mode_t triac_status = MANUAL_OFF;
     rele_output_status_t rele_vege_status = RELE_OFF;
+#ifdef DIGITAL_POTE
     uint8_t pwm_percent_power = 0;
+#endif
 
     config_buttons_isr();
 

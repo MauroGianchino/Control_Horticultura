@@ -5,7 +5,8 @@
 
 //------------------- MACROS Y DEFINES -----------------------------------------
 //------------------------------------------------------------------------------
-// #define ANALOG_POTE
+#define ANALOG_POTE
+
 #ifndef ANALOG_POTE
     #define DIGITAL_POTE 
 #endif
@@ -30,7 +31,7 @@
 // DIGITAL OUTPUT FOR PERIPHERALS
 #define TRIAC_OUTPUT GPIO_NUM_27
 #define RELE_OUTPUT GPIO_NUM_14
-#define ADC_POTE_INPUT GPIO_NUM_12
+#define ADC_POTE_INPUT ADC_CHANNEL_6 // GPIO_NUM_12
 #define PWM_OUTPUT GPIO_NUM_23
 // I2C
 #define I2C_SDA GPIO_NUM_21
