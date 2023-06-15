@@ -11,6 +11,7 @@
         "esp_adc_cal.h": "c",
         "adc.h": "c",
         "adc_continuous.h": "c",
-        "adc_oneshot.h": "c"
+        "adc_oneshot.h": "c",
+        "stdint.h": "c"
     }
 }
