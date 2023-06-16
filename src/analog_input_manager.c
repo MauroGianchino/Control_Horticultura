@@ -9,12 +9,16 @@
 
 #include "../include/analog_input_manager.h"
 #include "../include/board_def.h"
+#include "../include/global_manager.h"
 //--------------------MACROS Y DEFINES------------------------------------------
 //------------------------------------------------------------------------------
 #define DEBUG_MODULE 1
 
 #define ADC_WIDTH       ADC_WIDTH_BIT_12
 #define ADC_ATTEN       ADC_ATTEN_DB_0
+
+#define CUENTAS_ADC_100_PER_PWM 3708
+#define HISTERESIS_PER_PWM_UPDATE 5 // histeresis para que se envie una actualizacion en la potencia depwmde salida
 //------------------- TYPEDEF --------------------------------------------------
 //------------------------------------------------------------------------------
 
@@ -31,41 +35,47 @@ static void config_analog_input(void);
 
 //------------------- DEFINICION DE DATOS GLOBALES -----------------------------
 //------------------------------------------------------------------------------
-adc_oneshot_unit_handle_t adc1_handle;
+adc_oneshot_unit_handle_t adc2_handle;
 
 //------------------- DEFINICION DE FUNCIONES LOCALES --------------------------
 //------------------------------------------------------------------------------
 static void config_analog_input(void)
 {
-    //-------------ADC1 Init---------------//
-    adc_oneshot_unit_init_cfg_t init_config1 = {
+    adc_oneshot_unit_init_cfg_t init_config = {
         .unit_id = ADC_UNIT_2,
     };
-    adc_oneshot_new_unit(&init_config1, &adc1_handle);
+    adc_oneshot_new_unit(&init_config, &adc2_handle);
 
-     //-------------ADC1 Config---------------//
     adc_oneshot_chan_cfg_t config = {
         .bitwidth = ADC_BITWIDTH_DEFAULT,
         .atten = ADC_ATTEN,
     };
-    adc_oneshot_config_channel(adc1_handle, ADC_POTE_INPUT, &config);
+    adc_oneshot_config_channel(adc2_handle, ADC_POTE_INPUT, &config);
 
 }
 //------------------------------------------------------------------------------
 static void analog_input_manager_task(void* arg)
 {
-    int raw_value = 0;
+    int adc_read_value = 0;
+    int per_pwm = 0;
+    int per_pwm_ant = 0;
 
     config_analog_input();
 
     while(1)
     {
-        adc_oneshot_read(adc1_handle, ADC_POTE_INPUT, &raw_value);
+        adc_oneshot_read(adc2_handle, ADC_POTE_INPUT, &adc_read_value);
         #ifdef DEBUG_MODULE
-            printf("Valor ADC canal 5: %d \n", raw_value);
+            printf("Valor ADC channel 5: %d \n", adc_read_value);
         #endif
-        vTaskDelay(pdMS_TO_TICKS(1000));
-
+        per_pwm = (adc_read_value*100) / CUENTAS_ADC_100_PER_PWM;
+        if(((per_pwm_ant - per_pwm) > HISTERESIS_PER_PWM_UPDATE) \
+            || ((per_pwm - per_pwm_ant) > HISTERESIS_PER_PWM_UPDATE))
+        {
+            global_manager_set_pwm_power_value_manual((uint8_t)per_pwm);
+        }
+        per_pwm_ant = per_pwm;
+        vTaskDelay(pdMS_TO_TICKS(500));
     }
 }
 //------------------- DEFINICION DE FUNCIONES EXTERNAS -------------------------

@@ -291,19 +291,19 @@ void button_event_manager_task(void * pvParameters)
                     break;
                 case SIMUL_POTE_POS_BUTTON_PUSHED:
                     #ifdef DIGITAL_POTE
-                        if(pwm_percent_power < MAX_PERCENTAGE_POWER_VALUE)
+                        if(pwm_percent_power < MAX_PERCENTAGE_POWER_VALUE - 5)
                         {
-                            pwm_percent_power++;
-                            global_manager_set_pwm_power_value(pwm_percent_power);
+                            pwm_percent_power += 5;
+                            global_manager_set_pwm_power_value_manual(pwm_percent_power);
                         }                
                     #endif
                     break;
                 case SIMUL_POTE_NEG_BUTTON_PUSHED:
                     #ifdef DIGITAL_POTE
-                        if(pwm_percent_power > MIN_PERCENTAGE_POWER_VALUE)
+                        if(pwm_percent_power > MIN_PERCENTAGE_POWER_VALUE + 5)
                         {
-                            pwm_percent_power--;
-                            global_manager_set_pwm_power_value(pwm_percent_power);
+                            pwm_percent_power -= 5;
+                            global_manager_set_pwm_power_value_manual(pwm_percent_power);
                         }   
                     #endif            
                     break;
