@@ -31,7 +31,8 @@ typedef enum{
     TRIAC_AUTO = 6,
     RELE_VEGE_ON = 7,
     RELE_VEGE_OFF = 8,
-    SET_PWM_POWER = 9,
+    SET_MANUAL_PWM_POWER = 9,
+    SET_AUTO_PWM_POWER = 10,
 }global_event_cmds_t;
 
 typedef struct{
@@ -98,10 +99,16 @@ static void global_manager_task(void* arg)
                     global_info.rele_vege_status = RELE_OFF;
                     led_manager_rele_vege_off();
                     break;
-                case SET_PWM_POWER:
+                case SET_MANUAL_PWM_POWER:
                     global_info.pwm_percent_power = global_ev.value;
                     #ifdef DEBUG_MODULE
-                        printf("PORCENTAJE POTENCIA PWM: %d", global_info.pwm_percent_power);
+                        printf("PORCENTAJE POTENCIA PWM: %d \n", global_info.pwm_percent_power);
+                    #endif
+                    break;
+                case SET_AUTO_PWM_POWER:
+                    global_info.pwm_percent_power = global_ev.value;
+                    #ifdef DEBUG_MODULE
+                        printf("PORCENTAJE POTENCIA PWM: %d \n", global_info.pwm_percent_power);
                     #endif
                     break;
                 default:
@@ -176,11 +183,11 @@ void global_manager_set_rele_vege_status_on(void)
     xQueueSend(global_manager_queue, &ev, 10);
 }
 //------------------------------------------------------------------------------
-void global_manager_set_pwm_power_value(uint8_t power_percentage_value)
+void global_manager_set_pwm_power_value_manual(uint8_t power_percentage_value)
 {
     global_event_t ev;
     assert(power_percentage_value <= MAX_PERCENTAGE_POWER_VALUE);
-    ev.cmd = SET_PWM_POWER;
+    ev.cmd = SET_MANUAL_PWM_POWER;
     ev.value = power_percentage_value;
     xQueueSend(global_manager_queue, &ev, 10);
 }
