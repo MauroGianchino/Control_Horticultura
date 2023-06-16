@@ -46,7 +46,6 @@ typedef struct{
 //------------------- DECLARACION DE DATOS LOCALES -----------------------------
 //------------------------------------------------------------------------------
 static QueueHandle_t led_manager_queue;
-static led_event_t led_event;
 
 static esp_timer_handle_t timer_pwm;
 static esp_timer_handle_t timer_triac;
@@ -224,6 +223,7 @@ static void set_wifi_net_problem_indicator(void)
 static void led_manager_task(void* arg)
 {
     //const char *LED_MANAGER_TASK_TAG = "LED_MANAGER_TASK_TAG";
+    led_event_t led_ev;
 
     led_manager_power_up();
     //led_manager_pwm_manual_on();
@@ -235,9 +235,9 @@ static void led_manager_task(void* arg)
     //set_wifi_net_problem_indicator();
     while(1)
     {
-        if(xQueueReceive(led_manager_queue, &led_event, portMAX_DELAY ) == pdTRUE)
+        if(xQueueReceive(led_manager_queue, &led_ev, portMAX_DELAY ) == pdTRUE)
         {
-            switch(led_event.cmd)
+            switch(led_ev.cmd)
             {
                 case  CMD_UNDEFINED:
                     break;
@@ -302,7 +302,8 @@ void led_manager_init(void)
 
     led_manager_queue = xQueueCreate(QUEUE_ELEMENT_QUANTITY, sizeof(led_event_t));
     
-    xTaskCreate(led_manager_task, "led_manager_task", 2048, NULL, 10, NULL);
+    xTaskCreate(led_manager_task, "led_manager_task", configMINIMAL_STACK_SIZE*2, 
+        NULL, configMAX_PRIORITIES-2, NULL);
 }
 //------------------------------------------------------------------------------
 void led_manager_power_up(void)

@@ -4,7 +4,7 @@
         "task.h": "c",
         "freertos.h": "c",
         "sdkconfig.h": "c",
-        "esp_log.h": "c"
-    },
-    "cmake.configureOnOpen": false
+        "esp_log.h": "c",
+        "led_manager.h": "c"
+    }
 }
