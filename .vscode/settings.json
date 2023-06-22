@@ -12,6 +12,9 @@
         "adc.h": "c",
         "adc_continuous.h": "c",
         "adc_oneshot.h": "c",
-        "stdint.h": "c"
+        "stdint.h": "c",
+        "mcpwm_prelude.h": "c",
+        "mcpwm_reg.h": "c",
+        "ledc.h": "c"
     }
 }
