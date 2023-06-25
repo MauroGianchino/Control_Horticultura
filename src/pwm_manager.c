@@ -18,11 +18,11 @@
 
 #define PWM_TIMER LEDC_TIMER_0
 #define PWM_MODE LEDC_HIGH_SPEED_MODE
-#define PWM_OUTPUT_IO (23) // Define the output GPIO
+#define PWM_OUTPUT_IO PWM_OUTPUT // Define the output GPIO
 #define PWM_CHANNEL LEDC_CHANNEL_0
-#define PWM_DUTY_RES LEDC_TIMER_12_BIT // Set duty resolution to 13 bits
-#define PWM_DUTY (2048) // Set duty to 50%. ((2 ** 12) - 1) * 50% = 2048
-#define PWM_FREQUENCY (10000) // Frequency in Hertz. Set frequency at 10 kHz
+#define PWM_DUTY_RES LEDC_TIMER_13_BIT // Set duty resolution to 13 bits
+#define PWM_DUTY_50_PERCEN (4095) // Set duty to 50%. ((2 ** 13) - 1) * 50% = 4095
+#define PWM_FREQUENCY (1000) // Frequency in Hertz. Set frequency at 1 kHz
 //------------------- TYPEDEF --------------------------------------------------
 //------------------------------------------------------------------------------
 typedef enum{
@@ -30,6 +30,8 @@ typedef enum{
     TURN_ON_PWM = 1,
     TURN_OFF_PWM = 2,
     UPDATE_DUTY_CYCLE = 3,
+    TURN_ON_SIMUL_DAY_ON = 4,
+    TURN_OFF_SIMUL_DAY_ON = 5,
 }pwm_event_cmds_t;
 
 typedef struct{
@@ -46,6 +48,8 @@ static void config_pwm_output(void);
 static void turn_on_pwm(uint8_t duty_cycle);
 static void update_pwm(uint8_t duty_cycle);
 static void turn_off_pwm(void);
+static void turn_on_pwm_simul_day_on(uint8_t duty_cycle);
+static void turn_off_pwm_simul_day_on(void);
 //------------------- DEFINICION DE DATOS LOCALES ------------------------------
 //------------------------------------------------------------------------------
 
@@ -87,9 +91,28 @@ static void turn_on_pwm(uint8_t duty_cycle)
     ledc_set_duty(PWM_MODE, PWM_CHANNEL, 41); // duty cycle 1%
     ledc_update_duty(PWM_MODE, PWM_CHANNEL);
 
-    target_duty = (((uint32_t)duty_cycle)*(4095)) / 100;
+    target_duty = (((uint32_t)duty_cycle)*(8191)) / 100;
 
     ledc_set_fade_with_time(PWM_MODE, PWM_CHANNEL, target_duty, 1000);
+    ledc_fade_start(PWM_MODE, PWM_CHANNEL, LEDC_FADE_NO_WAIT);
+}
+//------------------------------------------------------------------------------
+static void turn_on_pwm_simul_day_on(uint8_t duty_cycle)
+{
+    uint32_t target_duty = 0;
+
+    ledc_set_duty(PWM_MODE, PWM_CHANNEL, 41); // duty cycle 1%
+    ledc_update_duty(PWM_MODE, PWM_CHANNEL);
+
+    target_duty = (((uint32_t)duty_cycle)*(8191)) / 100;
+
+    ledc_set_fade_with_time(PWM_MODE, PWM_CHANNEL, target_duty, 900000);
+    ledc_fade_start(PWM_MODE, PWM_CHANNEL, LEDC_FADE_NO_WAIT);
+}
+//------------------------------------------------------------------------------
+static void turn_off_pwm_simul_day_on(void)
+{
+    ledc_set_fade_with_time(PWM_MODE, PWM_CHANNEL, 0, 900000);
     ledc_fade_start(PWM_MODE, PWM_CHANNEL, LEDC_FADE_NO_WAIT);
 }
 //------------------------------------------------------------------------------
@@ -97,9 +120,9 @@ static void update_pwm(uint8_t duty_cycle)
 {
     uint32_t target_duty = 0;
 
-    target_duty = (((uint32_t)duty_cycle)*(4095)) / 100;
+    target_duty = (((uint32_t)duty_cycle)*(8191)) / 100;
 
-    ledc_set_fade_with_time(PWM_MODE, PWM_CHANNEL, target_duty, 1000);
+    ledc_set_fade_with_time(PWM_MODE, PWM_CHANNEL, target_duty, 50);
     ledc_fade_start(PWM_MODE, PWM_CHANNEL, LEDC_FADE_NO_WAIT);
 }
 //------------------------------------------------------------------------------
@@ -127,12 +150,20 @@ static void pwm_manager_task(void* arg)
                     break;
                 case TURN_ON_PWM:
                     turn_on_pwm(pwm_ev.duty_cycle);
+                    vTaskDelay(2000 / portTICK_PERIOD_MS);
+                    pwm_manager_turn_off_pwm_simul_day_on();
                     break; 
                 case TURN_OFF_PWM:
                     turn_off_pwm();
                     break;
                 case  UPDATE_DUTY_CYCLE:
                     update_pwm(pwm_ev.duty_cycle);
+                    break;
+                case TURN_ON_SIMUL_DAY_ON:
+                    turn_on_pwm_simul_day_on(pwm_ev.duty_cycle);
+                    break;
+                case TURN_OFF_SIMUL_DAY_ON:
+                    turn_off_pwm_simul_day_on();
                     break;
             }       
         }
@@ -173,6 +204,25 @@ void pwm_manager_update_pwm(uint8_t pwm_power_percent)
 
     ev.cmd = TURN_ON_PWM;
     ev.duty_cycle = pwm_power_percent;
+
+    xQueueSend(pwm_manager_queue, &ev, 10);
+}
+//------------------------------------------------------------------------------
+void pwm_manager_turn_on_pwm_simul_day_on(uint8_t pwm_power_percent)
+{
+    pwm_event_t ev;
+
+    ev.cmd = TURN_ON_SIMUL_DAY_ON;
+    ev.duty_cycle = pwm_power_percent;
+
+    xQueueSend(pwm_manager_queue, &ev, 10);
+}
+//------------------------------------------------------------------------------
+void pwm_manager_turn_off_pwm_simul_day_on(void)
+{
+    pwm_event_t ev;
+
+    ev.cmd = TURN_OFF_SIMUL_DAY_ON;
 
     xQueueSend(pwm_manager_queue, &ev, 10);
 }
