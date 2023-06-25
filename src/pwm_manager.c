@@ -23,6 +23,9 @@
 #define PWM_DUTY_RES LEDC_TIMER_13_BIT // Set duty resolution to 13 bits
 #define PWM_DUTY_50_PERCEN (4095) // Set duty to 50%. ((2 ** 13) - 1) * 50% = 4095
 #define PWM_FREQUENCY (1000) // Frequency in Hertz. Set frequency at 1 kHz
+
+#define MIN_15_FADING_TIME 900000
+#define SEC_1_FADING_TIME 1000
 //------------------- TYPEDEF --------------------------------------------------
 //------------------------------------------------------------------------------
 typedef enum{
@@ -88,12 +91,12 @@ static void turn_on_pwm(uint8_t duty_cycle)
 {
     uint32_t target_duty = 0;
 
-    ledc_set_duty(PWM_MODE, PWM_CHANNEL, 41); // duty cycle 1%
+    ledc_set_duty(PWM_MODE, PWM_CHANNEL, 41); // starts at duty cycle 1%
     ledc_update_duty(PWM_MODE, PWM_CHANNEL);
 
     target_duty = (((uint32_t)duty_cycle)*(8191)) / 100;
 
-    ledc_set_fade_with_time(PWM_MODE, PWM_CHANNEL, target_duty, 1000);
+    ledc_set_fade_with_time(PWM_MODE, PWM_CHANNEL, target_duty, SEC_1_FADING_TIME);
     ledc_fade_start(PWM_MODE, PWM_CHANNEL, LEDC_FADE_NO_WAIT);
 }
 //------------------------------------------------------------------------------
@@ -101,18 +104,18 @@ static void turn_on_pwm_simul_day_on(uint8_t duty_cycle)
 {
     uint32_t target_duty = 0;
 
-    ledc_set_duty(PWM_MODE, PWM_CHANNEL, 41); // duty cycle 1%
+    ledc_set_duty(PWM_MODE, PWM_CHANNEL, 41); // starts at duty cycle 1%
     ledc_update_duty(PWM_MODE, PWM_CHANNEL);
 
     target_duty = (((uint32_t)duty_cycle)*(8191)) / 100;
 
-    ledc_set_fade_with_time(PWM_MODE, PWM_CHANNEL, target_duty, 900000);
+    ledc_set_fade_with_time(PWM_MODE, PWM_CHANNEL, target_duty, MIN_15_FADING_TIME);
     ledc_fade_start(PWM_MODE, PWM_CHANNEL, LEDC_FADE_NO_WAIT);
 }
 //------------------------------------------------------------------------------
 static void turn_off_pwm_simul_day_on(void)
 {
-    ledc_set_fade_with_time(PWM_MODE, PWM_CHANNEL, 0, 900000);
+    ledc_set_fade_with_time(PWM_MODE, PWM_CHANNEL, 0, MIN_15_FADING_TIME);
     ledc_fade_start(PWM_MODE, PWM_CHANNEL, LEDC_FADE_NO_WAIT);
 }
 //------------------------------------------------------------------------------
@@ -122,13 +125,13 @@ static void update_pwm(uint8_t duty_cycle)
 
     target_duty = (((uint32_t)duty_cycle)*(8191)) / 100;
 
-    ledc_set_fade_with_time(PWM_MODE, PWM_CHANNEL, target_duty, 50);
+    ledc_set_fade_with_time(PWM_MODE, PWM_CHANNEL, target_duty, 10);
     ledc_fade_start(PWM_MODE, PWM_CHANNEL, LEDC_FADE_NO_WAIT);
 }
 //------------------------------------------------------------------------------
 static void turn_off_pwm(void)
 {
-    ledc_set_fade_with_time(PWM_MODE, PWM_CHANNEL, 0, 1000);
+    ledc_set_fade_with_time(PWM_MODE, PWM_CHANNEL, 0, SEC_1_FADING_TIME);
     ledc_fade_start(PWM_MODE, PWM_CHANNEL, LEDC_FADE_NO_WAIT);
 }
 //------------------------------------------------------------------------------
@@ -137,8 +140,6 @@ static void pwm_manager_task(void* arg)
     pwm_event_t pwm_ev;
     
     config_pwm_output();
-
-    pwm_manager_turn_on_pwm(50);
 
     while(1)
     {
@@ -150,13 +151,11 @@ static void pwm_manager_task(void* arg)
                     break;
                 case TURN_ON_PWM:
                     turn_on_pwm(pwm_ev.duty_cycle);
-                    vTaskDelay(2000 / portTICK_PERIOD_MS);
-                    pwm_manager_turn_off_pwm_simul_day_on();
                     break; 
                 case TURN_OFF_PWM:
                     turn_off_pwm();
                     break;
-                case  UPDATE_DUTY_CYCLE:
+                case UPDATE_DUTY_CYCLE:
                     update_pwm(pwm_ev.duty_cycle);
                     break;
                 case TURN_ON_SIMUL_DAY_ON:
@@ -193,7 +192,7 @@ void pwm_manager_turn_off_pwm(void)
 {
     pwm_event_t ev;
 
-    ev.cmd = TURN_ON_PWM;
+    ev.cmd = TURN_OFF_PWM;
 
     xQueueSend(pwm_manager_queue, &ev, 10);
 }
@@ -202,7 +201,7 @@ void pwm_manager_update_pwm(uint8_t pwm_power_percent)
 {
     pwm_event_t ev;
 
-    ev.cmd = TURN_ON_PWM;
+    ev.cmd = UPDATE_DUTY_CYCLE;
     ev.duty_cycle = pwm_power_percent;
 
     xQueueSend(pwm_manager_queue, &ev, 10);

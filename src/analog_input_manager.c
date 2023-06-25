@@ -17,8 +17,8 @@
 #define ADC_WIDTH       ADC_WIDTH_BIT_12
 #define ADC_ATTEN       ADC_ATTEN_DB_0
 
-#define CUENTAS_ADC_100_PER_PWM 3708
-#define HISTERESIS_PER_PWM_UPDATE 5 // histeresis para que se envie una actualizacion en la potencia depwmde salida
+#define CUENTAS_ADC_100_PER_PWM 4078
+#define HISTERESIS_PER_PWM_UPDATE 50 // histeresis para que se envie una actualizacion en la potencia depwmde salida
 //------------------- TYPEDEF --------------------------------------------------
 //------------------------------------------------------------------------------
 
@@ -56,26 +56,41 @@ static void config_analog_input(void)
 //------------------------------------------------------------------------------
 static void analog_input_manager_task(void* arg)
 {
-    int adc_read_value = 0;
+    int adc_read_value[20];
+    uint8_t adc_vec_length = (sizeof(adc_read_value) / sizeof(adc_read_value[0]));
+    int val = 0, val_ant = 0;
+    uint8_t index = 0;
     int per_pwm = 0;
-    int per_pwm_ant = 0;
 
     config_analog_input();
 
     while(1)
     {
-        adc_oneshot_read(adc2_handle, ADC_POTE_INPUT, &adc_read_value);
-        #ifdef DEBUG_MODULE
-            printf("Valor ADC channel 5: %d \n", adc_read_value);
-        #endif
-        per_pwm = (adc_read_value*100) / CUENTAS_ADC_100_PER_PWM;
-        if(((per_pwm_ant - per_pwm) > HISTERESIS_PER_PWM_UPDATE) \
-            || ((per_pwm - per_pwm_ant) > HISTERESIS_PER_PWM_UPDATE))
+        adc_oneshot_read(adc2_handle, ADC_POTE_INPUT, &adc_read_value[index]);
+        //#ifdef DEBUG_MODULE
+        //    printf("Valor ADC channel 5: %d \n", adc_read_value[index]);
+        //#endif
+        index++;
+        if(index == adc_vec_length)
         {
-            global_manager_set_pwm_power_value_manual((uint8_t)per_pwm);
+            for(index = 0; index < adc_vec_length; index++)
+            {
+                val += adc_read_value[index];
+            }
+            val = val / adc_vec_length;
+            index = 0;
+            
+            if((val - val_ant > HISTERESIS_PER_PWM_UPDATE) || (val_ant - val > HISTERESIS_PER_PWM_UPDATE))
+            {
+                per_pwm = (val*100) / CUENTAS_ADC_100_PER_PWM;
+                global_manager_set_pwm_power_value_manual((uint8_t)per_pwm);
+                #ifdef DEBUG_MODULE
+                    printf("Valor ADC channel 5: %d \n", val);
+                #endif
+            } 
+            val_ant = val;
         }
-        per_pwm_ant = per_pwm;
-        vTaskDelay(pdMS_TO_TICKS(500));
+        vTaskDelay(pdMS_TO_TICKS(10));
     }
 }
 //------------------- DEFINICION DE FUNCIONES EXTERNAS -------------------------
