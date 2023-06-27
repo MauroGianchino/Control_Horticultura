@@ -63,6 +63,8 @@ static void global_manager_task(void* arg);
 //------------------------------------------------------------------------------
 
 //------------------------------------------------------------------------------
+//TO DO
+// hacer las funciones de configuracion de UPDATE_PWM_CALENDAR
 static void global_manager_task(void* arg)
 {
     global_event_t global_ev;
