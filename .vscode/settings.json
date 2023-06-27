@@ -15,6 +15,7 @@
         "stdint.h": "c",
         "mcpwm_prelude.h": "c",
         "mcpwm_reg.h": "c",
-        "ledc.h": "c"
+        "ledc.h": "c",
+        "global_manager.h": "c"
     }
 }

@@ -34,11 +34,18 @@ typedef enum{
     RELE_VEGE_OFF = 8,
     SET_MANUAL_PWM_POWER = 9,
     SET_AUTO_PWM_POWER = 10,
+    UPDATE_CURRENT_TIME = 11,
+    UPDATE_SIMUL_DAY_FUNCTION_STATUS = 12,
+    UPDATE_PWM_CALENDAR = 13,
 }global_event_cmds_t;
 
 typedef struct{
     global_event_cmds_t cmd;
     uint8_t value;
+    struct tm current_time;
+    struct tm pwm_turn_on_time;
+    struct tm pwm_turn_off_time;
+    simul_day_status_t simul_day_function_status;
 }global_event_t;
 //------------------- DECLARACION DE DATOS LOCALES -----------------------------
 //------------------------------------------------------------------------------
@@ -60,18 +67,25 @@ static void global_manager_task(void* arg)
 {
     global_event_t global_ev;
     nv_info_t global_info;
+    time_t current_time;
+    simul_day_status_t simul_day_status;
+    time_t pwm_turn_on_time, pwm_turn_off_time;
     
     // PARA DEBUG HAY QUIE SUSTITUIR POR SECUENCIA DE STARTUP
     global_manager_set_pwm_mode_manual_on(); // EL PWM INICIA EN MANUAL
+    global_manager_update_simul_day_function_status(SIMUL_DAY_ON);
     vTaskDelay(1000 / portTICK_PERIOD_MS);
     ////////////////////////////////////////////////////////
     while(1)
     {
-        if(xQueueReceive(global_manager_queue, &global_ev, portMAX_DELAY ) == pdTRUE)
+        if(xQueueReceive(global_manager_queue, &global_ev, 2000 / portTICK_PERIOD_MS) == pdTRUE)
         {
             switch(global_ev.cmd)
             {
                 case  CMD_UNDEFINED:
+                    break;
+                case UPDATE_CURRENT_TIME:
+                    current_time = mktime(&global_ev.current_time);
                     break;
                 case PWM_MANUAL_ON:
                     global_info.pwm_mode = MANUAL_ON;
@@ -127,9 +141,20 @@ static void global_manager_task(void* arg)
                         #endif
                     }
                     break;
+                case UPDATE_SIMUL_DAY_FUNCTION_STATUS:
+                    simul_day_status = global_ev.simul_day_function_status;
+                    break;
+                case UPDATE_PWM_CALENDAR:
+                    pwm_turn_on_time = mktime(&global_ev.pwm_turn_on_time); 
+                    pwm_turn_off_time = mktime(&global_ev.pwm_turn_off_time);
+                    break;
                 default:
                     break;
             }
+        }
+        else
+        {
+
         }
     }
 }
@@ -205,6 +230,22 @@ void global_manager_set_pwm_power_value_manual(uint8_t power_percentage_value)
     assert(power_percentage_value <= MAX_PERCENTAGE_POWER_VALUE);
     ev.cmd = SET_MANUAL_PWM_POWER;
     ev.value = power_percentage_value;
+    xQueueSend(global_manager_queue, &ev, 10);
+}
+//------------------------------------------------------------------------------
+void global_manager_update_current_time(struct tm current_time)
+{
+    global_event_t ev;
+    ev.cmd = UPDATE_CURRENT_TIME;
+    ev.current_time = current_time;
+    xQueueSend(global_manager_queue, &ev, 10);
+}
+//------------------------------------------------------------------------------
+void global_manager_update_simul_day_function_status(simul_day_status_t status)
+{
+    global_event_t ev;
+    ev.cmd = UPDATE_SIMUL_DAY_FUNCTION_STATUS;
+    ev.simul_day_function_status = status;
     xQueueSend(global_manager_queue, &ev, 10);
 }
 //---------------------------- END OF FILE -------------------------------------
