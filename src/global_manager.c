@@ -16,7 +16,8 @@
 #include "../include/led_manager.h"
 #include "../include/pwm_manager.h"
 #include "../include/pwm_auto_manager.h"
-
+#include "../include/triac_manager.h"
+#include "../include/triac_auto_manager.h"
 //--------------------MACROS Y DEFINES------------------------------------------
 //------------------------------------------------------------------------------
 #define DEBUG_MODULE 1
@@ -39,7 +40,14 @@ typedef enum{
     UPDATE_CURRENT_TIME = 11,
     UPDATE_SIMUL_DAY_FUNCTION_STATUS = 12,
     UPDATE_PWM_CALENDAR = 13,
+    UPDATE_TRIAC_CALENDAR = 14,
 }global_event_cmds_t;
+
+typedef struct{
+    struct tm turn_on_time;
+    struct tm turn_off_time;
+    uint8_t enable;
+}triac_info_t;
 
 typedef struct{
     global_event_cmds_t cmd;
@@ -48,6 +56,7 @@ typedef struct{
     struct tm pwm_turn_on_time;
     struct tm pwm_turn_off_time;
     simul_day_status_t simul_day_function_status;
+    triac_info_t triac_info[MAX_AUTO_TRIAC_CONFIGS_HOURS];
 }global_event_t;
 //------------------- DECLARACION DE DATOS LOCALES -----------------------------
 //------------------------------------------------------------------------------
@@ -65,14 +74,23 @@ static void global_manager_task(void* arg);
 //------------------------------------------------------------------------------
 
 //------------------------------------------------------------------------------
+// TO DO: falta implementar funcion para actualizar parametros de hora del triac automatico
+// UPDATE_TRIAC_CALENDAR
+// TO DO: Falta agregar la dinamica de funcionamiento del rele vege
+// TO DO: Falta agregar el guardado y el levantado de flash al bootear de los parametros
+// no volatiles.
 static void global_manager_task(void* arg)
 {
     global_event_t global_ev;
     nv_info_t global_info;
     pwm_auto_info_t pwm_auto_info;
+    triac_auto_info_t triac_auto_info;
+
+    triac_manager_init();
     
     // PARA DEBUG HAY QUIE SUSTITUIR POR SECUENCIA DE STARTUP
-    global_manager_set_pwm_mode_manual_on(); // EL PWM INICIA EN MANUAL
+    global_manager_set_pwm_mode_manual_on(); // EL PWM INICIA EN MANUAL ACTIVADO
+     global_manager_set_triac_mode_off(); // EL PWM INICIA EN MANUAL APAGADO
     global_manager_update_simul_day_function_status(SIMUL_DAY_ON);
     vTaskDelay(1000 / portTICK_PERIOD_MS);
     ////////////////////////////////////////////////////////
@@ -86,6 +104,7 @@ static void global_manager_task(void* arg)
                     break;
                 case UPDATE_CURRENT_TIME:
                     pwm_auto_info.current_time = mktime(&global_ev.current_time);
+                    triac_auto_info.current_time = mktime(&global_ev.current_time);
                     break;
                 case PWM_MANUAL_ON:
                     global_info.pwm_mode = MANUAL_ON;
@@ -107,14 +126,19 @@ static void global_manager_task(void* arg)
                 case TRIAC_MANUAL_ON:
                     global_info.triac_mode = MANUAL_ON;
                     led_manager_triac_on();
+                    triac_auto_end();
+                    triac_manager_turn_on_triac();
                     break;
                 case TRIAC_OFF:
                     global_info.triac_mode = MANUAL_OFF;
                     led_manager_triac_off();
+                    triac_auto_end();
+                    triac_manager_turn_off_triac();
                     break;
                 case TRIAC_AUTO:
                     global_info.triac_mode = AUTOMATIC;
                     led_manager_triac_auto();
+                    triac_auto_start();
                     break;
                 case RELE_VEGE_ON:
                     global_info.rele_vege_status = RELE_ON;
@@ -152,6 +176,20 @@ static void global_manager_task(void* arg)
                     pwm_auto_info.pwm_auto_turn_on_time = mktime(&global_ev.pwm_turn_on_time); 
                     pwm_auto_info.pwm_auto_turn_off_time = mktime(&global_ev.pwm_turn_off_time);
                     break;
+                case UPDATE_TRIAC_CALENDAR:
+                    triac_auto_info.triac_auto[0].enable = global_ev.triac_info[0].enable;
+                    triac_auto_info.triac_auto[1].enable = global_ev.triac_info[1].enable;
+                    triac_auto_info.triac_auto[2].enable = global_ev.triac_info[2].enable;
+                    triac_auto_info.triac_auto[3].enable = global_ev.triac_info[3].enable;
+                    triac_auto_info.triac_auto[0].turn_off_time = mktime(&global_ev.triac_info[0].turn_off_time);
+                    triac_auto_info.triac_auto[1].turn_off_time = mktime(&global_ev.triac_info[1].turn_off_time);
+                    triac_auto_info.triac_auto[2].turn_off_time = mktime(&global_ev.triac_info[2].turn_off_time);
+                    triac_auto_info.triac_auto[3].turn_off_time = mktime(&global_ev.triac_info[3].turn_off_time);
+                    triac_auto_info.triac_auto[0].turn_on_time = mktime(&global_ev.triac_info[0].turn_on_time);
+                    triac_auto_info.triac_auto[1].turn_on_time = mktime(&global_ev.triac_info[1].turn_on_time);
+                    triac_auto_info.triac_auto[2].turn_on_time = mktime(&global_ev.triac_info[2].turn_on_time);
+                    triac_auto_info.triac_auto[3].turn_on_time = mktime(&global_ev.triac_info[3].turn_on_time);
+                    break;
                 default:
                     break;
             }
@@ -159,6 +197,7 @@ static void global_manager_task(void* arg)
         else
         {
             pwm_auto_manager_handler(&pwm_auto_info);
+            triac_auto_manager_handler(&triac_auto_info);
         }
     }
 }
