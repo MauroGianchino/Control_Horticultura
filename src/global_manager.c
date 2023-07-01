@@ -79,6 +79,8 @@ static void global_manager_task(void* arg);
 // TO DO: Falta agregar la dinamica de funcionamiento del rele vege
 // TO DO: Falta agregar el guardado y el levantado de flash al bootear de los parametros
 // no volatiles.
+// Falta agregar una tarea que lleve el conteo de la hora y se lo actualice a la 
+// global manager task.
 static void global_manager_task(void* arg)
 {
     global_event_t global_ev;
