@@ -16,6 +16,13 @@
         "mcpwm_prelude.h": "c",
         "mcpwm_reg.h": "c",
         "ledc.h": "c",
-        "global_manager.h": "c"
+        "global_manager.h": "c",
+        "queue.h": "c",
+        "system_error": "c",
+        "array": "c",
+        "functional": "c",
+        "tuple": "c",
+        "type_traits": "c",
+        "utility": "c"
     }
 }
