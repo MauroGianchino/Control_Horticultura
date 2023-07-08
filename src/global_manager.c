@@ -92,9 +92,10 @@ static void global_manager_task(void* arg)
     
     // PARA DEBUG HAY QUIE SUSTITUIR POR SECUENCIA DE STARTUP
     global_manager_set_pwm_mode_manual_on(); // EL PWM INICIA EN MANUAL ACTIVADO
-     global_manager_set_triac_mode_off(); // EL PWM INICIA EN MANUAL APAGADO
+    global_manager_set_triac_mode_off(); // EL PWM INICIA EN MANUAL APAGADO
     global_manager_update_simul_day_function_status(SIMUL_DAY_ON);
     vTaskDelay(1000 / portTICK_PERIOD_MS);
+    global_manager_set_triac_mode_off();
     ////////////////////////////////////////////////////////
     while(1)
     {
