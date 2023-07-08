@@ -8,9 +8,11 @@
 #ifdef ANALOG_POTE
   #include "../include/analog_input_manager.h"
 #endif
+#include "../include/nv_flash_manager.h"
 
 void app_main() 
 {
+  nv_flash_manager_init();
   global_manager_init();
   led_manager_init();
   button_manager_init();
