@@ -77,6 +77,7 @@ static void dataflash_manager_task(void* arg)
     char value[MAX_VALUE_LENGTH];
     size_t len = sizeof(value) / sizeof(value[0]);
 
+
     while(1)
     {
         if(xQueueReceive(dataflash_manager_queue, &ev, portMAX_DELAY) == pdTRUE)
@@ -123,6 +124,7 @@ static void dataflash_manager_task(void* arg)
                     else 
                     {
                         ret = nvs_get_str(nvs_handle, ev.operation_info.key, value, &len);
+
                         if(ret == ESP_OK) 
                         {
                             #ifdef DEBUG_MODULE
@@ -386,7 +388,7 @@ void read_parameter_from_flash_str(const char *key)
     dataflash_event_t ev;
     ev.cmd = READ_FLASH_STR;
     strncpy(ev.operation_info.key, key, MAX_KEY_LENGTH);
-    if(xQueueSend(dataflash_manager_queue, &ev, 0) != pdPASS) 
+    if(xQueueSend(dataflash_manager_queue, &ev, 10) != pdPASS) 
     {
         #ifdef DEBUG_MODULE
             printf("Error al enviar la operación de lectura a la cola\n");
