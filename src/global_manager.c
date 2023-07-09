@@ -273,7 +273,8 @@ void global_manager_set_rele_vege_status_on(void)
 void global_manager_set_pwm_power_value_manual(uint8_t power_percentage_value)
 {
     global_event_t ev;
-    assert(power_percentage_value <= MAX_PERCENTAGE_POWER_VALUE);
+    if(power_percentage_value >= 98)
+        power_percentage_value = 98;
     ev.cmd = SET_MANUAL_PWM_POWER;
     ev.value = power_percentage_value;
     xQueueSend(global_manager_queue, &ev, 10);

@@ -21,6 +21,9 @@
 #define MANUAL_PWM_TIME 3000000
 #define MANUAL_TRIAC_TIME 3000000
 #define RAMPA_PWM_TIME 500000
+
+#define LED_ON 0
+#define LED_OFF 1
 //------------------- TYPEDEF --------------------------------------------------
 //------------------------------------------------------------------------------
 typedef enum{
@@ -86,21 +89,21 @@ static void timer_led_toggle_triac_callback(void* arg);
 //------------------------------------------------------------------------------
 static void timer_led_toggle_pwm_callback(void* arg)
 {
-    static int led_state_pwm = 0;
+    static int led_state_pwm = LED_OFF;
     gpio_set_level(PWM_OUTPUT_STATUS_LED, led_state_pwm);
     led_state_pwm = !led_state_pwm;
 }
 //------------------------------------------------------------------------------
 static void timer_led_toggle_pwm_rampa_callback(void* arg)
 {
-    static int led_state_pwm_rampa = 0;
+    static int led_state_pwm_rampa = LED_OFF;
     gpio_set_level(PWM_OUTPUT_STATUS_LED, led_state_pwm_rampa);
     led_state_pwm_rampa = !led_state_pwm_rampa;
 }
 //------------------------------------------------------------------------------
 static void timer_led_toggle_triac_callback(void* arg)
 {
-    static int led_state_triac = 0;
+    static int led_state_triac = LED_OFF;
     gpio_set_level(TRIAC_OUTPUT_STATUS_LED, led_state_triac);
     led_state_triac = !led_state_triac;
 }
@@ -108,13 +111,13 @@ static void timer_led_toggle_triac_callback(void* arg)
 static void config_led_power_up(void)
 {
     gpio_set_direction(DEVICE_ON_LED, GPIO_MODE_OUTPUT);
-    gpio_set_level(DEVICE_ON_LED, 0);
+    gpio_set_level(DEVICE_ON_LED, LED_OFF);
 }
 //------------------------------------------------------------------------------
 static void config_led_pwm_status(void)
 {
     gpio_set_direction(PWM_OUTPUT_STATUS_LED, GPIO_MODE_OUTPUT);
-    gpio_set_level(PWM_OUTPUT_STATUS_LED, 0);
+    gpio_set_level(PWM_OUTPUT_STATUS_LED, LED_OFF);
 
     esp_timer_create_args_t timer_pwm_args = {
         .callback = timer_led_toggle_pwm_callback,
@@ -135,13 +138,13 @@ static void config_led_pwm_status(void)
 static void config_led_rele_vege_status_up(void)
 {
     gpio_set_direction(RELE_VEGE_STATUS_LED, GPIO_MODE_OUTPUT);
-    gpio_set_level(RELE_VEGE_STATUS_LED, 0);
+    gpio_set_level(RELE_VEGE_STATUS_LED, LED_OFF);
 }
 //------------------------------------------------------------------------------
 static void config_led_triac_status(void)
 {
     gpio_set_direction(TRIAC_OUTPUT_STATUS_LED, GPIO_MODE_OUTPUT);
-    gpio_set_level(TRIAC_OUTPUT_STATUS_LED, 0);
+    gpio_set_level(TRIAC_OUTPUT_STATUS_LED, LED_OFF);
 
     esp_timer_create_args_t timer_triac_args = {
         .callback = timer_led_toggle_triac_callback,
@@ -156,68 +159,68 @@ static void config_led_wifi_status(void)
 {
     gpio_set_direction(WIFI_STATUS_1_LED, GPIO_MODE_OUTPUT);
     gpio_set_direction(WIFI_STATUS_2_LED, GPIO_MODE_OUTPUT);
-    gpio_set_level(WIFI_STATUS_1_LED, 0);
-    gpio_set_level(WIFI_STATUS_2_LED, 0);
+    gpio_set_level(WIFI_STATUS_1_LED, LED_OFF);
+    gpio_set_level(WIFI_STATUS_2_LED, LED_OFF);
 }
 //------------------------------------------------------------------------------
 static void set_power_on_indicator(void)
 {
-    gpio_set_level(DEVICE_ON_LED, 1);
+    gpio_set_level(DEVICE_ON_LED, LED_ON);
 }
 //------------------------------------------------------------------------------
 static void set_pwm_auto_indicator(void)
 {
     esp_timer_stop(timer_pwm_rampa);
     esp_timer_stop(timer_pwm);
-    gpio_set_level(PWM_OUTPUT_STATUS_LED, 1);
+    gpio_set_level(PWM_OUTPUT_STATUS_LED, LED_ON);
 }
 //------------------------------------------------------------------------------
 static void set_pwm_manual_off_indicator(void)
 {
     esp_timer_stop(timer_pwm_rampa);
     esp_timer_stop(timer_pwm);
-    gpio_set_level(PWM_OUTPUT_STATUS_LED, 0);
+    gpio_set_level(PWM_OUTPUT_STATUS_LED, LED_OFF);
 }
 //------------------------------------------------------------------------------
 static void set_triac_auto_indicator(void)
 {
     esp_timer_stop(timer_triac);
-    gpio_set_level(TRIAC_OUTPUT_STATUS_LED, 1);
+    gpio_set_level(TRIAC_OUTPUT_STATUS_LED, LED_ON);
 }
 //------------------------------------------------------------------------------
 static void set_triac_manual_off_indicator(void)
 {
     esp_timer_stop(timer_triac);
-    gpio_set_level(TRIAC_OUTPUT_STATUS_LED, 0);
+    gpio_set_level(TRIAC_OUTPUT_STATUS_LED, LED_OFF);
 }
 //------------------------------------------------------------------------------
 static void set_rele_vege_on_indicator(void)
 {
     printf("encender led");
-    gpio_set_level(RELE_VEGE_STATUS_LED, 1);
+    gpio_set_level(RELE_VEGE_STATUS_LED, LED_ON);
 }
 //------------------------------------------------------------------------------
 static void set_rele_vege_off_indicator(void)
 {
-    gpio_set_level(RELE_VEGE_STATUS_LED, 0);
+    gpio_set_level(RELE_VEGE_STATUS_LED, LED_OFF);
 }
 //------------------------------------------------------------------------------
 static void set_wifi_ap_mode_indicator(void)
 {
-    gpio_set_level(WIFI_STATUS_1_LED, 1);
-    gpio_set_level(WIFI_STATUS_2_LED, 0);
+    gpio_set_level(WIFI_STATUS_1_LED, LED_ON);
+    gpio_set_level(WIFI_STATUS_2_LED, LED_OFF);
 }
 //------------------------------------------------------------------------------
 static void set_wifi_sta_mode_indicator(void)
 {
-    gpio_set_level(WIFI_STATUS_1_LED, 0);
-    gpio_set_level(WIFI_STATUS_2_LED, 1);
+    gpio_set_level(WIFI_STATUS_1_LED, LED_OFF);
+    gpio_set_level(WIFI_STATUS_2_LED, LED_ON);
 }
 //------------------------------------------------------------------------------
 static void set_wifi_net_problem_indicator(void)
 {
-    gpio_set_level(WIFI_STATUS_1_LED, 1);
-    gpio_set_level(WIFI_STATUS_2_LED, 1);
+    gpio_set_level(WIFI_STATUS_1_LED, LED_ON);
+    gpio_set_level(WIFI_STATUS_2_LED, LED_ON);
 }
 //------------------------------------------------------------------------------
 static void led_manager_task(void* arg)

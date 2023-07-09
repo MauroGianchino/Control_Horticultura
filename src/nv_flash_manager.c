@@ -31,7 +31,6 @@ static void first_time_flash(void);
 
 //------------------- DEFINICION DE FUNCIONES LOCALES --------------------------
 //------------------------------------------------------------------------------
-// TO DO: terminar con la inicializacion de datos
 // TO DO: resolver el problema de la primera lectura de date erronea en flash
 
 static void first_time_flash(void)
