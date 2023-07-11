@@ -17,10 +17,11 @@
 //------------------------------------------------------------------------------
 #define QUEUE_ELEMENT_QUANTITY 20
 
-#define TIEMPO_ANTIRREBOTE_MS 60
+#define TIEMPO_ANTIRREBOTE_MS 40
 #define TIEMPO_PULSADO_MS 3000
 
 //#define DEBUG_MODULE
+//TO DO: ver el tema del button wifi y los led wifi
 //------------------------------TYPEDEF-----------------------------------------
 //------------------------------------------------------------------------------
 typedef enum{
@@ -43,12 +44,13 @@ typedef struct{
 //------------------------------------------------------------------------------
 static QueueHandle_t button_manager_queue;
 
-static TickType_t push_init_time_wifi_button;
-static TickType_t push_init_time_pwm_button;
-static TickType_t push_init_time_triac_button;
 static TickType_t push_init_time_vege_button;
 static TickType_t push_init_time_simul_pote_pos_button;
 static TickType_t push_init_time_simul_pote_neg_button;
+
+volatile int triac_button_pressed_time = 0;
+volatile int pwm_button_pressed_time = 0;
+volatile int wifi_button_pressed_time = 0;
 //--------------------DECLARACION DE FUNCIONES INTERNAS-------------------------
 //------------------------------------------------------------------------------
 static void button_event_manager_task(void * pvParameters);
@@ -74,11 +76,18 @@ static void config_buttons_isr(void)
     gpio_config_t config;
 
     // Configurar el pin GPIO34 como entrada
-    config.pin_bit_mask = (1ULL << WIFI_MODE_BUTTON) | (1ULL << PWM_BUTTON) | (1ULL << TRIAC_BUTTON) | (1ULL << VEGE_BUTTON);
+    config.pin_bit_mask = (1ULL << VEGE_BUTTON);
     config.mode = GPIO_MODE_INPUT;
     config.pull_up_en = GPIO_PULLUP_DISABLE;
     config.pull_down_en = GPIO_PULLDOWN_DISABLE;
     config.intr_type = GPIO_INTR_POSEDGE;
+    gpio_config(&config);
+
+    config.pin_bit_mask = (1ULL << WIFI_MODE_BUTTON) | (1ULL << PWM_BUTTON) | (1ULL << TRIAC_BUTTON);
+    config.mode = GPIO_MODE_INPUT;
+    config.pull_up_en = GPIO_PULLUP_DISABLE;
+    config.pull_down_en = GPIO_PULLDOWN_DISABLE;
+    config.intr_type = GPIO_INTR_ANYEDGE;
     gpio_config(&config);
 
     config.pin_bit_mask = (1ULL << SIMUL_POTE_POS_BUTTON) | (1ULL << SIMUL_POTE_NEG_BUTTON);
@@ -97,9 +106,6 @@ static void config_buttons_isr(void)
     gpio_isr_handler_add(SIMUL_POTE_POS_BUTTON, simul_pote_pos_button_interrupt, NULL);
     gpio_isr_handler_add(SIMUL_POTE_NEG_BUTTON, simul_pote_neg_button_interrupt, NULL);
 
-    push_init_time_wifi_button = xTaskGetTickCount();
-    push_init_time_pwm_button = xTaskGetTickCount();
-    push_init_time_triac_button = xTaskGetTickCount();
     push_init_time_vege_button = xTaskGetTickCount();
     push_init_time_simul_pote_pos_button = xTaskGetTickCount();
     push_init_time_simul_pote_neg_button = xTaskGetTickCount();
@@ -107,71 +113,77 @@ static void config_buttons_isr(void)
 //------------------------------------------------------------------------------
 static void IRAM_ATTR wifi_mode_button_interrupt(void *arg) 
 {
-    TickType_t current_time = xTaskGetTickCountFromISR();
     button_events_t ev;
+    uint32_t currentTime = xTaskGetTickCountFromISR() * portTICK_PERIOD_MS; 
 
-    if((current_time - push_init_time_wifi_button >= pdMS_TO_TICKS(TIEMPO_ANTIRREBOTE_MS)))
+    if(gpio_get_level(WIFI_MODE_BUTTON) == 0)
     {
-        if (gpio_get_level(WIFI_MODE_BUTTON) == 0)
-        {
-            if(current_time - push_init_time_wifi_button >= pdMS_TO_TICKS(TIEMPO_PULSADO_MS)) 
-            {
-                ev.cmd = WIFI_BUTTON_PUSHED_3_SEC;
-            }
-            else
-            {
-                ev.cmd = WIFI_BUTTON_PUSHED;
-            }
-            xQueueSendFromISR(button_manager_queue, &ev, pdFALSE);
-        }
+        wifi_button_pressed_time += currentTime;
     }
-    push_init_time_wifi_button = current_time;
+    else
+    {
+        if(currentTime - wifi_button_pressed_time >= TIEMPO_PULSADO_MS)
+        {
+            ev.cmd = WIFI_BUTTON_PUSHED_3_SEC;
+        }
+        else if(currentTime - wifi_button_pressed_time >= TIEMPO_ANTIRREBOTE_MS)
+        {
+            ev.cmd = WIFI_BUTTON_PUSHED;
+        }
+        wifi_button_pressed_time = 0;
+        xQueueSendFromISR(button_manager_queue, &ev, pdFALSE);
+    }
 }
 //------------------------------------------------------------------------------
 static void IRAM_ATTR pwm_button_interrupt(void *arg) 
 {
     button_events_t ev;
-    TickType_t current_time = xTaskGetTickCountFromISR();
-    
-    if((current_time - push_init_time_pwm_button >= pdMS_TO_TICKS(TIEMPO_ANTIRREBOTE_MS)))
+    uint32_t currentTime = xTaskGetTickCountFromISR() * portTICK_PERIOD_MS; 
+
+    if(gpio_get_level(PWM_BUTTON) == 0)
     {
-        if (gpio_get_level(PWM_BUTTON) == 0)
-        {
-            if(current_time - push_init_time_pwm_button >= pdMS_TO_TICKS(TIEMPO_PULSADO_MS)) 
-            {
-                ev.cmd = PWM_BUTTON_PUSHED_3_SEC;
-            }
-            else
-            {
-                ev.cmd = PWM_BUTTON_PUSHED;
-            }
-            xQueueSendFromISR(button_manager_queue, &ev, pdFALSE);
-        }
+        pwm_button_pressed_time += currentTime;
     }
-    push_init_time_pwm_button = current_time;
+    else
+    {
+        if(currentTime - pwm_button_pressed_time >= TIEMPO_PULSADO_MS)
+        {
+            ev.cmd = PWM_BUTTON_PUSHED_3_SEC;
+        }
+        else if(currentTime - pwm_button_pressed_time >= TIEMPO_ANTIRREBOTE_MS)
+        {
+            ev.cmd = PWM_BUTTON_PUSHED;
+        }
+        pwm_button_pressed_time = 0;
+        xQueueSendFromISR(button_manager_queue, &ev, pdFALSE);
+    }
 }
 //------------------------------------------------------------------------------
 static void IRAM_ATTR triac_button_interrupt(void *arg) 
 {
-    TickType_t current_time = xTaskGetTickCountFromISR();
     button_events_t ev;
+    uint32_t currentTime = xTaskGetTickCountFromISR() * portTICK_PERIOD_MS; // Tiempo actual en milisegundos
 
-    if((current_time - push_init_time_triac_button >= pdMS_TO_TICKS(TIEMPO_ANTIRREBOTE_MS)))
+    // Verifica si el botón está presionado
+    if(gpio_get_level(TRIAC_BUTTON) == 0)
     {
-        if (gpio_get_level(TRIAC_BUTTON) == 0)
-        {
-            if(current_time - push_init_time_triac_button >= pdMS_TO_TICKS(TIEMPO_PULSADO_MS)) 
-            {
-                ev.cmd = TRIAC_BUTTON_PUSHED_3_SEC;
-            }
-            else
-            {
-                ev.cmd = TRIAC_BUTTON_PUSHED;
-            }
-            xQueueSendFromISR(button_manager_queue, &ev, pdFALSE);
-        }
+        // Si el botón está presionado, incrementa el contador de tiempo
+        triac_button_pressed_time += currentTime;
     }
-    push_init_time_triac_button = current_time;
+    else
+    {
+        // Si el botón se ha soltado, verifica si se ha mantenido presionado durante más de 3 segundos
+        if(currentTime - triac_button_pressed_time >= TIEMPO_PULSADO_MS)
+        {
+            ev.cmd = TRIAC_BUTTON_PUSHED_3_SEC;
+        }
+        else if(currentTime - triac_button_pressed_time >= TIEMPO_ANTIRREBOTE_MS)
+        {
+            ev.cmd = TRIAC_BUTTON_PUSHED;
+        }
+        triac_button_pressed_time = 0;
+        xQueueSendFromISR(button_manager_queue, &ev, pdFALSE);
+    }
 }
 //------------------------------------------------------------------------------
 static void IRAM_ATTR vege_button_interrupt(void *arg) 
@@ -237,10 +249,12 @@ void button_event_manager_task(void * pvParameters)
                 case WIFI_BUTTON_PUSHED:
                     gpio_set_level(GPIO_NUM_4, 1);
                     gpio_set_level(GPIO_NUM_5, 0);
+                    printf("WIFI BUTTON PUSHED\n");
                     break;
                 case WIFI_BUTTON_PUSHED_3_SEC:
                     gpio_set_level(GPIO_NUM_4, 0);
                     gpio_set_level(GPIO_NUM_5, 1);
+                    printf("WIFI BUTTON PUSHED 3 sec\n");
                     break;
                 case PWM_BUTTON_PUSHED:
                     if(pwm_status == MANUAL_OFF)

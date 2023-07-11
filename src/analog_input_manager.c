@@ -18,7 +18,7 @@
 #define ADC_ATTEN       ADC_ATTEN_DB_0
 
 #define CUENTAS_ADC_100_PER_PWM 4078
-#define HISTERESIS_PER_PWM_UPDATE 50 // histeresis para que se envie una actualizacion en la potencia depwmde salida
+#define HISTERESIS_PER_PWM_UPDATE 25 // histeresis para que se envie una actualizacion en la potencia depwmde salida
 //------------------- TYPEDEF --------------------------------------------------
 //------------------------------------------------------------------------------
 

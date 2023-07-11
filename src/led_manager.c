@@ -165,11 +165,17 @@ static void config_led_wifi_status(void)
 //------------------------------------------------------------------------------
 static void set_power_on_indicator(void)
 {
+    #ifdef DEBUG_MODULE
+        printf("POWER ON \n");
+    #endif
     gpio_set_level(DEVICE_ON_LED, LED_ON);
 }
 //------------------------------------------------------------------------------
 static void set_pwm_auto_indicator(void)
 {
+    #ifdef DEBUG_MODULE
+        printf("PWM AUTO \n");
+    #endif
     esp_timer_stop(timer_pwm_rampa);
     esp_timer_stop(timer_pwm);
     gpio_set_level(PWM_OUTPUT_STATUS_LED, LED_ON);
@@ -177,6 +183,9 @@ static void set_pwm_auto_indicator(void)
 //------------------------------------------------------------------------------
 static void set_pwm_manual_off_indicator(void)
 {
+    #ifdef DEBUG_MODULE
+        printf("PWM OFF \n");
+    #endif
     esp_timer_stop(timer_pwm_rampa);
     esp_timer_stop(timer_pwm);
     gpio_set_level(PWM_OUTPUT_STATUS_LED, LED_OFF);
@@ -184,24 +193,35 @@ static void set_pwm_manual_off_indicator(void)
 //------------------------------------------------------------------------------
 static void set_triac_auto_indicator(void)
 {
+    #ifdef DEBUG_MODULE
+        printf("TRIAC AUTO \n");
+    #endif
     esp_timer_stop(timer_triac);
     gpio_set_level(TRIAC_OUTPUT_STATUS_LED, LED_ON);
 }
 //------------------------------------------------------------------------------
 static void set_triac_manual_off_indicator(void)
 {
+    #ifdef DEBUG_MODULE
+        printf("TRIAC OFF \n");
+    #endif
     esp_timer_stop(timer_triac);
     gpio_set_level(TRIAC_OUTPUT_STATUS_LED, LED_OFF);
 }
 //------------------------------------------------------------------------------
 static void set_rele_vege_on_indicator(void)
 {
-    printf("encender led");
+    #ifdef DEBUG_MODULE
+        printf("Led rele vege ON \n");
+    #endif
     gpio_set_level(RELE_VEGE_STATUS_LED, LED_ON);
 }
 //------------------------------------------------------------------------------
 static void set_rele_vege_off_indicator(void)
 {
+    #ifdef DEBUG_MODULE
+        printf("Led rele vege OFF \n");
+    #endif
     gpio_set_level(RELE_VEGE_STATUS_LED, LED_OFF);
 }
 //------------------------------------------------------------------------------
@@ -253,6 +273,9 @@ static void led_manager_task(void* arg)
                 case PWM_MANUAL_ON:
                     esp_timer_stop(timer_pwm_rampa);
                     esp_timer_start_periodic(timer_pwm, MANUAL_PWM_TIME);
+                    #ifdef DEBUG_MODULE
+                        printf("PWM MANUAL ON \n");
+                    #endif
                     break;
                 case PWM_AUTO:
                     set_pwm_auto_indicator();
@@ -263,6 +286,9 @@ static void led_manager_task(void* arg)
                     break;
                 case TRIAC_ON:
                     esp_timer_start_periodic(timer_triac, MANUAL_TRIAC_TIME);
+                    #ifdef DEBUG_MODULE
+                        printf("TRIAC MANUAL ON \n");
+                    #endif
                     break;
                 case TRIAC_OFF:
                     set_triac_manual_off_indicator();
