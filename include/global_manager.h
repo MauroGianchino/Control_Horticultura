@@ -44,6 +44,7 @@ typedef struct{
 //------------------------------------------------------------------------------
 void global_manager_init(void);
 
+void global_manager_set_pwm_mode(output_mode_t pwm_mode);
 void global_manager_set_pwm_mode_off(void);
 void global_manager_set_pwm_mode_manual_on(void);
 void global_manager_set_pwm_mode_auto(void);

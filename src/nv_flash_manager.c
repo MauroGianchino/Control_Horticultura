@@ -64,7 +64,6 @@ static void first_time_flash(void)
 }
 //------------------- DEFINICION DE FUNCIONES EXTERNAS -------------------------
 //------------------------------------------------------------------------------
-// TO DO: implementar funciones de escritura y lectura de date en flash
 void nv_flash_manager_init(void)
 {
     nv_flash_driver_init();
@@ -111,6 +110,16 @@ void write_date_on_flash(char *key, struct tm time_info)
 
     strftime(buffer, sizeof(buffer), "%Y-%m-%d %H:%M:%S", &time_info);
     write_parameter_on_flash_str(key, buffer);  
+}
+//------------------------------------------------------------------------------
+uint8_t read_uint32_from_flash(char *key, uint32_t *value)
+{
+    read_parameter_from_flash_uint32(key);
+    if(wait_for_flash_response_uint32(value))
+    {
+        return 1;
+    }
+    return 0;
 }
 //---------------------------- END OF FILE -------------------------------------
 //------------------------------------------------------------------------------

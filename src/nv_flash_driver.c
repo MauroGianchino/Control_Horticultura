@@ -467,7 +467,7 @@ void write_parameter_on_flash_uint32(const char *key, uint32_t value)
     strncpy(ev.operation_info.key, key, MAX_KEY_LENGTH);
     ev.operation_info.value_uint32 = value;
 
-    if(xQueueSend(dataflash_manager_queue, &ev, 0) != pdPASS) 
+    if(xQueueSend(dataflash_manager_queue, &ev, 10) != pdPASS) 
     {
         #ifdef DEBUG_MODULE
             printf("Error al enviar la operación de lectura a la cola\n");
