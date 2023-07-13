@@ -15,14 +15,14 @@
 #include "../include/global_manager.h"
 #include "../include/led_manager.h"
 #include "../include/pwm_manager.h"
-#include "../include/pwm_auto_manager.h"
+
 #include "../include/triac_manager.h"
 #include "../include/triac_auto_manager.h"
 //--------------------MACROS Y DEFINES------------------------------------------
 //------------------------------------------------------------------------------
 #define DEBUG_MODULE 1
 
-#define QUEUE_ELEMENT_QUANTITY 20
+#define QUEUE_ELEMENT_QUANTITY 200
 //------------------- TYPEDEF --------------------------------------------------
 //------------------------------------------------------------------------------
 typedef enum{
@@ -85,14 +85,13 @@ static void global_manager_task(void* arg)
 {
     global_event_t global_ev;
     nv_info_t global_info;
-    pwm_auto_info_t pwm_auto_info;
     triac_auto_info_t triac_auto_info;
 
-    triac_manager_init();
     
     // PARA DEBUG HAY QUIE SUSTITUIR POR SECUENCIA DE STARTUP
-    global_manager_set_pwm_mode_manual_on(); // EL PWM INICIA EN MANUAL ACTIVADO
-    global_manager_set_triac_mode_off(); // EL PWM INICIA EN MANUAL APAGADO
+    global_info.pwm_manual_percent_power = 10;
+    global_manager_set_pwm_mode_off(); // EL PWM INICIA EN MANUAL APAGADO
+    global_manager_set_triac_mode_off(); // EL TRIAC INICIA EN MANUAL APAGADO
     global_manager_update_simul_day_function_status(SIMUL_DAY_ON);
     vTaskDelay(1000 / portTICK_PERIOD_MS);
     ////////////////////////////////////////////////////////
@@ -105,13 +104,13 @@ static void global_manager_task(void* arg)
                 case  CMD_UNDEFINED:
                     break;
                 case UPDATE_CURRENT_TIME:
-                    pwm_auto_info.current_time = mktime(&global_ev.current_time);
+                    global_info.pwm_auto.current_time = mktime(&global_ev.current_time);
                     triac_auto_info.current_time = mktime(&global_ev.current_time);
                     break;
                 case PWM_MANUAL_ON:
                     global_info.pwm_mode = MANUAL_ON;
                     led_manager_pwm_manual_on();
-                    pwm_manager_turn_on_pwm(global_info.pwm_percent_power);
+                    pwm_manager_turn_on_pwm(global_info.pwm_manual_percent_power);
                     pwm_auto_end();
                     break;
                 case PWM_OFF:
@@ -151,32 +150,31 @@ static void global_manager_task(void* arg)
                     led_manager_rele_vege_off();
                     break;
                 case SET_MANUAL_PWM_POWER:
+                    global_info.pwm_manual_percent_power = global_ev.value;
                     if(global_info.pwm_mode == MANUAL_ON)
                     {
-                        global_info.pwm_percent_power = global_ev.value;
-                        pwm_manager_update_pwm(global_info.pwm_percent_power);
+                        pwm_manager_update_pwm(global_info.pwm_manual_percent_power);
                         #ifdef DEBUG_MODULE
-                            printf("PORCENTAJE POTENCIA PWM: %d \n", global_info.pwm_percent_power);
+                            printf("UPDATE PWM: %d \n", global_info.pwm_manual_percent_power);
                         #endif
                     }
                     break;
                 case SET_AUTO_PWM_POWER:
+                    global_info.pwm_auto.percent_power = global_ev.value;
                     if(global_info.pwm_mode == AUTOMATIC)
                     {
-                        global_info.pwm_percent_power = global_ev.value;
-                        pwm_auto_info.pwm_percent_power = global_ev.value;
-                        pwm_manager_update_pwm(global_info.pwm_percent_power);
+                        pwm_manager_update_pwm(global_info.pwm_auto.percent_power);
                         #ifdef DEBUG_MODULE
-                            printf("PORCENTAJE POTENCIA PWM: %d \n", global_info.pwm_percent_power);
+                            printf("UPDATE PWM: %d \n", global_info.pwm_auto.percent_power);
                         #endif
                     }
                     break;
                 case UPDATE_SIMUL_DAY_FUNCTION_STATUS:
-                    pwm_auto_info.simul_day_status = global_ev.simul_day_function_status;
+                    global_info.pwm_auto.simul_day_status = global_ev.simul_day_function_status;
                     break;
                 case UPDATE_PWM_CALENDAR:
-                    pwm_auto_info.pwm_auto_turn_on_time = mktime(&global_ev.pwm_turn_on_time); 
-                    pwm_auto_info.pwm_auto_turn_off_time = mktime(&global_ev.pwm_turn_off_time);
+                    global_info.pwm_auto.turn_on_time = mktime(&global_ev.pwm_turn_on_time); 
+                    global_info.pwm_auto.turn_off_time = mktime(&global_ev.pwm_turn_off_time);
                     break;
                 case UPDATE_TRIAC_CALENDAR:
                     triac_auto_info.triac_auto[0].enable = global_ev.triac_info[0].enable;
@@ -198,7 +196,7 @@ static void global_manager_task(void* arg)
         }
         else
         {
-            pwm_auto_manager_handler(&pwm_auto_info);
+            pwm_auto_manager_handler(&global_info.pwm_auto);
             triac_auto_manager_handler(&triac_auto_info);
         }
     }

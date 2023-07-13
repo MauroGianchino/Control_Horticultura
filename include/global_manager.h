@@ -4,6 +4,8 @@
 //------------------------------------------------------------------------------
 #include <stdint.h>
 #include <time.h>
+
+#include "../include/pwm_auto_manager.h"
 //------------------- MACROS Y DEFINES -----------------------------------------
 //------------------------------------------------------------------------------
 #define MAX_TRIAC_CALENDARS 4
@@ -21,10 +23,7 @@ typedef enum{
     RELE_OFF = 1,
 }rele_output_status_t;
 
-typedef enum{
-    SIMUL_DAY_OFF = 0,
-    SIMUL_DAY_ON = 1,
-}simul_day_status_t;
+
 typedef struct{
     struct tm turn_on_time;
     struct tm turn_off_time;
@@ -32,9 +31,8 @@ typedef struct{
 
 typedef struct{
     output_mode_t pwm_mode;
-    calendar_auto_mode_t pwm_auto_calendar;
-    uint8_t pwm_percent_power;
-    simul_day_status_t simul_day_status;
+    pwm_auto_info_t pwm_auto;
+    uint8_t pwm_manual_percent_power;
     output_mode_t triac_mode;
     rele_output_status_t rele_vege_status;
     calendar_auto_mode_t triac_auto_calendar[MAX_TRIAC_CALENDARS];
