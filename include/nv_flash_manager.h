@@ -45,6 +45,7 @@ void nv_flash_manager_init(void);
 void init_date_parameter_in_flash(char *key, struct tm time_info_default);
 uint8_t read_date_from_flash(char *key, struct tm *time_info);
 void write_date_on_flash(char *key, struct tm time_info);
+uint8_t read_uint32_from_flash(char *key, uint32_t *value);
 //------------------------------------------------------------------------------
 /*
 Ejemplo de lectura de una fecha de dataflash

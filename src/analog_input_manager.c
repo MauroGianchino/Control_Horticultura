@@ -12,7 +12,7 @@
 #include "../include/global_manager.h"
 //--------------------MACROS Y DEFINES------------------------------------------
 //------------------------------------------------------------------------------
-#define DEBUG_MODULE 1
+//#define DEBUG_MODULE 1
 
 #define ADC_WIDTH       ADC_BITWIDTH_9
 #define ADC_ATTEN       ADC_ATTEN_DB_0
@@ -64,6 +64,7 @@ static void analog_input_manager_task(void* arg)
 
     config_analog_input();
 
+    vTaskDelay(2000 / portTICK_PERIOD_MS);
     while(1)
     {
         adc_oneshot_read(adc2_handle, ADC_POTE_INPUT, &adc_read_value[index]);
