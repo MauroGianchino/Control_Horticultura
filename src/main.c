@@ -9,6 +9,7 @@
   #include "../include/analog_input_manager.h"
 #endif
 #include "../include/nv_flash_manager.h"
+#include "../include/triac_manager.h"
 
 void app_main() 
 {
@@ -20,6 +21,8 @@ void app_main()
     analog_input_manager_init();
   #endif    
   pwm_manager_init();
+  triac_manager_init();
+
   while(true) 
   {
     vTaskDelay(10 / portTICK_PERIOD_MS);

@@ -8,12 +8,17 @@
 
 //------------------- TYPEDEF --------------------------------------------------
 //------------------------------------------------------------------------------
+typedef enum{
+    SIMUL_DAY_OFF = 0,
+    SIMUL_DAY_ON = 1,
+}simul_day_status_t;
+
 typedef struct{
     time_t current_time;
-    time_t pwm_auto_turn_on_time;
-    time_t pwm_auto_turn_off_time;
-    uint8_t simul_day_status;
-    uint8_t pwm_percent_power;
+    time_t turn_on_time;
+    time_t turn_off_time;
+    simul_day_status_t simul_day_status;
+    uint8_t percent_power;
 }pwm_auto_info_t;
 //------------------- DECLARACION DE DATOS EXTERNOS ----------------------------
 //------------------------------------------------------------------------------

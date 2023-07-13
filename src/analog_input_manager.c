@@ -14,11 +14,11 @@
 //------------------------------------------------------------------------------
 #define DEBUG_MODULE 1
 
-#define ADC_WIDTH       ADC_WIDTH_BIT_12
+#define ADC_WIDTH       ADC_BITWIDTH_9
 #define ADC_ATTEN       ADC_ATTEN_DB_0
 
-#define CUENTAS_ADC_100_PER_PWM 4078
-#define HISTERESIS_PER_PWM_UPDATE 25 // histeresis para que se envie una actualizacion en la potencia depwmde salida
+#define CUENTAS_ADC_100_PER_PWM 509
+#define HISTERESIS_PER_PWM_UPDATE 8 // histeresis para que se envie una actualizacion en la potencia depwmde salida
 //------------------- TYPEDEF --------------------------------------------------
 //------------------------------------------------------------------------------
 
@@ -47,7 +47,7 @@ static void config_analog_input(void)
     adc_oneshot_new_unit(&init_config, &adc2_handle);
 
     adc_oneshot_chan_cfg_t config = {
-        .bitwidth = ADC_BITWIDTH_DEFAULT,
+        .bitwidth = ADC_WIDTH,
         .atten = ADC_ATTEN,
     };
     adc_oneshot_config_channel(adc2_handle, ADC_POTE_INPUT, &config);
@@ -56,9 +56,9 @@ static void config_analog_input(void)
 //------------------------------------------------------------------------------
 static void analog_input_manager_task(void* arg)
 {
-    int adc_read_value[20];
+    int adc_read_value[10];
     uint8_t adc_vec_length = (sizeof(adc_read_value) / sizeof(adc_read_value[0]));
-    int val = 0, val_ant = 0;
+    int val = 0;
     uint8_t index = 0;
     int per_pwm = 0;
 
@@ -67,28 +67,23 @@ static void analog_input_manager_task(void* arg)
     while(1)
     {
         adc_oneshot_read(adc2_handle, ADC_POTE_INPUT, &adc_read_value[index]);
-        //#ifdef DEBUG_MODULE
-        //    printf("Valor ADC channel 5: %d \n", adc_read_value[index]);
-        //#endif
         index++;
         if(index == adc_vec_length)
         {
+
             for(index = 0; index < adc_vec_length; index++)
             {
                 val += adc_read_value[index];
             }
             val = val / adc_vec_length;
             index = 0;
-            
-            if((val - val_ant > HISTERESIS_PER_PWM_UPDATE) || (val_ant - val > HISTERESIS_PER_PWM_UPDATE))
-            {
-                per_pwm = (val*100) / CUENTAS_ADC_100_PER_PWM;
-                global_manager_set_pwm_power_value_manual((uint8_t)per_pwm);
-                #ifdef DEBUG_MODULE
-                    printf("Valor ADC channel 5: %d \n", val);
-                #endif
-            } 
-            val_ant = val;
+
+            per_pwm = (val*100) / CUENTAS_ADC_100_PER_PWM;
+            global_manager_set_pwm_power_value_manual((uint8_t)per_pwm);
+            #ifdef DEBUG_MODULE
+                printf("Valor ADC channel 5: %d \n", val);
+            #endif
+           
         }
         vTaskDelay(pdMS_TO_TICKS(10));
     }
