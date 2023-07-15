@@ -55,7 +55,7 @@ void global_manager_set_rele_vege_status_off(void);
 void global_manager_set_rele_vege_status_on(void);
 void global_manager_set_pwm_power_value_manual(uint8_t power_percentage_value);
 void global_manager_update_current_time(struct tm current_time);
-void global_manager_update_simul_day_function_status(simul_day_status_t status);
+void global_manager_update_simul_day_function_status(simul_day_status_t status, bool read_from_flash);
 void global_manager_update_auto_pwm_calendar(calendar_auto_mode_t calendar);
 //------------------- FIN DEL ARCHIVO ------------------------------------------
 #endif /* GLOBAL_MANAGER_H__ */
