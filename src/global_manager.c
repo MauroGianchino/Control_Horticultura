@@ -59,6 +59,7 @@ typedef struct{
     struct tm pwm_turn_off_time;
     simul_day_status_t simul_day_function_status;
     triac_info_t triac_info[MAX_AUTO_TRIAC_CONFIGS_HOURS];
+    bool value_read_from_flash;
 }global_event_t;
 //------------------- DECLARACION DE DATOS LOCALES -----------------------------
 //------------------------------------------------------------------------------
@@ -68,7 +69,8 @@ static QueueHandle_t global_manager_queue;
 static void global_manager_task(void* arg);
 static void nv_init_pwm_mode(void);
 static void nv_save_pwm_mode(output_mode_t pwm_mode);
-
+static void nv_init_simul_day_status(void);
+void nv_save_simul_day_status(simul_day_status_t simul_day_status);
 //------------------- DEFINICION DE DATOS LOCALES ------------------------------
 //------------------------------------------------------------------------------
 
@@ -102,6 +104,31 @@ void nv_save_pwm_mode(output_mode_t pwm_mode)
     write_parameter_on_flash_uint32(PWM_MODE_KEY, (uint32_t)pwm_mode);
 }
 //------------------------------------------------------------------------------
+static void nv_init_simul_day_status(void)
+{
+    uint32_t value;
+    simul_day_status_t simul_day_status;
+    if(read_uint32_from_flash(SIMUL_DAY_STATUS_KEY, &value))
+    {
+        simul_day_status = (simul_day_status_t)value;
+        #ifdef DEBUG_MODULE
+            printf("SIMUL DAY STATUS READ: %d \n", simul_day_status);
+        #endif
+        global_manager_update_simul_day_function_status(simul_day_status, true);
+    }
+    else
+    {
+        #ifdef DEBUG_MODULE
+            printf("SIMUL DAY STATUS READING FAILED \n");
+        #endif
+    }
+}
+//------------------------------------------------------------------------------
+void nv_save_simul_day_status(simul_day_status_t simul_day_status)
+{
+    write_parameter_on_flash_uint32(SIMUL_DAY_STATUS_KEY, (uint32_t)simul_day_status);
+}
+//------------------------------------------------------------------------------
 // TO DO: falta implementar funcion para actualizar parametros de hora del triac automatico
 // UPDATE_TRIAC_CALENDAR
 // TO DO: Falta agregar la dinamica de funcionamiento del rele vege
@@ -119,10 +146,11 @@ static void global_manager_task(void* arg)
 
     // INIT FROM FLASH
     nv_init_pwm_mode();
+    nv_init_simul_day_status();
     // PARA DEBUG HAY QUIE SUSTITUIR POR SECUENCIA DE STARTUP
     
     global_manager_set_triac_mode_off(); // EL TRIAC INICIA EN MANUAL APAGADO
-    global_manager_update_simul_day_function_status(SIMUL_DAY_ON);
+    //global_manager_update_simul_day_function_status(SIMUL_DAY_ON);
     vTaskDelay(1000 / portTICK_PERIOD_MS);
     ////////////////////////////////////////////////////////
     while(1)
@@ -235,6 +263,11 @@ static void global_manager_task(void* arg)
                     }
                     break;
                 case UPDATE_SIMUL_DAY_FUNCTION_STATUS:
+                    if((global_info.pwm_auto.simul_day_status != global_ev.simul_day_function_status)\
+                        && (global_ev.value_read_from_flash == false))
+                    {
+                        nv_save_simul_day_status(global_ev.simul_day_function_status);
+                    }
                     global_info.pwm_auto.simul_day_status = global_ev.simul_day_function_status;
                     break;
                 case UPDATE_PWM_CALENDAR:
@@ -358,10 +391,11 @@ void global_manager_update_current_time(struct tm current_time)
     xQueueSend(global_manager_queue, &ev, 10);
 }
 //------------------------------------------------------------------------------
-void global_manager_update_simul_day_function_status(simul_day_status_t status)
+void global_manager_update_simul_day_function_status(simul_day_status_t status , bool read_from_flash)
 {
     global_event_t ev;
     ev.cmd = UPDATE_SIMUL_DAY_FUNCTION_STATUS;
+    ev.value_read_from_flash = read_from_flash;
     ev.simul_day_function_status = status;
     xQueueSend(global_manager_queue, &ev, 10);
 }
