@@ -25,7 +25,7 @@
 #define RELE_VEGE_STATUS_KEY "rele_vege_key\0"
 
 // DEFAULT VALUES
-#define DEVICE_ALIAS_DEFAULT "GreenGrowTech\0"
+#define DEVICE_ALIAS_DEFAULT "GreenGrowTech"
 #define WIFI_AP_SSID_DEFAULT "GreenGrowTech\0" // el tamaño maximo del ssid no debe exceder los 32 caracteres
 #define PWM_MODE_DEFAULT 2 // MANUAL_OFF
 #define PWM_SIMUL_DAY_STATUS_DEFAULT 0 // SIMUL_DAY_OFF
@@ -46,6 +46,7 @@ void init_date_parameter_in_flash(char *key, struct tm time_info_default);
 uint8_t read_date_from_flash(char *key, struct tm *time_info);
 void write_date_on_flash(char *key, struct tm time_info);
 uint8_t read_uint32_from_flash(char *key, uint32_t *value);
+uint8_t read_str_from_flash(char *key, char *str_val);
 //------------------------------------------------------------------------------
 /*
 Ejemplo de lectura de una fecha de dataflash

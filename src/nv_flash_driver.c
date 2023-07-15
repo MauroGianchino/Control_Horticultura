@@ -75,7 +75,7 @@ static void dataflash_manager_task(void* arg)
     esp_err_t ret;
     uint32_t value_aux= 0;
     char value[MAX_VALUE_LENGTH];
-    size_t len = sizeof(value) / sizeof(value[0]);
+    size_t len = sizeof(value);
 
 
     while(1)
@@ -123,6 +123,7 @@ static void dataflash_manager_task(void* arg)
                     } 
                     else 
                     {
+                        memset(value, '\0', sizeof(value));
                         ret = nvs_get_str(nvs_handle, ev.operation_info.key, value, &len);
 
                         if(ret == ESP_OK) 
@@ -136,6 +137,7 @@ static void dataflash_manager_task(void* arg)
                             #ifdef DEBUG_MODULE
                                 printf("Clave %s no encontrada\n", ev.operation_info.key);
                             #endif
+                            
                             ret = nvs_set_str(nvs_handle, ev.operation_info.key, (const char*)ev.operation_info.default_value);
                             #ifdef DEBUG_MODULE
                                 printf((ret != ESP_OK) ? "FAILED!\n" : "DONE\n");
@@ -166,6 +168,7 @@ static void dataflash_manager_task(void* arg)
                     } 
                     else 
                     {
+                        memset(value, '\0', sizeof(value));
                         ret = nvs_get_str(nvs_handle, ev.operation_info.key, value, &len);
                         if(ret == ESP_OK) 
                         {
@@ -173,7 +176,7 @@ static void dataflash_manager_task(void* arg)
                                 printf("Valor de %s: %s\n", ev.operation_info.key, value);
                             #endif
                             strncpy(ev.operation_info.value, value, MAX_VALUE_LENGTH);
-                            xQueueSend(dataflash_response_queue, &ev, 0);  // Envía la respuesta a la cola de respuesta
+                            xQueueSend(dataflash_response_queue, &ev, 10);  // Envía la respuesta a la cola de respuesta
                         } 
                         else if(ret == ESP_ERR_NVS_NOT_FOUND) 
                         {
@@ -357,6 +360,8 @@ void init_parameter_in_flash_str(const char *key, char *default_value)
 {
     dataflash_event_t ev;
     ev.cmd = INIT_PARAMETER_IN_FLASH_STR;
+    memset(ev.operation_info.default_value, '\0', sizeof(ev.operation_info.default_value));
+    memset(ev.operation_info.key, '\0', sizeof(ev.operation_info.key));
     strncpy(ev.operation_info.key, key, MAX_KEY_LENGTH);
     strncpy(ev.operation_info.default_value, default_value, strlen(default_value));
     if(xQueueSend(dataflash_manager_queue, &ev, 10) != pdPASS) 
@@ -400,9 +405,10 @@ void read_parameter_from_flash_str(const char *key)
 uint8_t wait_for_flash_response_str(char *value) 
 {
     dataflash_event_t ev;
+    memset(ev.operation_info.value, '\0', sizeof(ev.operation_info.value));
     if(xQueueReceive(dataflash_response_queue, &ev, TIMEOUT_MS / portTICK_PERIOD_MS)) 
     {
-        strncpy(value, ev.operation_info.value, MAX_VALUE_LENGTH);
+        strncpy(value, ev.operation_info.value, strlen(ev.operation_info.value));
         return 1;
     } 
     else 
