@@ -31,8 +31,6 @@ static void first_time_flash(void);
 
 //------------------- DEFINICION DE FUNCIONES LOCALES --------------------------
 //------------------------------------------------------------------------------
-// TO DO: resolver el problema de la primera lectura de date erronea en flash
-
 static void first_time_flash(void)
 {
     struct tm time_info_default;
@@ -44,7 +42,7 @@ static void first_time_flash(void)
     time_info_default.tm_min = 30;
     time_info_default.tm_sec = 30;
 
-    init_parameter_in_flash_str(DEVICE_ALIAS_KEY, DEVICE_ALIAS_DEFAULT);
+    init_parameter_in_flash_str(DEVICE_ALIAS_KEY, "GreenGrowTech");
     init_parameter_in_flash_str(WIFI_AP_SSID_KEY, WIFI_AP_SSID_DEFAULT);
     init_date_parameter_in_flash(PWM_DATE_OFF_KEY, time_info_default);// work around
     init_date_parameter_in_flash(PWM_DATE_ON_KEY, time_info_default);
@@ -116,6 +114,16 @@ uint8_t read_uint32_from_flash(char *key, uint32_t *value)
 {
     read_parameter_from_flash_uint32(key);
     if(wait_for_flash_response_uint32(value))
+    {
+        return 1;
+    }
+    return 0;
+}
+//------------------------------------------------------------------------------
+uint8_t read_str_from_flash(char *key, char *str_val)
+{
+    read_parameter_from_flash_str(key);
+    if(wait_for_flash_response_str(str_val))
     {
         return 1;
     }
