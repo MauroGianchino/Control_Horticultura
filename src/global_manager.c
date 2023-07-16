@@ -75,7 +75,10 @@ static void nv_save_alias(char *alias);
 static void nv_init_pwm_mode(void);
 static void nv_save_pwm_mode(output_mode_t pwm_mode);
 static void nv_init_simul_day_status(void);
-void nv_save_simul_day_status(simul_day_status_t simul_day_status);
+static void nv_save_simul_day_status(simul_day_status_t simul_day_status);
+static void nv_save_rele_vege_status(rele_output_status_t rele_vege_status);
+static void nv_init_auto_percent_power(void);
+static void nv_save_auto_percent_power(uint8_t percent_power);
 //------------------- DEFINICION DE DATOS LOCALES ------------------------------
 //------------------------------------------------------------------------------
 
@@ -154,9 +157,65 @@ static void nv_init_simul_day_status(void)
     }
 }
 //------------------------------------------------------------------------------
-void nv_save_simul_day_status(simul_day_status_t simul_day_status)
+static void nv_save_simul_day_status(simul_day_status_t simul_day_status)
 {
     write_parameter_on_flash_uint32(SIMUL_DAY_STATUS_KEY, (uint32_t)simul_day_status);
+}
+//------------------------------------------------------------------------------
+static void nv_init_rele_vege_status(void)
+{
+    uint32_t value;
+
+    if(read_uint32_from_flash(RELE_VEGE_STATUS_KEY, &value))
+    {
+        #ifdef DEBUG_MODULE
+            printf("RELE VEGE STATUS READ: %lu \n", value);
+        #endif
+
+        if(value == 0)
+        {
+            global_manager_set_rele_vege_status_on(true);
+        }
+        else
+        {   
+             global_manager_set_rele_vege_status_off(true);
+        }
+    }
+    else
+    {
+        #ifdef DEBUG_MODULE
+            printf("RELE VEGE STATUS READING FAILED \n");
+        #endif
+    }
+}
+//------------------------------------------------------------------------------
+static void nv_save_rele_vege_status(rele_output_status_t rele_vege_status)
+{
+    write_parameter_on_flash_uint32(RELE_VEGE_STATUS_KEY, (uint32_t)rele_vege_status);
+}
+//------------------------------------------------------------------------------
+static void nv_init_auto_percent_power(void)
+{
+    uint32_t value;
+    if(read_uint32_from_flash(PWM_PERCENT_POWER_KEY, &value))
+    {
+        #ifdef DEBUG_MODULE
+            printf("AUTO PERCENT POWER READ: %ld \n", value);
+        #endif
+        global_manager_set_pwm_power_value_auto((uint8_t)value, true);
+
+    }
+    else
+    {
+        #ifdef DEBUG_MODULE
+            printf("AUTO PERCENT POWER READING FAILED \n");
+        #endif
+    }
+}
+//------------------------------------------------------------------------------
+static void nv_save_auto_percent_power(uint8_t percent_power)
+{
+    write_parameter_on_flash_uint32(PWM_PERCENT_POWER_KEY, (uint32_t)percent_power);
 }
 //------------------------------------------------------------------------------
 // TO DO: falta implementar funcion para actualizar parametros de hora del triac automatico
@@ -178,10 +237,10 @@ static void global_manager_task(void* arg)
     nv_init_alias();
     nv_init_pwm_mode();
     nv_init_simul_day_status();
+    nv_init_rele_vege_status();
+    nv_init_auto_percent_power();
     // PARA DEBUG HAY QUIE SUSTITUIR POR SECUENCIA DE STARTUP
-    
     global_manager_set_triac_mode_off(); // EL TRIAC INICIA EN MANUAL APAGADO
-    //global_manager_update_simul_day_function_status(SIMUL_DAY_ON);
     vTaskDelay(1000 / portTICK_PERIOD_MS);
     ////////////////////////////////////////////////////////
     while(1)
@@ -273,10 +332,20 @@ static void global_manager_task(void* arg)
                     triac_auto_start();
                     break;
                 case RELE_VEGE_ON:
+                    if((global_info.rele_vege_status != RELE_ON) \
+                        && (global_ev.value_read_from_flash == false))
+                    {
+                        nv_save_rele_vege_status(RELE_ON);
+                    }
                     global_info.rele_vege_status = RELE_ON;
                     led_manager_rele_vege_on();
                     break;
                 case RELE_VEGE_OFF:
+                    if((global_info.rele_vege_status != RELE_OFF) \
+                        && (global_ev.value_read_from_flash == false))
+                    {
+                        nv_save_rele_vege_status(RELE_OFF);
+                    }
                     global_info.rele_vege_status = RELE_OFF;
                     led_manager_rele_vege_off();
                     break;
@@ -292,6 +361,12 @@ static void global_manager_task(void* arg)
                     global_info.pwm_manual_percent_power = global_ev.value;
                     break;
                 case SET_AUTO_PWM_POWER:
+                    if((global_info.pwm_auto.percent_power != global_ev.value) \
+                        && (global_ev.value_read_from_flash == false))
+                    {
+                        nv_save_auto_percent_power(global_ev.value);
+                    }
+                    // TO DO: esto va a haber que cambiarlo lo tiene que hacer la fsm
                     global_info.pwm_auto.percent_power = global_ev.value;
                     if(global_info.pwm_mode == AUTOMATIC)
                     {
@@ -398,17 +473,19 @@ void global_manager_set_triac_mode_auto(void)
     xQueueSend(global_manager_queue, &ev, 10);
 }
 //------------------------------------------------------------------------------
-void global_manager_set_rele_vege_status_off(void)
+void global_manager_set_rele_vege_status_off(bool read_from_flash)
 {
     global_event_t ev;
     ev.cmd = RELE_VEGE_OFF;
+    ev.value_read_from_flash = read_from_flash;
     xQueueSend(global_manager_queue, &ev, 10);
 }
 //------------------------------------------------------------------------------
-void global_manager_set_rele_vege_status_on(void)
+void global_manager_set_rele_vege_status_on(bool read_from_flash)
 {
     global_event_t ev;
     ev.cmd = RELE_VEGE_ON;
+    ev.value_read_from_flash = read_from_flash;
     xQueueSend(global_manager_queue, &ev, 10);
 }
 //------------------------------------------------------------------------------
@@ -418,6 +495,17 @@ void global_manager_set_pwm_power_value_manual(uint8_t power_percentage_value)
     if(power_percentage_value >= 98)
         power_percentage_value = 98;
     ev.cmd = SET_MANUAL_PWM_POWER;
+    ev.value = power_percentage_value;
+    xQueueSend(global_manager_queue, &ev, 10);
+}
+//------------------------------------------------------------------------------
+void global_manager_set_pwm_power_value_auto(uint8_t power_percentage_value, bool read_from_flash)
+{
+    global_event_t ev;
+    if(power_percentage_value >= 98)
+        power_percentage_value = 98;
+    ev.cmd = SET_AUTO_PWM_POWER;
+    ev.value_read_from_flash = read_from_flash;
     ev.value = power_percentage_value;
     xQueueSend(global_manager_queue, &ev, 10);
 }
