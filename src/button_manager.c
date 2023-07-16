@@ -294,12 +294,12 @@ void button_event_manager_task(void * pvParameters)
                 case VEGE_BUTTON_PUSHED:
                     if(rele_vege_status == RELE_OFF)
                     {
-                        global_manager_set_rele_vege_status_off();
+                        global_manager_set_rele_vege_status_off(false);
                         rele_vege_status = RELE_ON;
                     }
                     else if(rele_vege_status == RELE_ON)
                     {
-                        global_manager_set_rele_vege_status_on();
+                        global_manager_set_rele_vege_status_on(false);
                         rele_vege_status = RELE_OFF;
                     }
                     break;
