@@ -72,6 +72,8 @@ static QueueHandle_t global_manager_queue;
 static void global_manager_task(void* arg);
 static void nv_init_alias(void);
 static void nv_save_alias(char *alias);
+static void nv_init_triac_mode(void);
+static void nv_save_triac_mode(output_mode_t triac_mode);
 static void nv_init_pwm_mode(void);
 static void nv_save_pwm_mode(output_mode_t pwm_mode);
 static void nv_init_simul_day_status(void);
@@ -112,6 +114,44 @@ static void nv_save_alias(char *alias)
     write_parameter_on_flash_str(DEVICE_ALIAS_KEY, alias); 
 }
 //------------------------------------------------------------------------------
+static void nv_init_triac_mode(void)
+{
+    uint32_t value;
+    output_mode_t triac_mode;
+    if(read_uint32_from_flash(TRIAC_MODE_KEY, &value))
+    {
+        triac_mode = (output_mode_t)value;
+        #ifdef DEBUG_MODULE
+            printf("TRIAC MODE READ: %d \n", triac_mode);
+        #endif
+        switch(triac_mode)
+        {
+            case MANUAL_ON:
+                global_manager_set_triac_mode_manual_on(true);
+                break;
+            case MANUAL_OFF:
+                global_manager_set_triac_mode_off(true);
+                break;
+            case AUTOMATIC:
+                global_manager_set_triac_mode_auto(true);
+                break;
+            default:
+                break;
+        }
+    }
+    else
+    {
+        #ifdef DEBUG_MODULE
+            printf("TRIAC MODE READING FAILED \n");
+        #endif
+    }
+}
+//------------------------------------------------------------------------------
+static void nv_save_triac_mode(output_mode_t triac_mode)
+{
+    write_parameter_on_flash_uint32(TRIAC_MODE_KEY, (uint32_t)triac_mode);
+}
+//------------------------------------------------------------------------------
 static void nv_init_pwm_mode(void)
 {
     uint32_t value;
@@ -132,7 +172,7 @@ static void nv_init_pwm_mode(void)
     }
 }
 //------------------------------------------------------------------------------
-void nv_save_pwm_mode(output_mode_t pwm_mode)
+static void nv_save_pwm_mode(output_mode_t pwm_mode)
 {
     write_parameter_on_flash_uint32(PWM_MODE_KEY, (uint32_t)pwm_mode);
 }
@@ -236,11 +276,11 @@ static void global_manager_task(void* arg)
     // INIT FROM FLASH
     nv_init_alias();
     nv_init_pwm_mode();
+    nv_init_triac_mode();
     nv_init_simul_day_status();
     nv_init_rele_vege_status();
     nv_init_auto_percent_power();
     // PARA DEBUG HAY QUIE SUSTITUIR POR SECUENCIA DE STARTUP
-    global_manager_set_triac_mode_off(); // EL TRIAC INICIA EN MANUAL APAGADO
     vTaskDelay(1000 / portTICK_PERIOD_MS);
     ////////////////////////////////////////////////////////
     while(1)
@@ -315,18 +355,33 @@ static void global_manager_task(void* arg)
                     led_manager_pwm_auto();
                     break;
                 case TRIAC_MANUAL_ON:
+                    if((global_info.triac_mode != MANUAL_ON)\
+                        && (global_ev.value_read_from_flash == false))
+                    {
+                        nv_save_triac_mode(MANUAL_ON);
+                    }
                     global_info.triac_mode = MANUAL_ON;
                     led_manager_triac_on();
                     triac_auto_end();
                     triac_manager_turn_on_triac();
                     break;
                 case TRIAC_OFF:
+                    if((global_info.triac_mode != MANUAL_OFF)\
+                        && (global_ev.value_read_from_flash == false))
+                    {
+                        nv_save_triac_mode(MANUAL_OFF);
+                    }
                     global_info.triac_mode = MANUAL_OFF;
                     led_manager_triac_off();
                     triac_auto_end();
                     triac_manager_turn_off_triac();
                     break;
                 case TRIAC_AUTO:
+                    if((global_info.triac_mode != AUTOMATIC)\
+                        && (global_ev.value_read_from_flash == false))
+                    {
+                        nv_save_triac_mode(AUTOMATIC);
+                    }
                     global_info.triac_mode = AUTOMATIC;
                     led_manager_triac_auto();
                     triac_auto_start();
@@ -452,24 +507,27 @@ void global_manager_set_pwm_mode_auto(void)
     xQueueSend(global_manager_queue, &ev, 10);
 }
 //------------------------------------------------------------------------------
-void global_manager_set_triac_mode_off(void)
+void global_manager_set_triac_mode_off(bool read_from_flash)
 {
     global_event_t ev;
     ev.cmd = TRIAC_OFF;
+    ev.value_read_from_flash = read_from_flash;
     xQueueSend(global_manager_queue, &ev, 10);
 }
 //------------------------------------------------------------------------------
-void global_manager_set_pwm_triac_manual_on(void)
+void global_manager_set_triac_mode_manual_on(bool read_from_flash)
 {
     global_event_t ev;
     ev.cmd = TRIAC_MANUAL_ON;
+    ev.value_read_from_flash = read_from_flash;
     xQueueSend(global_manager_queue, &ev, 10);
 }
 //------------------------------------------------------------------------------
-void global_manager_set_triac_mode_auto(void)
+void global_manager_set_triac_mode_auto(bool read_from_flash)
 {
     global_event_t ev;
     ev.cmd = TRIAC_AUTO;
+    ev.value_read_from_flash = read_from_flash;
     xQueueSend(global_manager_queue, &ev, 10);
 }
 //------------------------------------------------------------------------------

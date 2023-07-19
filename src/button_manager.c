@@ -278,17 +278,17 @@ void button_event_manager_task(void * pvParameters)
                 case TRIAC_BUTTON_PUSHED:
                     if(triac_status == MANUAL_OFF)
                     {
-                        global_manager_set_triac_mode_off();
+                        global_manager_set_triac_mode_off(false);
                         triac_status = AUTOMATIC;
                     }
                     else if(triac_status == AUTOMATIC)
                     {
-                        global_manager_set_triac_mode_auto();
+                        global_manager_set_triac_mode_auto(false);
                         triac_status = MANUAL_OFF;
                     }
                     break;
                 case TRIAC_BUTTON_PUSHED_3_SEC:
-                    global_manager_set_pwm_triac_manual_on();
+                    global_manager_set_triac_mode_manual_on(false);
                     triac_status = MANUAL_OFF;
                     break;
                 case VEGE_BUTTON_PUSHED:
