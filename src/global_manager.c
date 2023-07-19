@@ -17,7 +17,6 @@
 #include "../include/led_manager.h"
 #include "../include/pwm_manager.h"
 #include "../include/triac_manager.h"
-#include "../include/triac_auto_manager.h"
 #include "../include/nv_flash_manager.h"
 //--------------------MACROS Y DEFINES------------------------------------------
 //------------------------------------------------------------------------------
@@ -269,7 +268,6 @@ static void global_manager_task(void* arg)
 {
     global_event_t global_ev;
     nv_info_t global_info;
-    triac_auto_info_t triac_auto_info;
 
     global_info.pwm_manual_percent_power = 10;
 
@@ -293,7 +291,7 @@ static void global_manager_task(void* arg)
                     break;
                 case UPDATE_CURRENT_TIME:
                     global_info.pwm_auto.current_time = mktime(&global_ev.current_time);
-                    triac_auto_info.current_time = mktime(&global_ev.current_time);
+                    global_info.triac_auto.current_time = mktime(&global_ev.current_time);
                     break;
                 case SET_DEVICE_ALIAS:
                     if((strcmp((const char*)global_info.device_alias, (const char*)global_ev.str_value) != 0) \
@@ -444,18 +442,18 @@ static void global_manager_task(void* arg)
                     global_info.pwm_auto.turn_off_time = mktime(&global_ev.pwm_turn_off_time);
                     break;
                 case UPDATE_TRIAC_CALENDAR:
-                    triac_auto_info.triac_auto[0].enable = global_ev.triac_info[0].enable;
-                    triac_auto_info.triac_auto[1].enable = global_ev.triac_info[1].enable;
-                    triac_auto_info.triac_auto[2].enable = global_ev.triac_info[2].enable;
-                    triac_auto_info.triac_auto[3].enable = global_ev.triac_info[3].enable;
-                    triac_auto_info.triac_auto[0].turn_off_time = mktime(&global_ev.triac_info[0].turn_off_time);
-                    triac_auto_info.triac_auto[1].turn_off_time = mktime(&global_ev.triac_info[1].turn_off_time);
-                    triac_auto_info.triac_auto[2].turn_off_time = mktime(&global_ev.triac_info[2].turn_off_time);
-                    triac_auto_info.triac_auto[3].turn_off_time = mktime(&global_ev.triac_info[3].turn_off_time);
-                    triac_auto_info.triac_auto[0].turn_on_time = mktime(&global_ev.triac_info[0].turn_on_time);
-                    triac_auto_info.triac_auto[1].turn_on_time = mktime(&global_ev.triac_info[1].turn_on_time);
-                    triac_auto_info.triac_auto[2].turn_on_time = mktime(&global_ev.triac_info[2].turn_on_time);
-                    triac_auto_info.triac_auto[3].turn_on_time = mktime(&global_ev.triac_info[3].turn_on_time);
+                    global_info.triac_auto.triac_auto[0].enable = global_ev.triac_info[0].enable;
+                    global_info.triac_auto.triac_auto[1].enable = global_ev.triac_info[1].enable;
+                    global_info.triac_auto.triac_auto[2].enable = global_ev.triac_info[2].enable;
+                    global_info.triac_auto.triac_auto[3].enable = global_ev.triac_info[3].enable;
+                    global_info.triac_auto.triac_auto[0].turn_off_time = mktime(&global_ev.triac_info[0].turn_off_time);
+                    global_info.triac_auto.triac_auto[1].turn_off_time = mktime(&global_ev.triac_info[1].turn_off_time);
+                    global_info.triac_auto.triac_auto[2].turn_off_time = mktime(&global_ev.triac_info[2].turn_off_time);
+                    global_info.triac_auto.triac_auto[3].turn_off_time = mktime(&global_ev.triac_info[3].turn_off_time);
+                    global_info.triac_auto.triac_auto[0].turn_on_time = mktime(&global_ev.triac_info[0].turn_on_time);
+                    global_info.triac_auto.triac_auto[1].turn_on_time = mktime(&global_ev.triac_info[1].turn_on_time);
+                    global_info.triac_auto.triac_auto[2].turn_on_time = mktime(&global_ev.triac_info[2].turn_on_time);
+                    global_info.triac_auto.triac_auto[3].turn_on_time = mktime(&global_ev.triac_info[3].turn_on_time);
                     break;
                 default:
                     break;
@@ -464,7 +462,7 @@ static void global_manager_task(void* arg)
         else
         {
             pwm_auto_manager_handler(&global_info.pwm_auto);
-            triac_auto_manager_handler(&triac_auto_info);
+            triac_auto_manager_handler(&global_info.triac_auto);
         }
     }
 }

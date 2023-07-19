@@ -6,6 +6,7 @@
 #include <time.h>
 
 #include "../include/pwm_auto_manager.h"
+#include "../include/triac_auto_manager.h"
 //------------------- MACROS Y DEFINES -----------------------------------------
 //------------------------------------------------------------------------------
 #define MAX_TRIAC_CALENDARS 4
@@ -36,8 +37,8 @@ typedef struct{
     pwm_auto_info_t pwm_auto;
     uint8_t pwm_manual_percent_power;
     output_mode_t triac_mode;
+    triac_auto_info_t triac_auto;
     rele_output_status_t rele_vege_status;
-    calendar_auto_mode_t triac_auto_calendar[MAX_TRIAC_CALENDARS];
 }nv_info_t;
 //------------------- DECLARACION DE DATOS EXTERNOS ----------------------------
 //------------------------------------------------------------------------------
