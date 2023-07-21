@@ -60,7 +60,7 @@ void global_manager_set_pwm_power_value_manual(uint8_t power_percentage_value);
 void global_manager_set_pwm_power_value_auto(uint8_t power_percentage_value, bool read_from_flash);
 void global_manager_update_current_time(struct tm current_time);
 void global_manager_update_simul_day_function_status(simul_day_status_t status, bool read_from_flash);
-void global_manager_update_auto_pwm_calendar(calendar_auto_mode_t calendar);
+void global_manager_update_auto_pwm_calendar(calendar_auto_mode_t calendar, bool read_from_flash);
 uint8_t global_manager_set_device_alias(char* alias, bool read_from_flash);
 //------------------- FIN DEL ARCHIVO ------------------------------------------
 #endif /* GLOBAL_MANAGER_H__ */

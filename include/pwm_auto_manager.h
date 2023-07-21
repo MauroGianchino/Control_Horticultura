@@ -14,9 +14,9 @@ typedef enum{
 }simul_day_status_t;
 
 typedef struct{
-    time_t current_time;
-    time_t turn_on_time;
-    time_t turn_off_time;
+    struct tm current_time;
+    struct tm turn_on_time;
+    struct tm turn_off_time;
     simul_day_status_t simul_day_status;
     uint8_t percent_power;
 }pwm_auto_info_t;

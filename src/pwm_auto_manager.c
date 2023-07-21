@@ -63,7 +63,9 @@ void pwm_auto_manager_handler(pwm_auto_info_t *info)
             return;
             break;
         case PWM_AUTO_WORKING_PWM_OFF:
-            if(info->current_time > info->turn_on_time)
+            if((info->current_time.tm_hour > info->turn_on_time.tm_hour) \
+                || ((info->current_time.tm_hour == info->turn_on_time.tm_hour) \
+                && (info->current_time.tm_min > info->turn_on_time.tm_min)))
             {
                 actual_state = PWM_AUTO_WORKING_PWM_ON;
                 if(info->simul_day_status == true)
@@ -77,7 +79,9 @@ void pwm_auto_manager_handler(pwm_auto_info_t *info)
             }
             break;
         case PWM_AUTO_WORKING_PWM_ON:
-            if(info->current_time > info->turn_off_time)
+            if((info->current_time.tm_hour > info->turn_off_time.tm_hour) \
+                || ((info->current_time.tm_hour == info->turn_off_time.tm_hour) \
+                && (info->current_time.tm_min > info->turn_off_time.tm_min)))
             {
                 actual_state = PWM_AUTO_WORKING_PWM_OFF;
                 if(info->simul_day_status == true)
@@ -88,10 +92,6 @@ void pwm_auto_manager_handler(pwm_auto_info_t *info)
                 {
                     pwm_manager_turn_off_pwm();
                 }
-                // Aumento 1 dia en segundos para que se redispare el dia siguinte
-                // en los mismos horarios
-                info->turn_off_time += 86400; 
-                info->turn_on_time += 86400;
             }
             break;
         default:
