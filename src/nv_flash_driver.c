@@ -22,7 +22,7 @@
 #define MAX_KEY_LENGTH 15
 
 
-#define TIMEOUT_MS 200
+#define TIMEOUT_MS 350
 
 #define DEBUG_MODULE
 //------------------- TYPEDEF --------------------------------------------------

@@ -80,6 +80,8 @@ static void nv_save_simul_day_status(simul_day_status_t simul_day_status);
 static void nv_save_rele_vege_status(rele_output_status_t rele_vege_status);
 static void nv_init_auto_percent_power(void);
 static void nv_save_auto_percent_power(uint8_t percent_power);
+static void nv_init_pwm_calendar(void);
+static void nv_save_pwm_calendar(pwm_auto_info_t pwm_calendar);
 //------------------- DEFINICION DE DATOS LOCALES ------------------------------
 //------------------------------------------------------------------------------
 
@@ -111,6 +113,43 @@ static void nv_init_alias(void)
 static void nv_save_alias(char *alias)
 {
     write_parameter_on_flash_str(DEVICE_ALIAS_KEY, alias); 
+}
+//------------------------------------------------------------------------------
+static void nv_init_pwm_calendar(void)
+{
+    pwm_auto_info_t pwm_calendar;
+    if(read_date_from_flash(PWM_DATE_ON_KEY, &pwm_calendar.turn_on_time))
+    {
+         #ifdef DEBUG_MODULE
+            printf("TURN ON TIME HOUR READ: %d \n", pwm_calendar.turn_on_time.tm_hour);
+            printf("TURN ON TIME min READ: %d \n", pwm_calendar.turn_on_time.tm_min);
+        #endif
+    }
+    else
+    {
+        #ifdef DEBUG_MODULE
+            printf("TURN ON CALENDAR READING FAILED \n");
+        #endif
+    }
+    if(read_date_from_flash(PWM_DATE_OFF_KEY, &pwm_calendar.turn_off_time))
+    {
+         #ifdef DEBUG_MODULE
+            printf("TURN OFF TIME HOUR READ: %d \n", pwm_calendar.turn_off_time.tm_hour);
+            printf("TURN OFF TIME min READ: %d \n", pwm_calendar.turn_off_time.tm_min);
+        #endif
+    }
+    else
+    {
+        #ifdef DEBUG_MODULE
+            printf("TURN OFF CALENDAR READING FAILED \n");
+        #endif
+    }
+}
+//------------------------------------------------------------------------------
+static void nv_save_pwm_calendar(pwm_auto_info_t pwm_calendar)
+{
+    write_date_on_flash(PWM_DATE_ON_KEY, pwm_calendar.turn_on_time);
+    write_date_on_flash(PWM_DATE_OFF_KEY, pwm_calendar.turn_off_time);
 }
 //------------------------------------------------------------------------------
 static void nv_init_triac_mode(void)
@@ -268,11 +307,13 @@ static void global_manager_task(void* arg)
 {
     global_event_t global_ev;
     nv_info_t global_info;
+    pwm_auto_info_t pwm_auto_info;
 
     global_info.pwm_manual_percent_power = 10;
 
     // INIT FROM FLASH
-    nv_init_alias();
+   // nv_init_alias();
+    nv_init_pwm_calendar();
     nv_init_pwm_mode();
     nv_init_triac_mode();
     nv_init_simul_day_status();
@@ -290,7 +331,7 @@ static void global_manager_task(void* arg)
                 case  CMD_UNDEFINED:
                     break;
                 case UPDATE_CURRENT_TIME:
-                    global_info.pwm_auto.current_time = mktime(&global_ev.current_time);
+                    global_info.pwm_auto.current_time = global_ev.current_time;
                     global_info.triac_auto.current_time = mktime(&global_ev.current_time);
                     break;
                 case SET_DEVICE_ALIAS:
@@ -438,8 +479,18 @@ static void global_manager_task(void* arg)
                     global_info.pwm_auto.simul_day_status = global_ev.simul_day_function_status;
                     break;
                 case UPDATE_PWM_CALENDAR:
-                    global_info.pwm_auto.turn_on_time = mktime(&global_ev.pwm_turn_on_time); 
-                    global_info.pwm_auto.turn_off_time = mktime(&global_ev.pwm_turn_off_time);
+                    if(((global_ev.pwm_turn_on_time.tm_hour != global_info.pwm_auto.turn_on_time.tm_hour) \
+                        || (global_ev.pwm_turn_on_time.tm_min != global_info.pwm_auto.turn_on_time.tm_min) \
+                        || (global_ev.pwm_turn_off_time.tm_hour != global_info.pwm_auto.turn_off_time.tm_hour) \
+                        || (global_ev.pwm_turn_off_time.tm_min != global_info.pwm_auto.turn_off_time.tm_min))\
+                        && (global_ev.value_read_from_flash == false))
+                    {
+                        pwm_auto_info.turn_on_time = global_ev.pwm_turn_on_time;
+                        pwm_auto_info.turn_off_time = global_ev.pwm_turn_off_time;
+                        nv_save_pwm_calendar(pwm_auto_info);
+                    }
+                    global_info.pwm_auto.turn_on_time = global_ev.pwm_turn_on_time; 
+                    global_info.pwm_auto.turn_off_time = global_ev.pwm_turn_off_time;
                     break;
                 case UPDATE_TRIAC_CALENDAR:
                     global_info.triac_auto.triac_auto[0].enable = global_ev.triac_info[0].enable;
@@ -574,7 +625,7 @@ void global_manager_update_current_time(struct tm current_time)
     xQueueSend(global_manager_queue, &ev, 10);
 }
 //------------------------------------------------------------------------------
-void global_manager_update_simul_day_function_status(simul_day_status_t status , bool read_from_flash)
+void global_manager_update_simul_day_function_status(simul_day_status_t status, bool read_from_flash)
 {
     global_event_t ev;
     ev.cmd = UPDATE_SIMUL_DAY_FUNCTION_STATUS;
@@ -594,10 +645,11 @@ uint8_t global_manager_set_device_alias(char* alias, bool read_from_flash)
     return 1;
 }
 //------------------------------------------------------------------------------
-void global_manager_update_auto_pwm_calendar(calendar_auto_mode_t calendar)
+void global_manager_update_auto_pwm_calendar(calendar_auto_mode_t calendar, bool read_from_flash)
 {
     global_event_t ev;
     ev.cmd = UPDATE_PWM_CALENDAR;
+    ev.value_read_from_flash = read_from_flash;
     ev.pwm_turn_on_time = calendar.turn_on_time;
     ev.pwm_turn_off_time = calendar.turn_off_time;
     xQueueSend(global_manager_queue, &ev, 10);
