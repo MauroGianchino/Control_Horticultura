@@ -46,12 +46,6 @@ typedef enum{
 }global_event_cmds_t;
 
 typedef struct{
-    struct tm turn_on_time;
-    struct tm turn_off_time;
-    uint8_t enable;
-}triac_info_t;
-
-typedef struct{
     global_event_cmds_t cmd;
     output_mode_t output_mode;
     uint8_t value;
@@ -60,7 +54,8 @@ typedef struct{
     struct tm pwm_turn_on_time;
     struct tm pwm_turn_off_time;
     simul_day_status_t simul_day_function_status;
-    triac_info_t triac_info[MAX_AUTO_TRIAC_CONFIGS_HOURS];
+    triac_config_info_t triac_info;
+    uint8_t triac_num;
     bool value_read_from_flash;
 }global_event_t;
 //------------------- DECLARACION DE DATOS LOCALES -----------------------------
@@ -82,6 +77,8 @@ static void nv_init_auto_percent_power(void);
 static void nv_save_auto_percent_power(uint8_t percent_power);
 static void nv_init_pwm_calendar(void);
 static void nv_save_pwm_calendar(pwm_auto_info_t pwm_calendar);
+static void nv_init_triac_calendar(uint8_t triac_num);
+static void nv_save_triac_calendar(triac_config_info_t triac_info, uint8_t triac_num);
 //------------------- DEFINICION DE DATOS LOCALES ------------------------------
 //------------------------------------------------------------------------------
 
@@ -115,15 +112,130 @@ static void nv_save_alias(char *alias)
     write_parameter_on_flash_str(DEVICE_ALIAS_KEY, alias); 
 }
 //------------------------------------------------------------------------------
+static void nv_init_triac_calendar(uint8_t triac_num)
+{
+    triac_config_info_t info;
+    char aux_str_on[20], aux_str_off[20], triac_enable_aux[20];
+    uint32_t value;
+
+    switch(triac_num)
+    {
+        case 1:
+            strcpy(aux_str_on, TRIAC1_DATE_ON_KEY);
+            strcpy(aux_str_off, TRIAC1_DATE_OFF_KEY);
+            strcpy(triac_enable_aux, TRIAC1_DATE_ENABLE);
+            break;
+        case 2:
+            strcpy(aux_str_on, TRIAC2_DATE_ON_KEY);
+            strcpy(aux_str_off, TRIAC2_DATE_OFF_KEY);
+            strcpy(triac_enable_aux, TRIAC2_DATE_ENABLE);
+            break;
+        case 3:
+            strcpy(aux_str_on, TRIAC3_DATE_ON_KEY);
+            strcpy(aux_str_off, TRIAC3_DATE_OFF_KEY);
+            strcpy(triac_enable_aux, TRIAC3_DATE_ENABLE);
+            break;
+        case 4:
+            strcpy(aux_str_on, TRIAC4_DATE_ON_KEY);
+            strcpy(aux_str_off, TRIAC4_DATE_OFF_KEY);
+            strcpy(triac_enable_aux, TRIAC4_DATE_ENABLE);
+            break;
+        default:
+            break;
+    }
+
+    if(read_date_from_flash(aux_str_on, &info.turn_on_time))
+    {
+        #ifdef DEBUG_MODULE
+            printf("TURN ON TIME HOUR READ: %d \n", info.turn_on_time.tm_hour);
+            printf("TURN ON TIME min READ: %d \n", info.turn_on_time.tm_min);
+        #endif
+    }
+    else
+    {
+        #ifdef DEBUG_MODULE
+            printf("TURN ON CALENDAR READING FAILED \n");
+        #endif
+    }
+
+    if(read_date_from_flash(aux_str_off, &info.turn_off_time))
+    {
+         #ifdef DEBUG_MODULE
+            printf("TURN ON TIME HOUR READ: %d \n", info.turn_off_time.tm_hour);
+            printf("TURN ON TIME min READ: %d \n", info.turn_off_time.tm_min);
+        #endif
+    }
+    else
+    {
+        #ifdef DEBUG_MODULE
+            printf("TURN ON CALENDAR READING FAILED \n");
+        #endif
+    }
+    
+    if(read_uint32_from_flash(triac_enable_aux, &value))
+    {
+        info.enable = (uint8_t)value;
+        #ifdef DEBUG_MODULE
+            printf("TRIAC ENABLE STATUS READ: %d \n", info.enable);
+        #endif
+    }
+    else
+    {
+        #ifdef DEBUG_MODULE
+            printf("TRIAC ENABLE STATUS READING FAILED \n");
+        #endif
+    }
+
+    global_manager_update_auto_triac_calendar(info, triac_num, true);
+}
+//------------------------------------------------------------------------------
+static void nv_save_triac_calendar(triac_config_info_t triac_info, uint8_t triac_num)
+{
+    char aux_str_on[20], aux_str_off[20], triac_enable_aux[20];
+
+    switch(triac_num)
+    {
+        case 1:
+            strcpy(aux_str_on, TRIAC1_DATE_ON_KEY);
+            strcpy(aux_str_off, TRIAC1_DATE_OFF_KEY);
+            strcpy(triac_enable_aux, TRIAC1_DATE_ENABLE);
+            break;
+        case 2:
+            strcpy(aux_str_on, TRIAC2_DATE_ON_KEY);
+            strcpy(aux_str_off, TRIAC2_DATE_OFF_KEY);
+            strcpy(triac_enable_aux, TRIAC2_DATE_ENABLE);
+            break;
+        case 3:
+            strcpy(aux_str_on, TRIAC3_DATE_ON_KEY);
+            strcpy(aux_str_off, TRIAC3_DATE_OFF_KEY);
+            strcpy(triac_enable_aux, TRIAC3_DATE_ENABLE);
+            break;
+        case 4:
+            strcpy(aux_str_on, TRIAC4_DATE_ON_KEY);
+            strcpy(aux_str_off, TRIAC4_DATE_OFF_KEY);
+            strcpy(triac_enable_aux, TRIAC4_DATE_ENABLE);
+            break;
+        default:
+            break;
+    }
+    
+    write_date_on_flash(aux_str_on, triac_info.turn_on_time);
+    write_date_on_flash(aux_str_off, triac_info.turn_off_time);
+    write_parameter_on_flash_uint32(triac_enable_aux, (uint32_t)triac_info.enable);
+}
+//------------------------------------------------------------------------------
 static void nv_init_pwm_calendar(void)
 {
     pwm_auto_info_t pwm_calendar;
+    calendar_auto_mode_t calendar;
+
     if(read_date_from_flash(PWM_DATE_ON_KEY, &pwm_calendar.turn_on_time))
     {
          #ifdef DEBUG_MODULE
             printf("TURN ON TIME HOUR READ: %d \n", pwm_calendar.turn_on_time.tm_hour);
             printf("TURN ON TIME min READ: %d \n", pwm_calendar.turn_on_time.tm_min);
         #endif
+        calendar.turn_on_time = pwm_calendar.turn_on_time;
     }
     else
     {
@@ -137,6 +249,7 @@ static void nv_init_pwm_calendar(void)
             printf("TURN OFF TIME HOUR READ: %d \n", pwm_calendar.turn_off_time.tm_hour);
             printf("TURN OFF TIME min READ: %d \n", pwm_calendar.turn_off_time.tm_min);
         #endif
+        calendar.turn_off_time = pwm_calendar.turn_off_time;
     }
     else
     {
@@ -144,6 +257,8 @@ static void nv_init_pwm_calendar(void)
             printf("TURN OFF CALENDAR READING FAILED \n");
         #endif
     }
+
+    global_manager_update_auto_pwm_calendar(calendar, true);
 }
 //------------------------------------------------------------------------------
 static void nv_save_pwm_calendar(pwm_auto_info_t pwm_calendar)
@@ -296,18 +411,15 @@ static void nv_save_auto_percent_power(uint8_t percent_power)
     write_parameter_on_flash_uint32(PWM_PERCENT_POWER_KEY, (uint32_t)percent_power);
 }
 //------------------------------------------------------------------------------
-// TO DO: falta implementar funcion para actualizar parametros de hora del triac automatico
-// UPDATE_TRIAC_CALENDAR
 // TO DO: Falta agregar la dinamica de funcionamiento del rele vege
-// TO DO: Falta agregar el guardado y el levantado de flash al bootear de los parametros
-// no volatiles.
-// Falta agregar una tarea que lleve el conteo de la hora y se lo actualice a la 
+// TO DO: Falta agregar una tarea que lleve el conteo de la hora y se lo actualice a la 
 // global manager task.
 static void global_manager_task(void* arg)
 {
     global_event_t global_ev;
     nv_info_t global_info;
     pwm_auto_info_t pwm_auto_info;
+    uint8_t triac_index;
 
     global_info.pwm_manual_percent_power = 10;
 
@@ -319,7 +431,11 @@ static void global_manager_task(void* arg)
     nv_init_simul_day_status();
     nv_init_rele_vege_status();
     nv_init_auto_percent_power();
-    // PARA DEBUG HAY QUIE SUSTITUIR POR SECUENCIA DE STARTUP
+    nv_init_triac_calendar(1);
+    nv_init_triac_calendar(2);
+    nv_init_triac_calendar(3);
+    nv_init_triac_calendar(4);
+    
     vTaskDelay(1000 / portTICK_PERIOD_MS);
     ////////////////////////////////////////////////////////
     while(1)
@@ -493,18 +609,20 @@ static void global_manager_task(void* arg)
                     global_info.pwm_auto.turn_off_time = global_ev.pwm_turn_off_time;
                     break;
                 case UPDATE_TRIAC_CALENDAR:
-                    global_info.triac_auto.triac_auto[TRIAC_CALENDAR_1].enable = global_ev.triac_info[TRIAC_CALENDAR_1].enable;
-                    global_info.triac_auto.triac_auto[TRIAC_CALENDAR_2].enable = global_ev.triac_info[TRIAC_CALENDAR_2].enable;
-                    global_info.triac_auto.triac_auto[TRIAC_CALENDAR_3].enable = global_ev.triac_info[TRIAC_CALENDAR_3].enable;
-                    global_info.triac_auto.triac_auto[TRIAC_CALENDAR_4].enable = global_ev.triac_info[TRIAC_CALENDAR_4].enable;
-                    global_info.triac_auto.triac_auto[TRIAC_CALENDAR_1].turn_off_time = global_ev.triac_info[TRIAC_CALENDAR_1].turn_off_time;
-                    global_info.triac_auto.triac_auto[TRIAC_CALENDAR_2].turn_off_time = global_ev.triac_info[TRIAC_CALENDAR_2].turn_off_time;
-                    global_info.triac_auto.triac_auto[TRIAC_CALENDAR_3].turn_off_time = global_ev.triac_info[TRIAC_CALENDAR_3].turn_off_time;
-                    global_info.triac_auto.triac_auto[TRIAC_CALENDAR_4].turn_off_time = global_ev.triac_info[TRIAC_CALENDAR_4].turn_off_time;
-                    global_info.triac_auto.triac_auto[TRIAC_CALENDAR_1].turn_on_time = global_ev.triac_info[TRIAC_CALENDAR_1].turn_on_time;
-                    global_info.triac_auto.triac_auto[TRIAC_CALENDAR_2].turn_on_time = global_ev.triac_info[TRIAC_CALENDAR_2].turn_on_time;
-                    global_info.triac_auto.triac_auto[TRIAC_CALENDAR_3].turn_on_time = global_ev.triac_info[TRIAC_CALENDAR_3].turn_on_time;
-                    global_info.triac_auto.triac_auto[TRIAC_CALENDAR_4].turn_on_time = global_ev.triac_info[TRIAC_CALENDAR_4].turn_on_time;
+                    triac_index = global_ev.triac_num - 1;
+
+                    if(((global_ev.triac_info.turn_on_time.tm_hour != global_info.triac_auto.triac_auto[triac_index].turn_on_time.tm_hour) \
+                        || (global_ev.triac_info.turn_on_time.tm_min != global_info.triac_auto.triac_auto[triac_index].turn_on_time.tm_min) \
+                        || (global_ev.triac_info.turn_off_time.tm_hour != global_info.triac_auto.triac_auto[triac_index].turn_off_time.tm_hour) \
+                        || (global_ev.triac_info.turn_off_time.tm_min != global_info.triac_auto.triac_auto[triac_index].turn_off_time.tm_min)\
+                        || (global_ev.triac_info.enable != global_info.triac_auto.triac_auto[triac_index].enable))\
+                        && (global_ev.value_read_from_flash == false))
+                    {
+                        nv_save_triac_calendar(global_ev.triac_info, global_ev.triac_num);
+                    }
+                    global_info.triac_auto.triac_auto[triac_index].enable = global_ev.triac_info.enable;
+                    global_info.triac_auto.triac_auto[triac_index].turn_off_time = global_ev.triac_info.turn_off_time;
+                    global_info.triac_auto.triac_auto[triac_index].turn_on_time = global_ev.triac_info.turn_on_time;
                     break;
                 default:
                     break;
@@ -652,6 +770,18 @@ void global_manager_update_auto_pwm_calendar(calendar_auto_mode_t calendar, bool
     ev.value_read_from_flash = read_from_flash;
     ev.pwm_turn_on_time = calendar.turn_on_time;
     ev.pwm_turn_off_time = calendar.turn_off_time;
+    xQueueSend(global_manager_queue, &ev, 10);
+}
+//------------------------------------------------------------------------------
+void global_manager_update_auto_triac_calendar(triac_config_info_t triac_info, uint8_t triac_num, bool read_from_flash)
+{
+    global_event_t ev;
+    ev.cmd = UPDATE_TRIAC_CALENDAR;
+    ev.value_read_from_flash = read_from_flash;
+    ev.triac_info.enable = triac_info.enable;
+    ev.triac_info.turn_off_time = triac_info.turn_off_time;
+    ev.triac_info.turn_on_time = triac_info.turn_on_time;
+    ev.triac_num = triac_num;
     xQueueSend(global_manager_queue, &ev, 10);
 }
 //---------------------------- END OF FILE -------------------------------------
