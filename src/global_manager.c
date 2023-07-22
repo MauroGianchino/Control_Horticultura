@@ -312,7 +312,7 @@ static void global_manager_task(void* arg)
     global_info.pwm_manual_percent_power = 10;
 
     // INIT FROM FLASH
-   // nv_init_alias();
+    //nv_init_alias();
     nv_init_pwm_calendar();
     nv_init_pwm_mode();
     nv_init_triac_mode();

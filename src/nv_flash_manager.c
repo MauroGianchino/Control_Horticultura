@@ -42,8 +42,8 @@ static void first_time_flash(void)
     time_info_default.tm_min = 30;
     time_info_default.tm_sec = 30;
 
-    init_parameter_in_flash_str(DEVICE_ALIAS_KEY, "GreenGrowTech");
-    init_parameter_in_flash_str(WIFI_AP_SSID_KEY, WIFI_AP_SSID_DEFAULT);
+    //init_parameter_in_flash_str(DEVICE_ALIAS_KEY, "GreenGrowTech");
+    //init_parameter_in_flash_str(WIFI_AP_SSID_KEY, WIFI_AP_SSID_DEFAULT);
     init_date_parameter_in_flash(PWM_DATE_OFF_KEY, time_info_default);// work around
     init_date_parameter_in_flash(PWM_DATE_ON_KEY, time_info_default);
     init_date_parameter_in_flash(TRIAC1_DATE_ON_KEY, time_info_default);
@@ -54,11 +54,23 @@ static void first_time_flash(void)
     init_date_parameter_in_flash(TRIAC2_DATE_ON_KEY, time_info_default);
     time_info_default.tm_hour++;
     init_date_parameter_in_flash(TRIAC2_DATE_OFF_KEY, time_info_default);
+    time_info_default.tm_hour++;
+    init_date_parameter_in_flash(TRIAC3_DATE_ON_KEY, time_info_default);
+    time_info_default.tm_hour++;
+    init_date_parameter_in_flash(TRIAC3_DATE_OFF_KEY, time_info_default);
+    time_info_default.tm_hour++;
+    init_date_parameter_in_flash(TRIAC4_DATE_ON_KEY, time_info_default);
+    time_info_default.tm_hour++;
+    init_date_parameter_in_flash(TRIAC4_DATE_OFF_KEY, time_info_default);
     init_parameter_in_flash_uint32(PWM_MODE_KEY, PWM_MODE_DEFAULT);
     init_parameter_in_flash_uint32(SIMUL_DAY_STATUS_KEY, PWM_SIMUL_DAY_STATUS_DEFAULT);
     init_parameter_in_flash_uint32(PWM_PERCENT_POWER_KEY, PWM_PERCENT_POWER_DEFAULT);
     init_parameter_in_flash_uint32(TRIAC_MODE_KEY, TRIAC_MODE_DEFAULT);
     init_parameter_in_flash_uint32(RELE_VEGE_STATUS_KEY, RELE_VEGE_STATUS_DEFAULT);
+    init_parameter_in_flash_uint32(TRIAC1_DATE_ENABLE, TRIAC1_DATE_ENABLE_DEFAULT);
+    init_parameter_in_flash_uint32(TRIAC2_DATE_ENABLE, TRIAC2_DATE_ENABLE_DEFAULT);
+    init_parameter_in_flash_uint32(TRIAC3_DATE_ENABLE, TRIAC3_DATE_ENABLE_DEFAULT);
+    init_parameter_in_flash_uint32(TRIAC4_DATE_ENABLE, TRIAC4_DATE_ENABLE_DEFAULT);
 }
 //------------------- DEFINICION DE FUNCIONES EXTERNAS -------------------------
 //------------------------------------------------------------------------------

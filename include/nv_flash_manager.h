@@ -18,20 +18,32 @@
 #define TRIAC_MODE_KEY "triac_mod_key\0" 
 #define PWM_DATE_ON_KEY "pwm_on_key\0" 
 #define PWM_DATE_OFF_KEY "pwm_off_key\0"
-#define TRIAC1_DATE_ON_KEY "triac1_on_key\0" 
-#define TRIAC1_DATE_OFF_KEY "triac1_off_key\0"
-#define TRIAC2_DATE_ON_KEY "triac2_on_key\0" 
-#define TRIAC2_DATE_OFF_KEY "triac2_off_key\0"
 #define RELE_VEGE_STATUS_KEY "rele_vege_key\0"
+#define TRIAC1_DATE_ON_KEY "triac1_on\0" 
+#define TRIAC1_DATE_OFF_KEY "triac1_off\0"
+#define TRIAC1_DATE_ENABLE "triac1_enable\0"
+#define TRIAC2_DATE_ON_KEY "triac2_on\0" 
+#define TRIAC2_DATE_OFF_KEY "triac2_off\0"
+#define TRIAC2_DATE_ENABLE "triac2_enable\0"
+#define TRIAC3_DATE_ON_KEY "triac3_on\0" 
+#define TRIAC3_DATE_OFF_KEY "triac3_off\0"
+#define TRIAC3_DATE_ENABLE "triac3_enable\0"
+#define TRIAC4_DATE_ON_KEY "triac4_on\0" 
+#define TRIAC4_DATE_OFF_KEY "triac4_off\0"
+#define TRIAC4_DATE_ENABLE "triac4_enable\0"
 
 // DEFAULT VALUES
 #define DEVICE_ALIAS_DEFAULT "GreenGrowTech"
-#define WIFI_AP_SSID_DEFAULT "GreenGrowTech\0" // el tamaño maximo del ssid no debe exceder los 32 caracteres
+#define WIFI_AP_SSID_DEFAULT "GreenGrowTech" // el tamaño maximo del ssid no debe exceder los 32 caracteres
 #define PWM_MODE_DEFAULT 2 // MANUAL_OFF
 #define PWM_SIMUL_DAY_STATUS_DEFAULT 0 // SIMUL_DAY_OFF
 #define PWM_PERCENT_POWER_DEFAULT 50 // 50 percent
 #define TRIAC_MODE_DEFAULT 2 // MANUAL_OFF
 #define RELE_VEGE_STATUS_DEFAULT 0 // OFF
+#define TRIAC1_DATE_ENABLE_DEFAULT 1 // enable
+#define TRIAC2_DATE_ENABLE_DEFAULT 0 // disable
+#define TRIAC3_DATE_ENABLE_DEFAULT 0 // disable
+#define TRIAC4_DATE_ENABLE_DEFAULT 0 // disable
 //------------------- TYPEDEF --------------------------------------------------
 //------------------------------------------------------------------------------
 
