@@ -332,7 +332,7 @@ static void global_manager_task(void* arg)
                     break;
                 case UPDATE_CURRENT_TIME:
                     global_info.pwm_auto.current_time = global_ev.current_time;
-                    global_info.triac_auto.current_time = mktime(&global_ev.current_time);
+                    global_info.triac_auto.current_time = global_ev.current_time;
                     break;
                 case SET_DEVICE_ALIAS:
                     if((strcmp((const char*)global_info.device_alias, (const char*)global_ev.str_value) != 0) \
@@ -493,18 +493,18 @@ static void global_manager_task(void* arg)
                     global_info.pwm_auto.turn_off_time = global_ev.pwm_turn_off_time;
                     break;
                 case UPDATE_TRIAC_CALENDAR:
-                    global_info.triac_auto.triac_auto[0].enable = global_ev.triac_info[0].enable;
-                    global_info.triac_auto.triac_auto[1].enable = global_ev.triac_info[1].enable;
-                    global_info.triac_auto.triac_auto[2].enable = global_ev.triac_info[2].enable;
-                    global_info.triac_auto.triac_auto[3].enable = global_ev.triac_info[3].enable;
-                    global_info.triac_auto.triac_auto[0].turn_off_time = mktime(&global_ev.triac_info[0].turn_off_time);
-                    global_info.triac_auto.triac_auto[1].turn_off_time = mktime(&global_ev.triac_info[1].turn_off_time);
-                    global_info.triac_auto.triac_auto[2].turn_off_time = mktime(&global_ev.triac_info[2].turn_off_time);
-                    global_info.triac_auto.triac_auto[3].turn_off_time = mktime(&global_ev.triac_info[3].turn_off_time);
-                    global_info.triac_auto.triac_auto[0].turn_on_time = mktime(&global_ev.triac_info[0].turn_on_time);
-                    global_info.triac_auto.triac_auto[1].turn_on_time = mktime(&global_ev.triac_info[1].turn_on_time);
-                    global_info.triac_auto.triac_auto[2].turn_on_time = mktime(&global_ev.triac_info[2].turn_on_time);
-                    global_info.triac_auto.triac_auto[3].turn_on_time = mktime(&global_ev.triac_info[3].turn_on_time);
+                    global_info.triac_auto.triac_auto[TRIAC_CALENDAR_1].enable = global_ev.triac_info[TRIAC_CALENDAR_1].enable;
+                    global_info.triac_auto.triac_auto[TRIAC_CALENDAR_2].enable = global_ev.triac_info[TRIAC_CALENDAR_2].enable;
+                    global_info.triac_auto.triac_auto[TRIAC_CALENDAR_3].enable = global_ev.triac_info[TRIAC_CALENDAR_3].enable;
+                    global_info.triac_auto.triac_auto[TRIAC_CALENDAR_4].enable = global_ev.triac_info[TRIAC_CALENDAR_4].enable;
+                    global_info.triac_auto.triac_auto[TRIAC_CALENDAR_1].turn_off_time = global_ev.triac_info[TRIAC_CALENDAR_1].turn_off_time;
+                    global_info.triac_auto.triac_auto[TRIAC_CALENDAR_2].turn_off_time = global_ev.triac_info[TRIAC_CALENDAR_2].turn_off_time;
+                    global_info.triac_auto.triac_auto[TRIAC_CALENDAR_3].turn_off_time = global_ev.triac_info[TRIAC_CALENDAR_3].turn_off_time;
+                    global_info.triac_auto.triac_auto[TRIAC_CALENDAR_4].turn_off_time = global_ev.triac_info[TRIAC_CALENDAR_4].turn_off_time;
+                    global_info.triac_auto.triac_auto[TRIAC_CALENDAR_1].turn_on_time = global_ev.triac_info[TRIAC_CALENDAR_1].turn_on_time;
+                    global_info.triac_auto.triac_auto[TRIAC_CALENDAR_2].turn_on_time = global_ev.triac_info[TRIAC_CALENDAR_2].turn_on_time;
+                    global_info.triac_auto.triac_auto[TRIAC_CALENDAR_3].turn_on_time = global_ev.triac_info[TRIAC_CALENDAR_3].turn_on_time;
+                    global_info.triac_auto.triac_auto[TRIAC_CALENDAR_4].turn_on_time = global_ev.triac_info[TRIAC_CALENDAR_4].turn_on_time;
                     break;
                 default:
                     break;
