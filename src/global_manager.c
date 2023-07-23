@@ -435,18 +435,32 @@ static void global_manager_task(void* arg)
     nv_init_triac_calendar(2);
     nv_init_triac_calendar(3);
     nv_init_triac_calendar(4);
+
+    calendar_auto_mode_t calendar;
+
+    calendar.turn_on_time.tm_hour = 13;
+    calendar.turn_on_time.tm_min = 2;
+    calendar.turn_on_time.tm_sec = 0;
+    calendar.turn_off_time.tm_hour = 13;
+    calendar.turn_off_time.tm_min = 5;
+    calendar.turn_off_time.tm_sec = 0;
+
+    global_manager_update_auto_pwm_calendar(calendar, true);
     
     vTaskDelay(1000 / portTICK_PERIOD_MS);
     ////////////////////////////////////////////////////////
     while(1)
     {
-        if(xQueueReceive(global_manager_queue, &global_ev, 2000 / portTICK_PERIOD_MS) == pdTRUE)
+        if(xQueueReceive(global_manager_queue, &global_ev, 50 / portTICK_PERIOD_MS) == pdTRUE)
         {
             switch(global_ev.cmd)
             {
                 case  CMD_UNDEFINED:
                     break;
                 case UPDATE_CURRENT_TIME:
+                    #ifdef DEBUG_MODULE
+                        printf("El tiempo actual es: %s", asctime(&global_ev.current_time));
+                    #endif 
                     global_info.pwm_auto.current_time = global_ev.current_time;
                     global_info.triac_auto.current_time = global_ev.current_time;
                     break;
@@ -576,15 +590,14 @@ static void global_manager_task(void* arg)
                     {
                         nv_save_auto_percent_power(global_ev.value);
                     }
-                    // TO DO: esto va a haber que cambiarlo lo tiene que hacer la fsm
                     global_info.pwm_auto.percent_power = global_ev.value;
-                    if(global_info.pwm_mode == AUTOMATIC)
+                    /*if(global_info.pwm_mode == AUTOMATIC)
                     {
                         pwm_manager_update_pwm(global_info.pwm_auto.percent_power);
                         #ifdef DEBUG_MODULE
                             printf("UPDATE PWM: %d \n", global_info.pwm_auto.percent_power);
                         #endif
-                    }
+                    }*/
                     break;
                 case UPDATE_SIMUL_DAY_FUNCTION_STATUS:
                     if((global_info.pwm_auto.simul_day_status != global_ev.simul_day_function_status)\
@@ -607,6 +620,10 @@ static void global_manager_task(void* arg)
                     }
                     global_info.pwm_auto.turn_on_time = global_ev.pwm_turn_on_time; 
                     global_info.pwm_auto.turn_off_time = global_ev.pwm_turn_off_time;
+                    #ifdef DEBUG_MODULE
+                        printf("PWM ON calendar: %s", asctime(&global_info.pwm_auto.turn_on_time));
+                        printf("PWM OFF calendar: %s", asctime(&global_info.pwm_auto.turn_off_time));
+                    #endif 
                     break;
                 case UPDATE_TRIAC_CALENDAR:
                     triac_index = global_ev.triac_num - 1;

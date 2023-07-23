@@ -15,7 +15,7 @@
 #include "../include/pwm_manager.h"
 //--------------------MACROS Y DEFINES------------------------------------------
 //------------------------------------------------------------------------------
-
+#define DEBUG_MODULE
 //------------------- TYPEDEF --------------------------------------------------
 //------------------------------------------------------------------------------
 typedef enum{
@@ -44,17 +44,28 @@ static pwm_auto_state_t actual_state;
 //------------------------------------------------------------------------------
 void pwm_auto_start(void)
 {
+    #ifdef DEBUG_MODULE
+        printf("pwm_auto_start \n");
+        printf("PWM_AUTO_WORKING_PWM_OFF \n");
+    #endif
     actual_state = PWM_AUTO_WORKING_PWM_OFF;
 }
 //------------------------------------------------------------------------------
 void pwm_auto_end(void)
 {
+    #ifdef DEBUG_MODULE
+        printf("pwm_auto_end \n");
+    #endif
+    #ifdef DEBUG_MODULE
+        printf("PWM_AUTO_STANDBY \n");
+    #endif
     actual_state = PWM_AUTO_STANDBY;
 }
 //------------------------------------------------------------------------------
 // TO DO: Hay que tener en cuenta el caso en que no finalice el ciclo de forma correcta
 // por lo que se deben reconfigurar el calendario automatico para el dia siguiente
 // y reiniciarse la maquina de estados para que pueda ser lanzada nuevamente.
+// TO DO: agregar el dia del proximo ciclo 
 void pwm_auto_manager_handler(pwm_auto_info_t *info)
 {
     switch(actual_state)
@@ -67,6 +78,9 @@ void pwm_auto_manager_handler(pwm_auto_info_t *info)
                 || ((info->current_time.tm_hour == info->turn_on_time.tm_hour) \
                 && (info->current_time.tm_min > info->turn_on_time.tm_min)))
             {
+                #ifdef DEBUG_MODULE
+                    printf("PWM_AUTO_WORKING_PWM_ON \n");
+                #endif
                 actual_state = PWM_AUTO_WORKING_PWM_ON;
                 if(info->simul_day_status == true)
                 {
@@ -83,6 +97,9 @@ void pwm_auto_manager_handler(pwm_auto_info_t *info)
                 || ((info->current_time.tm_hour == info->turn_off_time.tm_hour) \
                 && (info->current_time.tm_min > info->turn_off_time.tm_min)))
             {
+                #ifdef DEBUG_MODULE
+                    printf("PWM_AUTO_WORKING_PWM_OFF \n");
+                #endif
                 actual_state = PWM_AUTO_WORKING_PWM_OFF;
                 if(info->simul_day_status == true)
                 {
@@ -95,6 +112,9 @@ void pwm_auto_manager_handler(pwm_auto_info_t *info)
             }
             break;
         default:
+            #ifdef DEBUG_MODULE
+                printf("actual_state %d \n", (int)actual_state);
+            #endif
             break;
     }
 }
