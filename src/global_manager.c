@@ -3,6 +3,7 @@
 #include <stdio.h>
 #include <assert.h>
 #include <string.h>
+#include <stdbool.h>
 
 #include "freertos/FreeRTOS.h"
 #include "freertos/task.h"
@@ -412,14 +413,13 @@ static void nv_save_auto_percent_power(uint8_t percent_power)
 }
 //------------------------------------------------------------------------------
 // TO DO: Falta agregar la dinamica de funcionamiento del rele vege
-// TO DO: Falta agregar una tarea que lleve el conteo de la hora y se lo actualice a la 
-// global manager task.
 static void global_manager_task(void* arg)
 {
     global_event_t global_ev;
     nv_info_t global_info;
     pwm_auto_info_t pwm_auto_info;
     uint8_t triac_index;
+    bool pwm_auto_status = false;
 
     global_info.pwm_manual_percent_power = 10;
 
@@ -479,16 +479,14 @@ static void global_manager_task(void* arg)
                         case MANUAL_ON:
                             led_manager_pwm_manual_on();
                             pwm_manager_turn_on_pwm(global_info.pwm_manual_percent_power);
-                            pwm_auto_end();
                             break;
                         case MANUAL_OFF:
                             led_manager_pwm_manual_off();
                             pwm_manager_turn_off_pwm();
-                            pwm_auto_end();
                             break;
                         case AUTOMATIC:
-                            pwm_auto_start();
                             led_manager_pwm_auto();
+                            pwm_auto_start();
                             break;
                         default:
                             break;
@@ -502,7 +500,6 @@ static void global_manager_task(void* arg)
                     global_info.pwm_mode = MANUAL_ON;
                     led_manager_pwm_manual_on();
                     pwm_manager_turn_on_pwm(global_info.pwm_manual_percent_power);
-                    pwm_auto_end();
                     break;
                 case PWM_OFF:
                     if(global_info.pwm_mode != MANUAL_OFF)
@@ -512,7 +509,6 @@ static void global_manager_task(void* arg)
                     global_info.pwm_mode = MANUAL_OFF;
                     led_manager_pwm_manual_off();
                     pwm_manager_turn_off_pwm();
-                    pwm_auto_end();
                     break; 
                 case PWM_AUTO:
                     if(global_info.pwm_mode != AUTOMATIC)
@@ -591,13 +587,6 @@ static void global_manager_task(void* arg)
                         nv_save_auto_percent_power(global_ev.value);
                     }
                     global_info.pwm_auto.percent_power = global_ev.value;
-                    /*if(global_info.pwm_mode == AUTOMATIC)
-                    {
-                        pwm_manager_update_pwm(global_info.pwm_auto.percent_power);
-                        #ifdef DEBUG_MODULE
-                            printf("UPDATE PWM: %d \n", global_info.pwm_auto.percent_power);
-                        #endif
-                    }*/
                     break;
                 case UPDATE_SIMUL_DAY_FUNCTION_STATUS:
                     if((global_info.pwm_auto.simul_day_status != global_ev.simul_day_function_status)\
@@ -647,7 +636,11 @@ static void global_manager_task(void* arg)
         }
         else
         {
-            pwm_auto_manager_handler(&global_info.pwm_auto);
+            if(global_info.pwm_mode == AUTOMATIC)
+                pwm_auto_status = true;
+            else
+                pwm_auto_status = false;
+            pwm_auto_manager_handler(&global_info.pwm_auto, pwm_auto_status);
             triac_auto_manager_handler(&global_info.triac_auto);
         }
     }
