@@ -18,14 +18,11 @@
 #define DEBUG_MODULE
 //------------------- TYPEDEF --------------------------------------------------
 //------------------------------------------------------------------------------
-typedef enum{
-    PWM_AUTO_STANDBY = 1,
-    PWM_AUTO_WORKING_PWM_OFF = 2,
-    PWM_AUTO_WORKING_PWM_ON = 3,
-}pwm_auto_state_t;
+
 //------------------- DECLARACION DE DATOS LOCALES -----------------------------
 //------------------------------------------------------------------------------
-static pwm_auto_state_t actual_state;
+static uint8_t pwm_on = false;
+static uint8_t pwm_off = false;
 //------------------- DECLARACION DE FUNCIONES LOCALES -------------------------
 //------------------------------------------------------------------------------
 
@@ -39,83 +36,53 @@ static pwm_auto_state_t actual_state;
 //------------------------------------------------------------------------------
 
 //------------------------------------------------------------------------------
-
-//------------------- DEFINICION DE FUNCIONES EXTERNAS -------------------------
-//------------------------------------------------------------------------------
 void pwm_auto_start(void)
 {
-    #ifdef DEBUG_MODULE
-        printf("pwm_auto_start \n");
-        printf("PWM_AUTO_WORKING_PWM_OFF \n");
-    #endif
-    actual_state = PWM_AUTO_WORKING_PWM_OFF;
+    pwm_on = false;
+    pwm_off = false;
 }
+//------------------- DEFINICION DE FUNCIONES EXTERNAS -------------------------
 //------------------------------------------------------------------------------
-void pwm_auto_end(void)
+void pwm_auto_manager_handler(pwm_auto_info_t *info, bool pwm_auto_enable)
 {
-    #ifdef DEBUG_MODULE
-        printf("pwm_auto_end \n");
-    #endif
-    #ifdef DEBUG_MODULE
-        printf("PWM_AUTO_STANDBY \n");
-    #endif
-    actual_state = PWM_AUTO_STANDBY;
-}
-//------------------------------------------------------------------------------
-// TO DO: Hay que tener en cuenta el caso en que no finalice el ciclo de forma correcta
-// por lo que se deben reconfigurar el calendario automatico para el dia siguiente
-// y reiniciarse la maquina de estados para que pueda ser lanzada nuevamente.
-// TO DO: agregar el dia del proximo ciclo 
-void pwm_auto_manager_handler(pwm_auto_info_t *info)
-{
-    switch(actual_state)
+    if(pwm_auto_enable == true)
     {
-        case PWM_AUTO_STANDBY:
-            return;
-            break;
-        case PWM_AUTO_WORKING_PWM_OFF:
-            if((info->current_time.tm_hour > info->turn_on_time.tm_hour) \
-                || ((info->current_time.tm_hour == info->turn_on_time.tm_hour) \
-                && (info->current_time.tm_min > info->turn_on_time.tm_min)))
-            {
-                #ifdef DEBUG_MODULE
-                    printf("PWM_AUTO_WORKING_PWM_ON \n");
-                #endif
-                actual_state = PWM_AUTO_WORKING_PWM_ON;
-                if(info->simul_day_status == true)
-                {
-                    pwm_manager_turn_on_pwm_simul_day_on(info->percent_power);
-                }
-                else
-                {
-                    pwm_manager_turn_on_pwm(info->percent_power);
-                }
-            }
-            break;
-        case PWM_AUTO_WORKING_PWM_ON:
-            if((info->current_time.tm_hour > info->turn_off_time.tm_hour) \
-                || ((info->current_time.tm_hour == info->turn_off_time.tm_hour) \
-                && (info->current_time.tm_min > info->turn_off_time.tm_min)))
-            {
-                #ifdef DEBUG_MODULE
-                    printf("PWM_AUTO_WORKING_PWM_OFF \n");
-                #endif
-                actual_state = PWM_AUTO_WORKING_PWM_OFF;
-                if(info->simul_day_status == true)
-                {
-                    pwm_manager_turn_off_pwm_simul_day_on();
-                }
-                else
-                {
-                    pwm_manager_turn_off_pwm();
-                }
-            }
-            break;
-        default:
+        if((info->current_time.tm_hour == info->turn_on_time.tm_hour) \
+        && (info->current_time.tm_min == info->turn_on_time.tm_min)\
+        && (info->current_time.tm_sec == 0) && (pwm_on == false))
+        {
             #ifdef DEBUG_MODULE
-                printf("actual_state %d \n", (int)actual_state);
+                printf("PWM_AUTO_WORKING_PWM_ON \n");
             #endif
-            break;
+            pwm_on = true;
+            pwm_off = false;
+            if(info->simul_day_status == true)
+            {
+                pwm_manager_turn_on_pwm_simul_day_on(info->percent_power);
+            }
+            else
+            {
+                pwm_manager_turn_on_pwm(info->percent_power);
+            }
+        }
+        else if((info->current_time.tm_hour == info->turn_off_time.tm_hour) \
+            && (info->current_time.tm_min == info->turn_off_time.tm_min)\
+            && (info->current_time.tm_sec == 0) && (pwm_off == false))
+        {
+            #ifdef DEBUG_MODULE
+                printf("PWM_AUTO_WORKING_PWM_OFF \n");
+            #endif
+            pwm_on = false;
+            pwm_off = true;
+            if(info->simul_day_status == true)
+            {
+                pwm_manager_turn_off_pwm_simul_day_on();
+            }
+            else
+            {
+                pwm_manager_turn_off_pwm();
+            }
+        }
     }
 }
 
