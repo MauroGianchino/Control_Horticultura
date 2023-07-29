@@ -420,6 +420,7 @@ static void global_manager_task(void* arg)
     pwm_auto_info_t pwm_auto_info;
     uint8_t triac_index;
     bool pwm_auto_status = false;
+    bool triac_auto_status = false;
 
     global_info.pwm_manual_percent_power = 10;
 
@@ -435,17 +436,6 @@ static void global_manager_task(void* arg)
     nv_init_triac_calendar(2);
     nv_init_triac_calendar(3);
     nv_init_triac_calendar(4);
-
-    calendar_auto_mode_t calendar;
-
-    calendar.turn_on_time.tm_hour = 13;
-    calendar.turn_on_time.tm_min = 2;
-    calendar.turn_on_time.tm_sec = 0;
-    calendar.turn_off_time.tm_hour = 13;
-    calendar.turn_off_time.tm_min = 5;
-    calendar.turn_off_time.tm_sec = 0;
-
-    global_manager_update_auto_pwm_calendar(calendar, true);
     
     vTaskDelay(1000 / portTICK_PERIOD_MS);
     ////////////////////////////////////////////////////////
@@ -527,7 +517,6 @@ static void global_manager_task(void* arg)
                     }
                     global_info.triac_mode = MANUAL_ON;
                     led_manager_triac_on();
-                    triac_auto_end();
                     triac_manager_turn_on_triac();
                     break;
                 case TRIAC_OFF:
@@ -538,7 +527,6 @@ static void global_manager_task(void* arg)
                     }
                     global_info.triac_mode = MANUAL_OFF;
                     led_manager_triac_off();
-                    triac_auto_end();
                     triac_manager_turn_off_triac();
                     break;
                 case TRIAC_AUTO:
@@ -610,8 +598,8 @@ static void global_manager_task(void* arg)
                     global_info.pwm_auto.turn_on_time = global_ev.pwm_turn_on_time; 
                     global_info.pwm_auto.turn_off_time = global_ev.pwm_turn_off_time;
                     #ifdef DEBUG_MODULE
-                        printf("PWM ON calendar: %s", asctime(&global_info.pwm_auto.turn_on_time));
-                        printf("PWM OFF calendar: %s", asctime(&global_info.pwm_auto.turn_off_time));
+                        //printf("PWM ON calendar: %s", asctime(&global_info.pwm_auto.turn_on_time));
+                        //printf("PWM OFF calendar: %s", asctime(&global_info.pwm_auto.turn_off_time));
                     #endif 
                     break;
                 case UPDATE_TRIAC_CALENDAR:
@@ -640,8 +628,13 @@ static void global_manager_task(void* arg)
                 pwm_auto_status = true;
             else
                 pwm_auto_status = false;
+            
+            if(global_info.triac_mode == AUTOMATIC)
+                triac_auto_status = true;
+            else
+                triac_auto_status = false;
             pwm_auto_manager_handler(&global_info.pwm_auto, pwm_auto_status);
-            triac_auto_manager_handler(&global_info.triac_auto);
+            triac_auto_manager_handler(&global_info.triac_auto, triac_auto_status);
         }
     }
 }
@@ -651,7 +644,7 @@ void global_manager_init(void)
 {
     global_manager_queue = xQueueCreate(QUEUE_ELEMENT_QUANTITY, sizeof(global_event_t));
     
-    xTaskCreate(global_manager_task, "global_manager_task", configMINIMAL_STACK_SIZE*8, 
+    xTaskCreate(global_manager_task, "global_manager_task", configMINIMAL_STACK_SIZE*15, 
         NULL, configMAX_PRIORITIES-1, NULL);
 }
 //------------------------------------------------------------------------------

@@ -16,20 +16,17 @@
 //--------------------MACROS Y DEFINES------------------------------------------
 //------------------------------------------------------------------------------
 #define MAX_TRIAC_CALENDARS 4
+#define DEBUG_MODULE
 //------------------- TYPEDEF --------------------------------------------------
 //------------------------------------------------------------------------------
-typedef enum{
-    TRIAC_AUTO_STANDBY = 1,
-    TRIAC_AUTO_WORKING_OFF = 2,
-    TRIAC_AUTO_WORKING_ON = 3,
-}triac_auto_state_t;
+
 //------------------- DECLARACION DE DATOS LOCALES -----------------------------
 //------------------------------------------------------------------------------
-static triac_auto_state_t actual_state[MAX_TRIAC_CALENDARS];
+static uint8_t triac_on[MAX_TRIAC_CALENDARS] = {0, 0, 0, 0};
+static uint8_t triac_off[MAX_TRIAC_CALENDARS] = {0, 0, 0, 0};
 //------------------- DECLARACION DE FUNCIONES LOCALES -------------------------
 //------------------------------------------------------------------------------
 static void triac_auto_manager_handler_per_triac(triac_auto_info_t *info, uint8_t triac_index);
-
 //------------------- DEFINICION DE DATOS LOCALES ------------------------------
 //------------------------------------------------------------------------------
 
@@ -38,52 +35,38 @@ static void triac_auto_manager_handler_per_triac(triac_auto_info_t *info, uint8_
 
 //------------------- DEFINICION DE FUNCIONES LOCALES --------------------------
 //------------------------------------------------------------------------------
-
-//------------------------------------------------------------------------------
-// TO DO: Hay que tener en cuenta el caso en que no finalice el ciclo de forma correcta
-// por lo que se deben reconfigurar el calendario automatico para el dia siguiente
-// y reiniciarse la maquina de estados para que pueda ser lanzada nuevamente.
 static void triac_auto_manager_handler_per_triac(triac_auto_info_t *info, uint8_t triac_index)
 {
-    switch(actual_state[triac_index])
+
+    if(info->triac_auto[triac_index].enable == true)
     {
-        case TRIAC_AUTO_STANDBY:
-            return;
-            break;
-        case TRIAC_AUTO_WORKING_OFF:
-            if(info->triac_auto[triac_index].enable == true)
-            {
-                if((info->current_time.tm_hour > info->triac_auto[triac_index].turn_on_time.tm_hour) \
-                    || ((info->current_time.tm_hour == info->triac_auto[triac_index].turn_on_time.tm_hour) \
-                    && (info->current_time.tm_min > info->triac_auto[triac_index].turn_on_time.tm_min)))
-                {
-                    actual_state[triac_index] = TRIAC_AUTO_WORKING_ON;
-                    triac_manager_turn_on_triac();
-                }
-            }
-            else
-            {
-                return;
-            }
-            break;
-        case TRIAC_AUTO_WORKING_ON:
-            if(info->triac_auto[triac_index].enable == true)
-            {
-                if((info->current_time.tm_hour > info->triac_auto[triac_index].turn_off_time.tm_hour) \
-                    || ((info->current_time.tm_hour == info->triac_auto[triac_index].turn_off_time.tm_hour) \
-                    && (info->current_time.tm_min > info->triac_auto[triac_index].turn_off_time.tm_min)))
-                {
-                    actual_state[triac_index] = TRIAC_AUTO_WORKING_OFF;
-                    triac_manager_turn_off_triac();
-                }
-            }
-            else
-            {
-                return;
-            }
-            break;
-        default:
-            break;
+        if((info->current_time.tm_hour == info->triac_auto[triac_index].turn_on_time.tm_hour) \
+            && (info->current_time.tm_min == info->triac_auto[triac_index].turn_on_time.tm_min) \
+            && (info->current_time.tm_sec == 0) && (triac_on[triac_index] == false))
+        {
+            #ifdef DEBUG_MODULE
+                printf("TRIAC_AUTO_WORKING_TRIAC_ON, TRIAC INDEX: %i \n", (int)triac_index);
+            #endif
+            triac_on[triac_index] = true;
+            triac_off[triac_index] = false;
+            triac_manager_turn_on_triac();
+        }
+
+        if((info->current_time.tm_hour == info->triac_auto[triac_index].turn_off_time.tm_hour) \
+            && (info->current_time.tm_min == info->triac_auto[triac_index].turn_off_time.tm_min) \
+            && (info->current_time.tm_sec == 0) && (triac_off[triac_index] == false))
+        {
+            #ifdef DEBUG_MODULE
+                printf("TRIAC_AUTO_WORKING_TRIAC_OFF, TRIAC INDEX: %i \n", (int)triac_index);
+            #endif
+            triac_on[triac_index] = false;
+            triac_off[triac_index] = true;
+            triac_manager_turn_off_triac();
+        }
+    }
+    else
+    {
+        return;
     }
 }
 //------------------- DEFINICION DE FUNCIONES EXTERNAS -------------------------
@@ -94,27 +77,21 @@ void triac_auto_start(void)
 
     for(triac_index = 0; triac_index < MAX_TRIAC_CALENDARS; triac_index++)
     {
-        actual_state[triac_index] = TRIAC_AUTO_WORKING_OFF;
+        triac_on[triac_index] = false;
+        triac_off[triac_index] = false;
     }
 }
 //------------------------------------------------------------------------------
-void triac_auto_end(void)
+void triac_auto_manager_handler(triac_auto_info_t *info, bool triac_auto_enable)
 {
     uint8_t triac_index = 0;
 
-    for(triac_index = 0; triac_index < MAX_TRIAC_CALENDARS; triac_index++)
+    if(triac_auto_enable == true)
     {
-        actual_state[triac_index] = TRIAC_AUTO_STANDBY;
-    }
-}
-//------------------------------------------------------------------------------
-void triac_auto_manager_handler(triac_auto_info_t *info)
-{
-    uint8_t triac_index = 0;
-
-    for(triac_index = 0; triac_index < MAX_TRIAC_CALENDARS; triac_index++)
-    {
-        triac_auto_manager_handler_per_triac(info, triac_index);
+        for(triac_index = 0; triac_index < MAX_TRIAC_CALENDARS; triac_index++)
+        {
+            triac_auto_manager_handler_per_triac(info, triac_index);
+        }
     }
 }
 //---------------------------- END OF FILE -------------------------------------
