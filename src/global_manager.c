@@ -51,6 +51,7 @@ typedef enum{
     GET_CONFIG_NET_INFO = 18,
     GET_CONFIG_PWM_INFO = 19,
     GET_CONFIG_TRIAC_INFO = 20,
+    GET_CONFIG_RELE_VEGE_INFO = 21,
 }global_event_cmds_t;
 
 typedef struct{
@@ -74,6 +75,7 @@ typedef struct{
     pwm_auto_info_t pwm_auto;
     output_mode_t triac_mode;
     triac_auto_info_t triac_auto;
+    rele_output_status_t rele_vege_status;
 }response_event_t;
 //------------------- DECLARACION DE DATOS LOCALES -----------------------------
 //------------------------------------------------------------------------------
@@ -105,6 +107,8 @@ static void get_pwm_info(void);
 static uint8_t wait_pwm_info_response(output_mode_t *pwm_mode, pwm_auto_info_t *pwm_auto); 
 static void get_triac_info(void);
 static uint8_t wait_triac_info_response(output_mode_t *triac_mode, triac_auto_info_t *triac_auto); 
+static void get_rele_vege_info(void);
+static uint8_t wait_rele_vege_info_response(rele_output_status_t *rele_vege_status); 
 //------------------- DEFINICION DE DATOS LOCALES ------------------------------
 //------------------------------------------------------------------------------
 
@@ -513,6 +517,10 @@ static void global_manager_task(void* arg)
                 case GET_CONFIG_TRIAC_INFO:
                     resp_ev.triac_mode = global_info.triac_mode;
                     resp_ev.triac_auto = global_info.triac_auto; 
+                    xQueueSend(response_queue, &resp_ev, 10);
+                    break;
+                case GET_CONFIG_RELE_VEGE_INFO:
+                    resp_ev.rele_vege_status = global_info.rele_vege_status;
                     xQueueSend(response_queue, &resp_ev, 10);
                     break;
                 case UPDATE_CURRENT_TIME:
@@ -1016,6 +1024,40 @@ uint8_t global_manager_get_triac_info(output_mode_t *triac_mode, triac_auto_info
 {
     get_triac_info();
     if(wait_triac_info_response(triac_mode, triac_auto))
+    {
+        return(1);
+    }
+    return(0);
+}
+//------------------------------------------------------------------------------
+static void get_rele_vege_info(void)
+{
+    global_event_t ev;
+    ev.cmd = GET_CONFIG_RELE_VEGE_INFO;
+    xQueueSend(global_manager_queue, &ev, 10);
+}
+
+static uint8_t wait_rele_vege_info_response(rele_output_status_t *rele_vege_status) 
+{
+    response_event_t resp_ev;
+    if(xQueueReceive(response_queue, &resp_ev, TIMEOUT_MS / portTICK_PERIOD_MS)) 
+    {
+        *rele_vege_status = resp_ev.rele_vege_status;
+        return 1;
+    } 
+    else 
+    {
+        #ifdef DEBUG_MODULE
+            printf("Error al recibir la respuesta de pwm\n");
+        #endif
+        return 0;
+    }
+}
+
+uint8_t global_manager_get_rele_vege_info(rele_output_status_t *rele_vege_status)
+{
+    get_rele_vege_info();
+    if(wait_rele_vege_info_response(rele_vege_status))
     {
         return(1);
     }
