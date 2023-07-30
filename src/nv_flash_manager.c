@@ -42,8 +42,10 @@ static void first_time_flash(void)
     time_info_default.tm_min = 30;
     time_info_default.tm_sec = 30;
 
-    //init_parameter_in_flash_str(DEVICE_ALIAS_KEY, "GreenGrowTech");
-    //init_parameter_in_flash_str(WIFI_AP_SSID_KEY, WIFI_AP_SSID_DEFAULT);
+    init_parameter_in_flash_str(WIFI_AP_SSID_KEY, WIFI_AP_SSID_DEFAULT);
+    init_parameter_in_flash_str(WIFI_AP_PASSWORD_KEY, WIFI_AP_PASSWORD_DEFAULT);
+    init_date_parameter_in_flash(CURRENT_TIME_KEY, time_info_default);
+
     init_date_parameter_in_flash(PWM_DATE_OFF_KEY, time_info_default);// work around
     init_date_parameter_in_flash(PWM_DATE_ON_KEY, time_info_default);
     init_date_parameter_in_flash(TRIAC1_DATE_ON_KEY, time_info_default);
@@ -87,7 +89,7 @@ void init_date_parameter_in_flash(char *key, struct tm time_info_default)
 {
     char buffer[50];
 
-    memset(buffer, 0, sizeof(buffer));
+    memset(buffer, '\0', sizeof(buffer));
 
     strftime(buffer, sizeof(buffer), "%Y-%m-%d %H:%M:%S", &time_info_default);
     init_parameter_in_flash_str(key, buffer);
@@ -98,7 +100,7 @@ uint8_t read_date_from_flash(char *key, struct tm *time_info)
 {
     char buffer[50];
 
-    memset(buffer, 0, sizeof(buffer));
+    memset(buffer, '\0', sizeof(buffer));
 
     read_parameter_from_flash_str(key);
     if(wait_for_flash_response_str(buffer))
@@ -116,7 +118,7 @@ void write_date_on_flash(char *key, struct tm time_info)
 {
     char buffer[50];
 
-    memset(buffer, 0, sizeof(buffer));
+    memset(buffer, '\0', sizeof(buffer));
 
     strftime(buffer, sizeof(buffer), "%Y-%m-%d %H:%M:%S", &time_info);
     write_parameter_on_flash_str(key, buffer);  

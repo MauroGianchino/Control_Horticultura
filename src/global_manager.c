@@ -28,22 +28,23 @@
 //------------------------------------------------------------------------------
 typedef enum{
     CMD_UNDEFINED = 0,
-    SET_DEVICE_ALIAS = 1,
-    SET_PWM_MODE = 2,
-    PWM_MANUAL_ON = 3,
-    PWM_OFF = 4,
-    PWM_AUTO = 5,
-    TRIAC_MANUAL_ON = 6,
-    TRIAC_OFF = 7,
-    TRIAC_AUTO = 8,
-    RELE_VEGE_ON = 9,
-    RELE_VEGE_OFF = 10,
-    SET_MANUAL_PWM_POWER = 11,
-    SET_AUTO_PWM_POWER = 12,
-    UPDATE_CURRENT_TIME = 13,
-    UPDATE_SIMUL_DAY_FUNCTION_STATUS = 14,
-    UPDATE_PWM_CALENDAR = 15,
-    UPDATE_TRIAC_CALENDAR = 16,
+    SET_PWM_MODE = 1,
+    PWM_MANUAL_ON = 2,
+    PWM_OFF = 3,
+    PWM_AUTO = 4,
+    TRIAC_MANUAL_ON = 5,
+    TRIAC_OFF = 6,
+    TRIAC_AUTO = 7,
+    RELE_VEGE_ON = 8,
+    RELE_VEGE_OFF = 9,
+    SET_MANUAL_PWM_POWER = 10,
+    SET_AUTO_PWM_POWER = 11,
+    UPDATE_CURRENT_TIME = 12,
+    UPDATE_SIMUL_DAY_FUNCTION_STATUS = 13,
+    UPDATE_PWM_CALENDAR = 14,
+    UPDATE_TRIAC_CALENDAR = 15,
+    SET_SSID = 16,
+    SET_PASSWORD = 17,
 }global_event_cmds_t;
 
 typedef struct{
@@ -65,8 +66,6 @@ static QueueHandle_t global_manager_queue;
 //------------------- DECLARACION DE FUNCIONES LOCALES -------------------------
 //------------------------------------------------------------------------------
 static void global_manager_task(void* arg);
-static void nv_init_alias(void);
-static void nv_save_alias(char *alias);
 static void nv_init_triac_mode(void);
 static void nv_save_triac_mode(output_mode_t triac_mode);
 static void nv_init_pwm_mode(void);
@@ -80,6 +79,10 @@ static void nv_init_pwm_calendar(void);
 static void nv_save_pwm_calendar(pwm_auto_info_t pwm_calendar);
 static void nv_init_triac_calendar(uint8_t triac_num);
 static void nv_save_triac_calendar(triac_config_info_t triac_info, uint8_t triac_num);
+static void nv_init_ssid_ap_wifi(void);
+static void nv_save_ssid_ap_wifi(char *ssid);
+static void nv_init_password_ap_wifi(void);
+static void nv_save_password_ap_wifi(char *password);
 //------------------- DEFINICION DE DATOS LOCALES ------------------------------
 //------------------------------------------------------------------------------
 
@@ -88,29 +91,54 @@ static void nv_save_triac_calendar(triac_config_info_t triac_info, uint8_t triac
 
 //------------------- DEFINICION DE FUNCIONES LOCALES --------------------------
 //------------------------------------------------------------------------------
-static void nv_init_alias(void)
+static void nv_init_ssid_ap_wifi(void)
 {
-    char alias[DEVICE_ALIAS_MAX_LENGTH];
-    memset(alias, '\0', sizeof(alias));
+    char ssid[DEVICE_SSID_MAX_LENGTH];
+    memset(ssid, '\0', sizeof(ssid));
 
-    if(read_str_from_flash(DEVICE_ALIAS_KEY, alias))
+    if(read_str_from_flash(WIFI_AP_SSID_KEY, ssid))
     {
         #ifdef DEBUG_MODULE
-            printf("ALIAS READ: %s \n", alias);
+            printf("SSID READ: %s \n", ssid);
         #endif
-        global_manager_set_device_alias(alias, true);
+        global_manager_set_wifi_ssid(ssid, true);
     }
     else
     {
         #ifdef DEBUG_MODULE
-            printf("PWM MODE READING FAILED \n");
+            printf("SSID READING FAILED \n");
         #endif
     }
 }
 //------------------------------------------------------------------------------
-static void nv_save_alias(char *alias)
+static void nv_save_ssid_ap_wifi(char *ssid)
 {
-    write_parameter_on_flash_str(DEVICE_ALIAS_KEY, alias); 
+    write_parameter_on_flash_str(WIFI_AP_SSID_KEY, ssid); 
+}
+//------------------------------------------------------------------------------
+static void nv_init_password_ap_wifi(void)
+{
+    char password[DEVICE_PASS_MAX_LENGTH];
+    memset(password, '\0', sizeof(password));
+
+    if(read_str_from_flash(WIFI_AP_PASSWORD_KEY, password))
+    {
+        #ifdef DEBUG_MODULE
+            printf("WIFI PASSWORD READ: %s \n", password);
+        #endif
+        global_manager_set_wifi_password(password, true);
+    }
+    else
+    {
+        #ifdef DEBUG_MODULE
+            printf("WIFI PASSWORD READING FAILED \n");
+        #endif
+    }
+}
+//------------------------------------------------------------------------------
+static void nv_save_password_ap_wifi(char *password)
+{
+    write_parameter_on_flash_str(WIFI_AP_PASSWORD_KEY, password); 
 }
 //------------------------------------------------------------------------------
 static void nv_init_triac_calendar(uint8_t triac_num)
@@ -425,8 +453,10 @@ static void global_manager_task(void* arg)
     global_info.pwm_manual_percent_power = 10;
 
     // INIT FROM FLASH
-    //nv_init_alias();
+    nv_init_ssid_ap_wifi();
+    nv_init_password_ap_wifi();
     nv_init_pwm_calendar();
+    nv_init_pwm_calendar(); //workaround
     nv_init_pwm_mode();
     nv_init_triac_mode();
     nv_init_simul_day_status();
@@ -454,13 +484,21 @@ static void global_manager_task(void* arg)
                     global_info.pwm_auto.current_time = global_ev.current_time;
                     global_info.triac_auto.current_time = global_ev.current_time;
                     break;
-                case SET_DEVICE_ALIAS:
-                    if((strcmp((const char*)global_info.device_alias, (const char*)global_ev.str_value) != 0) \
+                case SET_SSID:
+                    if((strcmp((const char*)global_info.wifi_ssid, (const char*)global_ev.str_value) != 0) \
                         && (global_ev.value_read_from_flash == false))
                     {
-                        nv_save_alias(global_ev.str_value);
+                        nv_save_ssid_ap_wifi(global_ev.str_value);
                     }
-                    strcpy(global_info.device_alias, global_ev.str_value);
+                    strcpy(global_info.wifi_ssid, global_ev.str_value);
+                    break;
+                case SET_PASSWORD:
+                    if((strcmp((const char*)global_info.wifi_password, (const char*)global_ev.str_value) != 0) \
+                        && (global_ev.value_read_from_flash == false))
+                    {
+                        nv_save_password_ap_wifi(global_ev.str_value);
+                    }
+                    strcpy(global_info.wifi_password, global_ev.str_value);
                     break;
                 case SET_PWM_MODE:
                     global_info.pwm_mode = global_ev.output_mode;
@@ -755,12 +793,23 @@ void global_manager_update_simul_day_function_status(simul_day_status_t status, 
     xQueueSend(global_manager_queue, &ev, 10);
 }
 //------------------------------------------------------------------------------
-uint8_t global_manager_set_device_alias(char* alias, bool read_from_flash)
+uint8_t global_manager_set_wifi_ssid(char* wifi_ssid, bool read_from_flash)
 {
     global_event_t ev;
-    ev.cmd = SET_DEVICE_ALIAS;
-  
-    strncpy(ev.str_value, alias, strlen(alias));
+    ev.cmd = SET_SSID;
+    memset(ev.str_value, '\0', sizeof(ev.str_value));
+    strncpy(ev.str_value, wifi_ssid, strlen(wifi_ssid));
+    ev.value_read_from_flash = read_from_flash;
+    xQueueSend(global_manager_queue, &ev, 10);
+    return 1;
+}
+//------------------------------------------------------------------------------
+uint8_t global_manager_set_wifi_password(char* wifi_password, bool read_from_flash)
+{
+    global_event_t ev;
+    ev.cmd = SET_PASSWORD;
+    memset(ev.str_value, '\0', sizeof(ev.str_value));
+    strncpy(ev.str_value, wifi_password, strlen(wifi_password));
     ev.value_read_from_flash = read_from_flash;
     xQueueSend(global_manager_queue, &ev, 10);
     return 1;

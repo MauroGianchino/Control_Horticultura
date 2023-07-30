@@ -360,10 +360,13 @@ void init_parameter_in_flash_str(const char *key, char *default_value)
 {
     dataflash_event_t ev;
     ev.cmd = INIT_PARAMETER_IN_FLASH_STR;
+
     memset(ev.operation_info.default_value, '\0', sizeof(ev.operation_info.default_value));
     memset(ev.operation_info.key, '\0', sizeof(ev.operation_info.key));
-    strncpy(ev.operation_info.key, key, MAX_KEY_LENGTH);
+
+    strncpy(ev.operation_info.key, key, strlen(key));
     strncpy(ev.operation_info.default_value, default_value, strlen(default_value));
+
     if(xQueueSend(dataflash_manager_queue, &ev, 10) != pdPASS) 
     {
         #ifdef DEBUG_MODULE
@@ -377,8 +380,13 @@ void write_parameter_on_flash_str(const char *key, char *value)
 {
     dataflash_event_t ev;
     ev.cmd = READ_FLASH_STR;
-    strncpy(ev.operation_info.key, key, MAX_KEY_LENGTH);
-    strncpy(ev.operation_info.value, value, MAX_VALUE_LENGTH);
+
+    memset(ev.operation_info.default_value, '\0', sizeof(ev.operation_info.default_value));
+    memset(ev.operation_info.key, '\0', sizeof(ev.operation_info.key));
+
+    strncpy(ev.operation_info.key, key, strlen(key));
+    strncpy(ev.operation_info.value, value, strlen(value));
+
     if(xQueueSend(dataflash_manager_queue, &ev, 0) != pdPASS) 
     {
         #ifdef DEBUG_MODULE
@@ -392,7 +400,8 @@ void read_parameter_from_flash_str(const char *key)
 {
     dataflash_event_t ev;
     ev.cmd = READ_FLASH_STR;
-    strncpy(ev.operation_info.key, key, MAX_KEY_LENGTH);
+    memset(ev.operation_info.key, '\0', sizeof(ev.operation_info.key));
+    strncpy(ev.operation_info.key, key, strlen(key));
     if(xQueueSend(dataflash_manager_queue, &ev, 10) != pdPASS) 
     {
         #ifdef DEBUG_MODULE
