@@ -231,7 +231,7 @@ void button_event_manager_task(void * pvParameters)
     
     output_mode_t pwm_status = MANUAL_OFF;
     output_mode_t triac_status = MANUAL_OFF;
-    rele_output_status_t rele_vege_status = RELE_OFF;
+    rele_output_status_t rele_vege_status = RELE_VEGE_DISABLE;
 #ifdef DIGITAL_POTE
     uint8_t pwm_percent_power = 0;
 #endif
@@ -292,15 +292,15 @@ void button_event_manager_task(void * pvParameters)
                     triac_status = MANUAL_OFF;
                     break;
                 case VEGE_BUTTON_PUSHED:
-                    if(rele_vege_status == RELE_OFF)
+                    if(rele_vege_status == RELE_VEGE_DISABLE)
                     {
                         global_manager_set_rele_vege_status_off(false);
-                        rele_vege_status = RELE_ON;
+                        rele_vege_status = RELE_VEGE_ENABLE;
                     }
-                    else if(rele_vege_status == RELE_ON)
+                    else if(rele_vege_status == RELE_VEGE_ENABLE)
                     {
                         global_manager_set_rele_vege_status_on(false);
-                        rele_vege_status = RELE_OFF;
+                        rele_vege_status = RELE_VEGE_DISABLE;
                     }
                     break;
                 case SIMUL_POTE_POS_BUTTON_PUSHED:
