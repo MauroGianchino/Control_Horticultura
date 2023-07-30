@@ -18,6 +18,7 @@
 #include "../include/led_manager.h"
 #include "../include/pwm_manager.h"
 #include "../include/triac_manager.h"
+#include "../include/vege_manager.h"
 #include "../include/nv_flash_manager.h"
 //--------------------MACROS Y DEFINES------------------------------------------
 //------------------------------------------------------------------------------
@@ -507,10 +508,22 @@ static void global_manager_task(void* arg)
                         case MANUAL_ON:
                             led_manager_pwm_manual_on();
                             pwm_manager_turn_on_pwm(global_info.pwm_manual_percent_power);
+                            if(global_info.rele_vege_status == RELE_VEGE_ENABLE)
+                            {
+                                vege_manager_turn_on();
+                            }
+                            else
+                            {
+                                vege_manager_turn_off();
+                            }
                             break;
                         case MANUAL_OFF:
                             led_manager_pwm_manual_off();
                             pwm_manager_turn_off_pwm();
+                            if(global_info.rele_vege_status == RELE_VEGE_ENABLE)
+                            {
+                                vege_manager_turn_off();
+                            }
                             break;
                         case AUTOMATIC:
                             led_manager_pwm_auto();
@@ -528,6 +541,14 @@ static void global_manager_task(void* arg)
                     global_info.pwm_mode = MANUAL_ON;
                     led_manager_pwm_manual_on();
                     pwm_manager_turn_on_pwm(global_info.pwm_manual_percent_power);
+                    if(global_info.rele_vege_status == RELE_VEGE_ENABLE)
+                    {
+                        vege_manager_turn_on();
+                    }
+                    else
+                    {
+                        vege_manager_turn_off();
+                    }
                     break;
                 case PWM_OFF:
                     if(global_info.pwm_mode != MANUAL_OFF)
@@ -537,6 +558,10 @@ static void global_manager_task(void* arg)
                     global_info.pwm_mode = MANUAL_OFF;
                     led_manager_pwm_manual_off();
                     pwm_manager_turn_off_pwm();
+                    if(global_info.rele_vege_status == RELE_VEGE_ENABLE)
+                    {
+                        vege_manager_turn_off();
+                    }
                     break; 
                 case PWM_AUTO:
                     if(global_info.pwm_mode != AUTOMATIC)
@@ -578,22 +603,27 @@ static void global_manager_task(void* arg)
                     triac_auto_start();
                     break;
                 case RELE_VEGE_ON:
-                    if((global_info.rele_vege_status != RELE_ON) \
+                    if((global_info.rele_vege_status != RELE_VEGE_ENABLE) \
                         && (global_ev.value_read_from_flash == false))
                     {
-                        nv_save_rele_vege_status(RELE_ON);
+                        nv_save_rele_vege_status(RELE_VEGE_ENABLE);
                     }
-                    global_info.rele_vege_status = RELE_ON;
+                    global_info.rele_vege_status = RELE_VEGE_ENABLE;
                     led_manager_rele_vege_on();
+                    if(global_info.pwm_mode == MANUAL_ON)
+                    {
+                        vege_manager_turn_on();
+                    }
                     break;
                 case RELE_VEGE_OFF:
-                    if((global_info.rele_vege_status != RELE_OFF) \
+                    if((global_info.rele_vege_status != RELE_VEGE_DISABLE) \
                         && (global_ev.value_read_from_flash == false))
                     {
-                        nv_save_rele_vege_status(RELE_OFF);
+                        nv_save_rele_vege_status(RELE_VEGE_DISABLE);
                     }
-                    global_info.rele_vege_status = RELE_OFF;
+                    global_info.rele_vege_status = RELE_VEGE_DISABLE;
                     led_manager_rele_vege_off();
+                    vege_manager_turn_off();
                     break;
                 case SET_MANUAL_PWM_POWER:
                     
@@ -671,7 +701,16 @@ static void global_manager_task(void* arg)
                 triac_auto_status = true;
             else
                 triac_auto_status = false;
-            pwm_auto_manager_handler(&global_info.pwm_auto, pwm_auto_status);
+            
+            if(global_info.rele_vege_status == RELE_VEGE_ENABLE)
+            {
+                pwm_auto_manager_handler(&global_info.pwm_auto, pwm_auto_status, true);
+            }
+            else
+            {
+                pwm_auto_manager_handler(&global_info.pwm_auto, pwm_auto_status, false);
+            }
+            
             triac_auto_manager_handler(&global_info.triac_auto, triac_auto_status);
         }
     }

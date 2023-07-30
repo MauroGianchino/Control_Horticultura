@@ -14,7 +14,7 @@
 #include "../include/vege_manager.h"
 //--------------------MACROS Y DEFINES------------------------------------------
 //------------------------------------------------------------------------------
-
+#define DEBUG_MODULE
 //------------------- TYPEDEF --------------------------------------------------
 //------------------------------------------------------------------------------
 
@@ -42,13 +42,19 @@ void vege_manager_init(void)
     gpio_set_level(RELE_OUTPUT, 0);
 }
 //------------------------------------------------------------------------------
-void vege_manager_turn_on_triac(void)
+void vege_manager_turn_on(void)
 {
+    #ifdef DEBUG_MODULE
+        printf("TURN ON RELE VEGE \n");
+    #endif
     gpio_set_level(RELE_OUTPUT, 1);
 }
 //------------------------------------------------------------------------------
-void vege_manager_turn_off_triac(void)
+void vege_manager_turn_off(void)
 {
+    #ifdef DEBUG_MODULE
+        printf("TURN OFF RELE VEGE \n");
+    #endif
     gpio_set_level(RELE_OUTPUT, 0);
 }
 //---------------------------- END OF FILE -------------------------------------

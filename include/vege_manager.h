@@ -16,7 +16,7 @@
 //------------------------------------------------------------------------------
 void vege_manager_init(void);
 
-void vege_manager_turn_on_triac(void);
-void vege_manager_turn_off_triac(void);
+void vege_manager_turn_on(void);
+void vege_manager_turn_off(void);
 //------------------- FIN DEL ARCHIVO ------------------------------------------
 #endif /* VEGE_MANAGER_H__ */

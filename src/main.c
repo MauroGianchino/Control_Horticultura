@@ -10,6 +10,7 @@
 #endif
 #include "../include/nv_flash_manager.h"
 #include "../include/triac_manager.h"
+#include "../include/vege_manager.h"
 #include "../include/current_time_manager.h"
 
 void app_main() 
@@ -23,6 +24,7 @@ void app_main()
   #endif    
   pwm_manager_init();
   triac_manager_init();
+  vege_manager_init();
   current_time_manager_init();
 
   while(true) 

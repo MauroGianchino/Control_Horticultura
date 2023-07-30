@@ -22,8 +22,8 @@ typedef enum{
 }output_mode_t;
 
 typedef enum{
-    RELE_ON = 0,
-    RELE_OFF = 1,
+    RELE_VEGE_ENABLE = 0,
+    RELE_VEGE_DISABLE = 1,
 }rele_output_status_t;
 
 
