@@ -15,5 +15,6 @@
 //------------------- DECLARACION DE FUNCIONES EXTERNAS ------------------------
 //------------------------------------------------------------------------------
 void current_time_manager_init(void);
+void current_time_manager_set_current_time(struct tm current_time, bool read_from_flash);
 //------------------- FIN DEL ARCHIVO ------------------------------------------
 #endif /* CURRENT_TIME_MANAGER_H__ */

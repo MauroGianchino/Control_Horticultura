@@ -32,7 +32,7 @@
 
 #define WIFI_AP_SSID_KEY "ssid_ap_key\0"
 #define WIFI_AP_PASSWORD_KEY "pass_ap_key\0"
-#define CURRENT_TIME_KEY "current_time\0"
+#define CURRENT_TIME_KEY "actual_time"
 
 // DEFAULT VALUES
 #define WIFI_AP_SSID_DEFAULT "ssid_default" // el tamaño maximo del ssid no debe exceder los 32 caracteres

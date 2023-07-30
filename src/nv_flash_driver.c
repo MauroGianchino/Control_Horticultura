@@ -22,7 +22,7 @@
 #define MAX_KEY_LENGTH 15
 
 
-#define TIMEOUT_MS 350
+#define TIMEOUT_MS 500
 
 #define DEBUG_MODULE
 //------------------- TYPEDEF --------------------------------------------------
@@ -187,6 +187,7 @@ static void dataflash_manager_task(void* arg)
                         else 
                         {
                             #ifdef DEBUG_MODULE
+                                printf("%d",(int)ret);
                                 printf("Error al leer del NVS\n");
                             #endif
                         }
@@ -356,6 +357,14 @@ void nv_flash_driver_install_flash(void)
     xQueueSend(dataflash_manager_queue, &ev, 0);
 }
 //------------------------------------------------------------------------------
+void nv_flash_driver_erase_flash(void)
+{
+    dataflash_event_t ev;
+    ev.cmd = ERASE_FLASH;
+
+    xQueueSend(dataflash_manager_queue, &ev, 0);
+}
+//------------------------------------------------------------------------------
 void init_parameter_in_flash_str(const char *key, char *default_value) 
 {
     dataflash_event_t ev;
@@ -364,8 +373,8 @@ void init_parameter_in_flash_str(const char *key, char *default_value)
     memset(ev.operation_info.default_value, '\0', sizeof(ev.operation_info.default_value));
     memset(ev.operation_info.key, '\0', sizeof(ev.operation_info.key));
 
-    strncpy(ev.operation_info.key, key, strlen(key));
-    strncpy(ev.operation_info.default_value, default_value, strlen(default_value));
+    strcpy(ev.operation_info.key, key);
+    strcpy(ev.operation_info.default_value, default_value);
 
     if(xQueueSend(dataflash_manager_queue, &ev, 10) != pdPASS) 
     {
@@ -379,13 +388,13 @@ void init_parameter_in_flash_str(const char *key, char *default_value)
 void write_parameter_on_flash_str(const char *key, char *value) 
 {
     dataflash_event_t ev;
-    ev.cmd = READ_FLASH_STR;
+    ev.cmd = WRITE_FLASH_STR;
 
     memset(ev.operation_info.default_value, '\0', sizeof(ev.operation_info.default_value));
     memset(ev.operation_info.key, '\0', sizeof(ev.operation_info.key));
 
-    strncpy(ev.operation_info.key, key, strlen(key));
-    strncpy(ev.operation_info.value, value, strlen(value));
+    strcpy(ev.operation_info.key, key);
+    strcpy(ev.operation_info.value, value);
 
     if(xQueueSend(dataflash_manager_queue, &ev, 0) != pdPASS) 
     {
@@ -401,7 +410,7 @@ void read_parameter_from_flash_str(const char *key)
     dataflash_event_t ev;
     ev.cmd = READ_FLASH_STR;
     memset(ev.operation_info.key, '\0', sizeof(ev.operation_info.key));
-    strncpy(ev.operation_info.key, key, strlen(key));
+    strcpy(ev.operation_info.key, key);
     if(xQueueSend(dataflash_manager_queue, &ev, 10) != pdPASS) 
     {
         #ifdef DEBUG_MODULE
@@ -433,7 +442,7 @@ void init_parameter_in_flash_uint32(const char *key, uint32_t default_value)
 {
     dataflash_event_t ev;
     ev.cmd = INIT_PARAMETER_IN_FLASH_UINT32;
-    strncpy(ev.operation_info.key, key, MAX_KEY_LENGTH);
+    strcpy(ev.operation_info.key, key);
     ev.operation_info.default_value_uint32 =  default_value;
     if(xQueueSend(dataflash_manager_queue, &ev, 0) != pdPASS) 
     {
@@ -448,7 +457,7 @@ void read_parameter_from_flash_uint32(const char *key)
 {
     dataflash_event_t ev;
     ev.cmd = READ_FLASH_UINT32;
-    strncpy(ev.operation_info.key, key, MAX_KEY_LENGTH);
+    strcpy(ev.operation_info.key, key);
     if(xQueueSend(dataflash_manager_queue, &ev, 0) != pdPASS) 
     {
         #ifdef DEBUG_MODULE
@@ -479,7 +488,7 @@ void write_parameter_on_flash_uint32(const char *key, uint32_t value)
 {
     dataflash_event_t ev;
     ev.cmd = WRITE_FLASH_UINT32;
-    strncpy(ev.operation_info.key, key, MAX_KEY_LENGTH);
+    strcpy(ev.operation_info.key, key);
     ev.operation_info.value_uint32 = value;
 
     if(xQueueSend(dataflash_manager_queue, &ev, 10) != pdPASS) 

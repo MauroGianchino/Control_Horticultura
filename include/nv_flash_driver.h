@@ -17,6 +17,7 @@
 void nv_flash_driver_init(void);
 
 void nv_flash_driver_install_flash(void);
+void nv_flash_driver_erase_flash(void);
 
 void init_parameter_in_flash_str(const char *key, char *default_value);
 void read_parameter_from_flash_str(const char *key);
