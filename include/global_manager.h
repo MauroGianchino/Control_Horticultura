@@ -71,5 +71,6 @@ uint8_t global_manager_set_wifi_password(char* wifi_password, bool read_from_fla
 uint8_t global_manager_get_net_info(char *ssid, char *password);
 uint8_t global_manager_get_pwm_info(output_mode_t *pwm_mode, pwm_auto_info_t *pwm_auto);
 uint8_t global_manager_get_triac_info(output_mode_t *triac_mode, triac_auto_info_t *triac_auto);
+uint8_t global_manager_get_rele_vege_info(rele_output_status_t *rele_vege_status);
 //------------------- FIN DEL ARCHIVO ------------------------------------------
 #endif /* GLOBAL_MANAGER_H__ */
