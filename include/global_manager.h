@@ -10,7 +10,8 @@
 //------------------- MACROS Y DEFINES -----------------------------------------
 //------------------------------------------------------------------------------
 #define MAX_TRIAC_CALENDARS 4
-#define DEVICE_ALIAS_MAX_LENGTH 50
+#define DEVICE_SSID_MAX_LENGTH 50
+#define DEVICE_PASS_MAX_LENGTH 50
 //------------------- TYPEDEF --------------------------------------------------
 //------------------------------------------------------------------------------
 typedef enum{
@@ -32,7 +33,8 @@ typedef struct{
 }calendar_auto_mode_t;
 
 typedef struct{
-    char device_alias[DEVICE_ALIAS_MAX_LENGTH];
+    char wifi_ssid[DEVICE_SSID_MAX_LENGTH];
+    char wifi_password[DEVICE_PASS_MAX_LENGTH];
     output_mode_t pwm_mode;
     pwm_auto_info_t pwm_auto;
     uint8_t pwm_manual_percent_power;
@@ -61,7 +63,8 @@ void global_manager_set_pwm_power_value_auto(uint8_t power_percentage_value, boo
 void global_manager_update_current_time(struct tm current_time);
 void global_manager_update_simul_day_function_status(simul_day_status_t status, bool read_from_flash);
 void global_manager_update_auto_pwm_calendar(calendar_auto_mode_t calendar, bool read_from_flash);
-uint8_t global_manager_set_device_alias(char* alias, bool read_from_flash);
 void global_manager_update_auto_triac_calendar(triac_config_info_t triac_info, uint8_t triac_num, bool read_from_flash);
+uint8_t global_manager_set_wifi_ssid(char* wifi_ssid, bool read_from_flash);
+uint8_t global_manager_set_wifi_password(char* wifi_password, bool read_from_flash);
 //------------------- FIN DEL ARCHIVO ------------------------------------------
 #endif /* GLOBAL_MANAGER_H__ */

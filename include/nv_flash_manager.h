@@ -10,8 +10,6 @@
 //------------------------------------------------------------------------------
 // FLASH KEYs
 // Tamaño maximo de key 15 caracteres
-#define DEVICE_ALIAS_KEY "alias_key\0"
-#define WIFI_AP_SSID_KEY "ssid_ap_key\0"
 #define PWM_MODE_KEY "pwm_mode_key\0" 
 #define SIMUL_DAY_STATUS_KEY "sim_day_key\0"
 #define PWM_PERCENT_POWER_KEY "pwm_power_key\0"
@@ -32,9 +30,13 @@
 #define TRIAC4_DATE_OFF_KEY "triac4_off\0"
 #define TRIAC4_DATE_ENABLE "triac4_enable\0"
 
+#define WIFI_AP_SSID_KEY "ssid_ap_key\0"
+#define WIFI_AP_PASSWORD_KEY "pass_ap_key\0"
+#define CURRENT_TIME_KEY "current_time\0"
+
 // DEFAULT VALUES
-#define DEVICE_ALIAS_DEFAULT "GreenGrowTech"
-#define WIFI_AP_SSID_DEFAULT "GreenGrowTech" // el tamaño maximo del ssid no debe exceder los 32 caracteres
+#define WIFI_AP_SSID_DEFAULT "ssid_default" // el tamaño maximo del ssid no debe exceder los 32 caracteres
+#define WIFI_AP_PASSWORD_DEFAULT "13421342"
 #define PWM_MODE_DEFAULT 2 // MANUAL_OFF
 #define PWM_SIMUL_DAY_STATUS_DEFAULT 0 // SIMUL_DAY_OFF
 #define PWM_PERCENT_POWER_DEFAULT 50 // 50 percent
