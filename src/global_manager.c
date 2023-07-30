@@ -25,6 +25,8 @@
 #define DEBUG_MODULE 1
 
 #define QUEUE_ELEMENT_QUANTITY 200
+
+#define TIMEOUT_MS 500
 //------------------- TYPEDEF --------------------------------------------------
 //------------------------------------------------------------------------------
 typedef enum{
@@ -46,6 +48,9 @@ typedef enum{
     UPDATE_TRIAC_CALENDAR = 15,
     SET_SSID = 16,
     SET_PASSWORD = 17,
+    GET_CONFIG_NET_INFO = 18,
+    GET_CONFIG_PWM_INFO = 19,
+    GET_CONFIG_TRIAC_INFO = 20,
 }global_event_cmds_t;
 
 typedef struct{
@@ -61,9 +66,18 @@ typedef struct{
     uint8_t triac_num;
     bool value_read_from_flash;
 }global_event_t;
+
+typedef struct{
+    char ssid[40];
+    char password[40];
+    output_mode_t pwm_mode;
+    pwm_auto_info_t pwm_auto;
+    output_mode_t triac_mode;
+    triac_auto_info_t triac_auto;
+}response_event_t;
 //------------------- DECLARACION DE DATOS LOCALES -----------------------------
 //------------------------------------------------------------------------------
-static QueueHandle_t global_manager_queue;
+static QueueHandle_t global_manager_queue, response_queue;
 //------------------- DECLARACION DE FUNCIONES LOCALES -------------------------
 //------------------------------------------------------------------------------
 static void global_manager_task(void* arg);
@@ -84,6 +98,13 @@ static void nv_init_ssid_ap_wifi(void);
 static void nv_save_ssid_ap_wifi(char *ssid);
 static void nv_init_password_ap_wifi(void);
 static void nv_save_password_ap_wifi(char *password);
+
+static void get_net_info(void);
+static uint8_t wait_net_info_response(char *ssid, char *password); 
+static void get_pwm_info(void);
+static uint8_t wait_pwm_info_response(output_mode_t *pwm_mode, pwm_auto_info_t *pwm_auto); 
+static void get_triac_info(void);
+static uint8_t wait_triac_info_response(output_mode_t *triac_mode, triac_auto_info_t *triac_auto); 
 //------------------- DEFINICION DE DATOS LOCALES ------------------------------
 //------------------------------------------------------------------------------
 
@@ -450,6 +471,7 @@ static void global_manager_task(void* arg)
     uint8_t triac_index;
     bool pwm_auto_status = false;
     bool triac_auto_status = false;
+    response_event_t resp_ev;
 
     global_info.pwm_manual_percent_power = 10;
 
@@ -477,6 +499,21 @@ static void global_manager_task(void* arg)
             switch(global_ev.cmd)
             {
                 case  CMD_UNDEFINED:
+                    break;
+                case GET_CONFIG_NET_INFO:
+                    strcpy(resp_ev.ssid, global_info.wifi_ssid);
+                    strcpy(resp_ev.password, global_info.wifi_password);
+                    xQueueSend(response_queue, &resp_ev, 10);
+                    break;
+                case GET_CONFIG_PWM_INFO:
+                    resp_ev.pwm_mode = global_info.pwm_mode;
+                    resp_ev.pwm_auto = global_info.pwm_auto; 
+                    xQueueSend(response_queue, &resp_ev, 10);
+                    break;
+                case GET_CONFIG_TRIAC_INFO:
+                    resp_ev.triac_mode = global_info.triac_mode;
+                    resp_ev.triac_auto = global_info.triac_auto; 
+                    xQueueSend(response_queue, &resp_ev, 10);
                     break;
                 case UPDATE_CURRENT_TIME:
                     #ifdef DEBUG_MODULE
@@ -720,6 +757,7 @@ static void global_manager_task(void* arg)
 void global_manager_init(void)
 {
     global_manager_queue = xQueueCreate(QUEUE_ELEMENT_QUANTITY, sizeof(global_event_t));
+    response_queue = xQueueCreate(QUEUE_ELEMENT_QUANTITY, sizeof(global_event_t));
     
     xTaskCreate(global_manager_task, "global_manager_task", configMINIMAL_STACK_SIZE*15, 
         NULL, configMAX_PRIORITIES-1, NULL);
@@ -874,6 +912,114 @@ void global_manager_update_auto_triac_calendar(triac_config_info_t triac_info, u
     ev.triac_info.turn_on_time = triac_info.turn_on_time;
     ev.triac_num = triac_num;
     xQueueSend(global_manager_queue, &ev, 10);
+}
+//------------------------------------------------------------------------------
+static void get_net_info(void)
+{
+    global_event_t ev;
+    ev.cmd = GET_CONFIG_NET_INFO;
+    xQueueSend(global_manager_queue, &ev, 10);
+}
+
+static uint8_t wait_net_info_response(char *ssid, char *password) 
+{
+    response_event_t resp_ev;
+    if(xQueueReceive(response_queue, &resp_ev, TIMEOUT_MS / portTICK_PERIOD_MS)) 
+    {
+        strcpy(ssid, resp_ev.ssid);
+        strcpy(password, resp_ev.password);
+        
+        return 1;
+    } 
+    else 
+    {
+        #ifdef DEBUG_MODULE
+            printf("Error al recibir la respuesta de net\n");
+        #endif
+        return 0;
+    }
+}
+
+uint8_t global_manager_get_net_info(char *ssid, char *password)
+{
+    get_net_info();
+    if(wait_net_info_response(ssid, password))
+    {
+        return(1);
+    }
+    return(0);
+}
+//------------------------------------------------------------------------------
+static void get_pwm_info(void)
+{
+    global_event_t ev;
+    ev.cmd = GET_CONFIG_PWM_INFO;
+    xQueueSend(global_manager_queue, &ev, 10);
+}
+
+static uint8_t wait_pwm_info_response(output_mode_t *pwm_mode, pwm_auto_info_t *pwm_auto) 
+{
+    response_event_t resp_ev;
+    if(xQueueReceive(response_queue, &resp_ev, TIMEOUT_MS / portTICK_PERIOD_MS)) 
+    {
+        *pwm_auto = resp_ev.pwm_auto;
+        *pwm_mode = resp_ev.pwm_mode;
+        
+        return 1;
+    } 
+    else 
+    {
+        #ifdef DEBUG_MODULE
+            printf("Error al recibir la respuesta de pwm\n");
+        #endif
+        return 0;
+    }
+}
+
+uint8_t global_manager_get_pwm_info(output_mode_t *pwm_mode, pwm_auto_info_t *pwm_auto)
+{
+    get_pwm_info();
+    if(wait_pwm_info_response(pwm_mode, pwm_auto))
+    {
+        return(1);
+    }
+    return(0);
+}
+//------------------------------------------------------------------------------
+static void get_triac_info(void)
+{
+    global_event_t ev;
+    ev.cmd = GET_CONFIG_PWM_INFO;
+    xQueueSend(global_manager_queue, &ev, 10);
+}
+
+static uint8_t wait_triac_info_response(output_mode_t *triac_mode, triac_auto_info_t *triac_auto) 
+{
+    response_event_t resp_ev;
+    if(xQueueReceive(response_queue, &resp_ev, TIMEOUT_MS / portTICK_PERIOD_MS)) 
+    {
+        *triac_mode = resp_ev.triac_mode;
+        *triac_auto = resp_ev.triac_auto;
+        
+        return 1;
+    } 
+    else 
+    {
+        #ifdef DEBUG_MODULE
+            printf("Error al recibir la respuesta de pwm\n");
+        #endif
+        return 0;
+    }
+}
+
+uint8_t global_manager_get_triac_info(output_mode_t *triac_mode, triac_auto_info_t *triac_auto)
+{
+    get_triac_info();
+    if(wait_triac_info_response(triac_mode, triac_auto))
+    {
+        return(1);
+    }
+    return(0);
 }
 //---------------------------- END OF FILE -------------------------------------
 //------------------------------------------------------------------------------
