@@ -51,6 +51,13 @@
 
 
     <script>
+        function formatNumber(number) {
+            if (number >= 0 && number < 10) {
+                return '0' + number;
+            } else {
+                return number;
+            }
+        }
         window.addEventListener('load', () => {
             fetch("/data_hora").then(res => {
                 if (!res.ok)
@@ -58,8 +65,8 @@
                 return res.json()
             }).then(data => {
                 console.log(data)
-                document.getElementById("Hora_h").textContent = data.Hora_h;
-                document.getElementById("Hora_m").textContent = data.Hora_m;
+                document.getElementById("Hora_h").textContent = formatNumber(data.Hora_h);
+                document.getElementById("Hora_m").textContent = formatNumber(data.Hora_m);
             })
             fetch("/version").then(res => {
                 if (!res.ok)
@@ -79,10 +86,10 @@
                 console.log(data)
                 document.getElementById("PWM_Intensidad").textContent = data.intensidad;
                 document.getElementById("PWM_modo").textContent = data.Modo;
-                document.getElementById("PWM_horarioih").textContent = data.ih1h;
-                document.getElementById("PWM_horarioim").textContent = data.ih1m;
-                document.getElementById("PWM_horariofh").textContent = data.fh1h;
-                document.getElementById("PWM_horariofm").textContent = data.fh1m;
+                document.getElementById("PWM_horarioih").textContent = formatNumber(data.ih1h);
+                document.getElementById("PWM_horarioim").textContent = formatNumber(data.ih1m);
+                document.getElementById("PWM_horariofh").textContent = formatNumber(data.fh1h);
+                document.getElementById("PWM_horariofm").textContent = formatNumber(data.fh1m);
                 document.getElementById("PWM_DIA").textContent = data.DIA;
             })
             fetch("/data_triac").then(res => {
@@ -92,22 +99,22 @@
             }).then(data => {
                 console.log(data)
                 document.getElementById("TRIAC_modo").textContent = data.Modo;
-                document.getElementById("TRIAC_horarioi1_h").textContent = data.ih1h;
-                document.getElementById("TRIAC_horarioi1_m").textContent = data.ih1m;
-                document.getElementById("TRIAC_horariof1_h").textContent = data.fh1h;
-                document.getElementById("TRIAC_horariof1_m").textContent = data.fh1m;
-                document.getElementById("TRIAC_horarioi2_h").textContent = data.ih2h;
-                document.getElementById("TRIAC_horarioi2_m").textContent = data.ih2m;
-                document.getElementById("TRIAC_horariof2_h").textContent = data.fh2h;
-                document.getElementById("TRIAC_horariof2_m").textContent = data.fh2m;
-                document.getElementById("TRIAC_horarioi3_h").textContent = data.ih3h;
-                document.getElementById("TRIAC_horarioi3_m").textContent = data.ih3m;
-                document.getElementById("TRIAC_horariof3_h").textContent = data.fh3h;
-                document.getElementById("TRIAC_horariof3_m").textContent = data.fh3m;
-                document.getElementById("TRIAC_horarioi4_h").textContent = data.ih4h;
-                document.getElementById("TRIAC_horarioi4_m").textContent = data.ih4m;
-                document.getElementById("TRIAC_horariof4_h").textContent = data.fh4h;
-                document.getElementById("TRIAC_horariof4_m").textContent = data.fh4m;
+                document.getElementById("TRIAC_horarioi1_h").textContent = formatNumber(data.ih1h);
+                document.getElementById("TRIAC_horarioi1_m").textContent = formatNumber(data.ih1m);
+                document.getElementById("TRIAC_horariof1_h").textContent = formatNumber(data.fh1h);
+                document.getElementById("TRIAC_horariof1_m").textContent = formatNumber(data.fh1m);
+                document.getElementById("TRIAC_horarioi2_h").textContent = formatNumber(data.ih2h);
+                document.getElementById("TRIAC_horarioi2_m").textContent = formatNumber(data.ih2m);
+                document.getElementById("TRIAC_horariof2_h").textContent = formatNumber(data.fh2h);
+                document.getElementById("TRIAC_horariof2_m").textContent = formatNumber(data.fh2m);
+                document.getElementById("TRIAC_horarioi3_h").textContent = formatNumber(data.ih3h);
+                document.getElementById("TRIAC_horarioi3_m").textContent = formatNumber(data.ih3m);
+                document.getElementById("TRIAC_horariof3_h").textContent = formatNumber(data.fh3h);
+                document.getElementById("TRIAC_horariof3_m").textContent = formatNumber(data.fh3m);
+                document.getElementById("TRIAC_horarioi4_h").textContent = formatNumber(data.ih4h);
+                document.getElementById("TRIAC_horarioi4_m").textContent = formatNumber(data.ih4m);
+                document.getElementById("TRIAC_horariof4_h").textContent = formatNumber(data.fh4h);
+                document.getElementById("TRIAC_horariof4_m").textContent = formatNumber(data.fh4m);
             })
             fetch("/data_red").then(res => {
                 if (!res.ok)
