@@ -47,11 +47,11 @@
         Configuracion
     </button>
     <br><br>
-    <span><strong>Versión:</strong> </span><span id="Version_hw"></span>.</span><span id="Version_bgs"></span>
+    <span><strong>Versión:</strong> </span><span id="Version"></span>
 
 
     <script>
-        function formatNumber(number) {
+        function formatNumber(number) { //funcion para agregar un cero si es que el numero es menor a 10 para mostrarlo
             if (number >= 0 && number < 10) {
                 return '0' + number;
             } else {
@@ -74,8 +74,7 @@
                 return res.json()
             }).then(data => {
                 console.log(data)
-                document.getElementById("Version_hw").textContent = data.Hardware;
-                document.getElementById("Version_bgs").textContent = data.Bugs;
+                document.getElementById("Version").textContent = data.Version;
             })
 
             fetch("/data_pwm").then(res => {

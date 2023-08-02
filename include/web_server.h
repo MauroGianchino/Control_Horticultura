@@ -17,6 +17,7 @@ typedef enum
 {
     MANUAL,
     AUTOMATICO,
+    APAGADO,
     SI,
     NO,
     VEGE,
@@ -68,12 +69,6 @@ typedef struct vegeflor
     modo_t modo;
 } vegeflor_t;
 
-typedef struct version
-{
-    int hw;
-    int bgs;
-} version_t;
-
 typedef struct hora
 {
     horario_t hr;
@@ -99,14 +94,14 @@ void connect_handler(void *, esp_event_base_t, int32_t, void *);
 void parse_pwm(char *, pwm_t *);
 void parse_triac(char *, triac_t *);
 void parse_vegeflor(char *, vegeflor_t *);
-void parse_red(char *buff, red_t *);
+void parse_red(char *, red_t *);
+void parse_hora(char *, hora_t *, struct tm *);
 void analyze_token_pwm(char *, pwm_t *);
 void analyze_token_triac(char *, triac_t *);
 void init_pwm(pwm_t *);
 void init_triac(triac_t *);
 void init_vegeflor(vegeflor_t *);
 void init_red(red_t *);
-void init_version(version_t *);
 void init_hora(hora_t *);
 void print_pwm(pwm_t *);
 void print_triac(triac_t *);

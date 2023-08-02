@@ -17,12 +17,16 @@
 #include "nvs_flash.h"
 #include "web_server.h"
 #include "cJSON.h"
+#include "../include/version.h"
+#include "../include/current_time_manager.h"
+#include "../include/global_manager.h"
+#include <time.h>
 
 static const char *TAG = "WEBSERVER";
 static const char *PWM = "PWM";
 static const char *TRIAC = "TRIAC";
 static const char *VEGEFLOR = "VEGEFLOR";
-static const char *VERSION = "VERSION";
+static const char *VERSIONN = "VERSION";
 static const char *HORA = "HORA";
 
 red_t red;
@@ -33,9 +37,19 @@ triac_t triac;
 
 vegeflor_t vegeflor;
 
-version_t version;
-
 hora_t hora;
+
+struct tm aux_hora;
+
+calendar_auto_mode_t pwm_hora;
+
+triac_config_info_t triac_h1;
+
+triac_config_info_t triac_h2;
+
+triac_config_info_t triac_h3;
+
+triac_config_info_t triac_h4;
 
 //----------FUNCIONES------------//
 void init_pwm(pwm_t *pwm)
@@ -45,7 +59,7 @@ void init_pwm(pwm_t *pwm)
     pwm->ih1.m = -1;
     pwm->fh1.h = -1;
     pwm->fh1.m = -1;
-    pwm->modo = AUTOMATICO;
+    pwm->modo = APAGADO;
     pwm->dia = pdFALSE;
 }
 
@@ -85,13 +99,6 @@ void init_red(red_t *red)
     strcpy(red->ID, "-");
     memset(red->PASS, '\0', sizeof(red->PASS));
     strcpy(red->PASS, "-");
-}
-
-void init_version(version_t *version)
-{
-    version->hw = -1;
-
-    version->bgs = -1;
 }
 
 void init_hora(hora_t *hora)
@@ -206,6 +213,7 @@ void print_hora(hora_t *hora)
 void analyze_token_pwm(char *token, pwm_t *pwm)
 {
     int dh, dm; // unidades y decenas de horas y minutos
+    uint8_t inten;
     switch (token[0])
     {
     case 'r': // Parseo intensidad
@@ -213,16 +221,21 @@ void analyze_token_pwm(char *token, pwm_t *pwm)
         if (strlen(token) == 7) // caso de que sea un numero de un solo digito
         {
             pwm->intensidad = atoi(&token[6]);
+            inten = (uint8_t)atoi(&token[6]);
+            global_manager_set_pwm_power_value_auto(inten, pdFALSE);
         }
         else if (strlen(token) == 8) // caso de un numero de dos digitos
         {
             dh = atoi(&token[6]);
+            inten = (uint8_t)atoi(&token[6]);
             ESP_LOGI(TAG, "%d", dh);
             pwm->intensidad = dh;
+            global_manager_set_pwm_power_value_auto(inten, pdFALSE);
         }
         else if (strlen(token) == 9) // caso 100
         {
             pwm->intensidad = 100;
+            global_manager_set_pwm_power_value_auto(100, pdFALSE);
         }
         else
         {
@@ -235,10 +248,17 @@ void analyze_token_pwm(char *token, pwm_t *pwm)
         if (token[10] == 'A')
         {
             pwm->modo = AUTOMATICO;
+            global_manager_set_pwm_mode_auto();
         }
         else if (token[10] == 'M')
         {
             pwm->modo = MANUAL;
+            global_manager_set_pwm_mode_manual_on();
+        }
+        else if (token[10] == 'O')
+        {
+            pwm->modo = APAGADO;
+            global_manager_set_pwm_mode_off();
         }
         else
         {
@@ -251,6 +271,8 @@ void analyze_token_pwm(char *token, pwm_t *pwm)
 
         pwm->ih1.h = dh;
         pwm->ih1.m = dm;
+        pwm_hora.turn_on_time.tm_hour = dh;
+        pwm_hora.turn_on_time.tm_min = dm;
 
         break;
     case 'f':
@@ -259,16 +281,20 @@ void analyze_token_pwm(char *token, pwm_t *pwm)
 
         pwm->fh1.h = dh;
         pwm->fh1.m = dm;
+        pwm_hora.turn_off_time.tm_hour = dh;
+        pwm_hora.turn_off_time.tm_min = dm;
 
         break;
     case 'O':
         if (token[9] == 'S')
         {
             pwm->dia = pdTRUE;
+            global_manager_update_simul_day_function_status(SIMUL_DAY_ON, pdFALSE);
         }
         else
         {
             pwm->dia = pdFALSE;
+            global_manager_update_simul_day_function_status(SIMUL_DAY_OFF, pdFALSE);
         }
 
         break;
@@ -287,14 +313,17 @@ void analyze_token_triac(char *token, triac_t *triac)
         if (token[12] == 'S') // caso de que sea un numero de un solo digito
         {
             triac->modo = SI;
+            global_manager_set_triac_mode_manual_on(pdFALSE);
         }
         else if (token[12] == 'N')
         {
             triac->modo = NO;
+            global_manager_set_triac_mode_off(pdFALSE);
         }
         else if (token[12] == 'A')
         {
             triac->modo = AUTOMATICO;
+            global_manager_set_triac_mode_auto(pdFALSE);
         }
         else
         {
@@ -306,23 +335,47 @@ void analyze_token_triac(char *token, triac_t *triac)
         if (token[9] == '1')
         {
             triac->checkh1 = pdTRUE;
-        }
-        else if (token[9] == '2')
-        {
-            triac->checkh2 = pdTRUE;
-        }
-        else if (token[9] == '3')
-        {
-            triac->checkh3 = pdTRUE;
-        }
-        else if (token[9] == '4')
-        {
-            triac->checkh1 = pdTRUE;
+            triac_h1.enable = pdTRUE;
         }
         else
         {
-            ESP_LOGE(TRIAC, "Error en parseo del del CHECKBOX");
+            triac->checkh1 = pdFALSE;
+            triac_h1.enable = pdFALSE;
         }
+        if (token[9] == '2')
+        {
+            triac->checkh2 = pdTRUE;
+            triac_h2.enable = pdTRUE;
+        }
+        else
+        {
+            triac->checkh2 = pdFALSE;
+            triac_h4.enable = pdFALSE;
+        }
+        if (token[9] == '3')
+        {
+            triac->checkh3 = pdTRUE;
+            triac_h3.enable = pdTRUE;
+        }
+        else
+        {
+            triac->checkh3 = pdFALSE;
+            triac_h3.enable = pdFALSE;
+        }
+        if (token[9] == '4')
+        {
+            triac->checkh4 = pdTRUE;
+            triac_h4.enable = pdTRUE;
+        }
+        else
+        {
+            triac->checkh4 = pdFALSE;
+            triac_h4.enable = pdFALSE;
+        }
+        // else
+        //{
+        //  ESP_LOGE(TRIAC, "Error en parseo del del CHECKBOX");
+        //}
         break;
 
     case 'i':
@@ -332,25 +385,33 @@ void analyze_token_triac(char *token, triac_t *triac)
         {
             triac->ih1.h = dh;
             triac->ih1.m = dm;
+            triac_h1.turn_on_time.tm_hour = dh;
+            triac_h1.turn_on_time.tm_min = dm;
         }
         else if (token[2] == '2')
         {
             triac->ih2.h = dh;
             triac->ih2.m = dm;
+            triac_h2.turn_on_time.tm_hour = dh;
+            triac_h2.turn_on_time.tm_min = dm;
         }
         else if (token[2] == '3')
         {
             triac->ih3.h = dh;
             triac->ih3.m = dm;
+            triac_h3.turn_on_time.tm_hour = dh;
+            triac_h3.turn_on_time.tm_min = dm;
         }
         else if (token[2] == '4')
         {
             triac->ih4.h = dh;
             triac->ih4.m = dm;
+            triac_h4.turn_on_time.tm_hour = dh;
+            triac_h4.turn_on_time.tm_min = dm;
         }
         else
         {
-            ESP_LOGE(PWM, "Erro en parseo del HORARIO INICIAL");
+            ESP_LOGE(TRIAC, "Error en parseo del HORARIO INICIAL");
         }
         break;
     case 'f':
@@ -360,25 +421,33 @@ void analyze_token_triac(char *token, triac_t *triac)
         {
             triac->fh1.h = dh;
             triac->fh1.m = dm;
+            triac_h1.turn_off_time.tm_hour = dh;
+            triac_h1.turn_off_time.tm_min = dm;
         }
         else if (token[2] == '2')
         {
             triac->fh2.h = dh;
             triac->fh2.m = dm;
+            triac_h2.turn_off_time.tm_hour = dh;
+            triac_h2.turn_off_time.tm_min = dm;
         }
         else if (token[2] == '3')
         {
             triac->fh3.h = dh;
             triac->fh3.m = dm;
+            triac_h3.turn_off_time.tm_hour = dh;
+            triac_h3.turn_off_time.tm_min = dm;
         }
         else if (token[2] == '4')
         {
             triac->fh4.h = dh;
             triac->fh4.m = dm;
+            triac_h4.turn_off_time.tm_hour = dh;
+            triac_h4.turn_off_time.tm_min = dm;
         }
         else
         {
-            ESP_LOGE(PWM, "Erro en parseo del HORARIO FINAL");
+            ESP_LOGE(TRIAC, "Error en parseo del HORARIO FINAL");
         }
 
         break;
@@ -400,6 +469,7 @@ void parse_pwm(char *buff, pwm_t *pwm)
         ESP_LOGI(PWM, "%s", token);
         token = strtok(NULL, delim);
     }
+    global_manager_update_auto_pwm_calendar(pwm_hora, pdFALSE);
     ESP_LOGI(PWM, "Salgo del parseo");
 };
 
@@ -416,6 +486,11 @@ void parse_triac(char *buff, triac_t *triac)
         ESP_LOGI(TRIAC, "%s", token);
         token = strtok(NULL, delim);
     }
+    global_manager_update_auto_triac_calendar(triac_h1, 1, pdFALSE);
+    global_manager_update_auto_triac_calendar(triac_h2, 2, pdFALSE);
+    global_manager_update_auto_triac_calendar(triac_h3, 3, pdFALSE);
+    global_manager_update_auto_triac_calendar(triac_h4, 4, pdFALSE);
+
     ESP_LOGI(TRIAC, "Salgo del parseo");
 }
 
@@ -426,10 +501,12 @@ void parse_vegeflor(char *buff, vegeflor_t *vegeflor)
     if (buff[14] == 'V')
     {
         vegeflor->modo = VEGE;
+        global_manager_set_rele_vege_status_off(pdFALSE);
     }
     else if (buff[14] == 'F')
     {
         vegeflor->modo = FLOR;
+        global_manager_set_rele_vege_status_on(pdFALSE);
     }
     else
     {
@@ -442,6 +519,7 @@ void parse_red(char *buff, red_t *red)
 {
     // el & es el separador de los campos
     ESP_LOGI(TAG, "Testeo del parseo de RED");
+    uint8_t status;
     char *e;
     int j = 0;
     int len = strlen(buff);
@@ -458,24 +536,29 @@ void parse_red(char *buff, red_t *red)
     }
     red->ID[j] = '\0';
     j = 0;
+    status = global_manager_set_wifi_ssid(red->ID, pdFALSE);
     for (int i = secondEqualIndex + 1; i <= len; i++)
     {
         red->PASS[j] = buff[i];
         j++;
     }
+    status = global_manager_set_wifi_password(red->PASS, pdFALSE);
     // strncpy(red->ID, buff + equalIndex + 1, index - equalIndex - 1);
     // strncpy(red->PASS, buff + secondEqualIndex + 1, len - secondEqualIndex - 1);
 
     ESP_LOGI(TAG, "Salgo del parseo de RED");
 };
 
-void parse_hora(char *buff, hora_t *hora)
+void parse_hora(char *buff, hora_t *hora, struct tm *aux)
 {
     // el & es el separador de los campos
-    ESP_LOGI(HORA, "Testeo del parseo de HORA");
+    ESP_LOGI(HORA, "Entro al parseo de HORA");
 
     hora->hr.h = atoi(&buff[5]);
+    aux->tm_hour = hora->hr.h;
     hora->hr.m = atoi(&buff[10]);
+    aux->tm_min = hora->hr.m;
+    current_time_manager_set_current_time(*aux, pdFALSE);
 
     ESP_LOGI(HORA, "Salgo del parseo HORA");
 };
@@ -795,7 +878,7 @@ esp_err_t hora_post_handler(httpd_req_t *req)
             // Procesar los datos recibidos, por ejemplo, almacenarlos en una variable
         }
         ESP_LOGI(TAG, "%s", buff);
-        parse_hora(buff, &hora);
+        parse_hora(buff, &hora, &aux_hora);
         print_hora(&hora);
         ESP_LOGI(TAG, "Salgo del HORA HANDLER");
 
@@ -837,6 +920,10 @@ esp_err_t pwm_data_handler(httpd_req_t *req)
     if (pwm.modo == MANUAL)
     {
         modo = "Manual";
+    }
+    else if (pwm.modo == APAGADO)
+    {
+        modo = "OFF";
     }
     else
     {
@@ -1019,12 +1106,13 @@ esp_err_t vegeflor_data_handler(httpd_req_t *req)
 esp_err_t version_data_handler(httpd_req_t *req)
 {
     cJSON *json_object = cJSON_CreateObject();
-
-    cJSON_AddNumberToObject(json_object, "Hardware", version.hw);
-    cJSON_AddNumberToObject(json_object, "Bugs", version.bgs);
+    char version[10];
+    uint8_t len_ver;
+    get_version(version, &len_ver);
+    cJSON_AddStringToObject(json_object, "Version", version);
 
     char *json_str = cJSON_Print(json_object);
-    ESP_LOGI(TAG, "JSON ES: %s", json_str);
+    ESP_LOGI(VERSIONN, "JSON ES: %s", json_str);
     cJSON_Delete(json_object);
 
     httpd_resp_set_type(req, "application/json");
@@ -1090,8 +1178,6 @@ httpd_handle_t start_webserver(void)
         init_triac(&triac);
         ESP_LOGI(VEGEFLOR, "INICIO VARIABLE VEGEFLOR");
         init_vegeflor(&vegeflor);
-        ESP_LOGI(VERSION, "INICIO VARIABLE VERSION");
-        init_version(&version);
         ESP_LOGI(HORA, "INICIO VARIABLE HORA");
         init_hora(&hora);
         return server;
