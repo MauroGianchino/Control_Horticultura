@@ -25,12 +25,14 @@
 #define UPDATE_TIME 15 // 15 seconds
 
 #define MAX_RETRIES 5
+#define TIMEOUT_MS 500
 //------------------- TYPEDEF --------------------------------------------------
 //------------------------------------------------------------------------------
 typedef enum{
     CMD_UNDEFINED = 0,
     SET_CURRENT_TIME = 1,
-    SAVE_CURRENT_TIME = 2,
+    GET_CURRENT_TIME = 2,
+    SAVE_CURRENT_TIME = 3,
 }current_time_cmds_t;
 
 typedef struct{
@@ -40,13 +42,15 @@ typedef struct{
 }current_time_event_t;
 //------------------- DECLARACION DE DATOS LOCALES -----------------------------
 //------------------------------------------------------------------------------
-static QueueHandle_t current_time_manager_queue;
+static QueueHandle_t current_time_manager_queue, response_queue;
 //------------------- DECLARACION DE FUNCIONES LOCALES -------------------------
 //------------------------------------------------------------------------------
 static void current_time_manager_task(void* arg);
 static void init_current_time(struct tm* current_time);
 static void nv_save_current_time(struct tm current_time);
 static void current_time_manager_save_current_time(struct tm current_time);
+static void get_current_time(void);
+static uint8_t wait_get_current_time_response(struct tm *current_time);
 //------------------- DEFINICION DE DATOS LOCALES ------------------------------
 //------------------------------------------------------------------------------
 
@@ -141,6 +145,10 @@ static void current_time_manager_task(void* arg)
                     }
                     current_time = ev.current_time;
                     break;
+                case GET_CURRENT_TIME:
+                    ev.current_time = current_time;
+                    xQueueSend(response_queue, &ev, 10);
+                    break;
                 case SAVE_CURRENT_TIME:
                     nv_save_current_time(ev.current_time);
                     break;
@@ -170,7 +178,8 @@ static void current_time_manager_task(void* arg)
 void current_time_manager_init(void)
 {
     current_time_manager_queue = xQueueCreate(QUEUE_ELEMENT_QUANTITY, sizeof(current_time_event_t));
-    
+    response_queue = xQueueCreate(QUEUE_ELEMENT_QUANTITY, sizeof(current_time_event_t));
+
     xTaskCreate(current_time_manager_task, "current_time_manager_task", configMINIMAL_STACK_SIZE*5, 
         NULL, configMAX_PRIORITIES-2, NULL);
 }
@@ -183,6 +192,40 @@ void current_time_manager_set_current_time(struct tm current_time, bool read_fro
     ev.current_time = current_time;
     ev.read_from_flash = read_from_flash;
     xQueueSend(current_time_manager_queue, &ev, 10);
+}
+//------------------------------------------------------------------------------
+static void get_current_time(void)
+{
+    current_time_event_t ev;
+    ev.cmd = GET_CURRENT_TIME;
+    xQueueSend(current_time_manager_queue, &ev, 10);
+}
+
+static uint8_t wait_get_current_time_response(struct tm *current_time) 
+{
+    current_time_event_t resp_ev;
+    if(xQueueReceive(response_queue, &resp_ev, TIMEOUT_MS / portTICK_PERIOD_MS)) 
+    {
+        *current_time = resp_ev.current_time;
+        return 1;
+    } 
+    else 
+    {
+        #ifdef DEBUG_MODULE
+            printf("Error al recibir la respuesta de pwm\n");
+        #endif
+        return 0;
+    }
+}
+
+uint8_t global_manager_get_current_time_info(struct tm *current_time)
+{
+    get_current_time();
+    if(wait_get_current_time_response(current_time))
+    {
+        return(1);
+    }
+    return(0);
 }
 //---------------------------- END OF FILE -------------------------------------
 //------------------------------------------------------------------------------

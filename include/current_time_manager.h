@@ -16,5 +16,6 @@
 //------------------------------------------------------------------------------
 void current_time_manager_init(void);
 void current_time_manager_set_current_time(struct tm current_time, bool read_from_flash);
+uint8_t global_manager_get_current_time_info(struct tm *current_time);
 //------------------- FIN DEL ARCHIVO ------------------------------------------
 #endif /* CURRENT_TIME_MANAGER_H__ */
