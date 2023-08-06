@@ -29,69 +29,45 @@ static const char *VEGEFLOR = "VEGEFLOR";
 static const char *VERSIONN = "VERSION";
 static const char *HORA = "HORA";
 
-red_t red;
+//---------------RED-------------------
 
-pwm_t pwm;
+red_t red; // variable para leer el ssid y pass de la red
 
-triac_t triac;
+//---------------Hora-------------------
 
-vegeflor_t vegeflor;
+struct tm aux_hora; // variable para setear y leer la hora actual
 
-hora_t hora;
+//---------------PWM------------------
 
-struct tm aux_hora;
+calendar_auto_mode_t pwm_hora; // variable para setear la hora del pwm
 
-calendar_auto_mode_t pwm_hora;
+simul_day_status_t dia; // variable para setear la simulacion dia del PWM
 
-triac_config_info_t triac_h1;
+output_mode_t modo_pwm; // variable setear y leer el modo del pwm
 
-triac_config_info_t triac_h2;
+pwm_auto_info_t pwm_info; // variable con la info para leer el pwm
 
-triac_config_info_t triac_h3;
+//---------------TRIAC------------------
 
-triac_config_info_t triac_h4;
+output_mode_t modo_triac; // variable para setear y leer el modo del triac
+
+calendar_auto_mode_t triac_h; // variable para setear el modo del triac
+
+triac_config_info_t triac_h1; // variable para setear los horarios del triac
+
+triac_config_info_t triac_h2; // variable para setear los horarios del triac
+
+triac_config_info_t triac_h3; // variable para setear los horarios del triac
+
+triac_config_info_t triac_h4; // variable para setear los horarios del triac
+
+triac_auto_info_t triac_auto_info; // variable para leer toda la data del triac (y los 4 horarios)
+
+//---------------VEGEFLOR------------------
+
+rele_output_status_t rele_status; // variable para leer el estado del relé
 
 //----------FUNCIONES------------//
-void init_pwm(pwm_t *pwm)
-{
-    pwm->intensidad = -1;
-    pwm->ih1.h = -1;
-    pwm->ih1.m = -1;
-    pwm->fh1.h = -1;
-    pwm->fh1.m = -1;
-    pwm->modo = APAGADO;
-    pwm->dia = pdFALSE;
-}
-
-void init_triac(triac_t *triac)
-{
-    triac->modo = NO;
-    triac->ih1.h = -1;
-    triac->ih1.m = -1;
-    triac->fh1.h = -1;
-    triac->fh1.m = -1;
-    triac->ih2.h = -1;
-    triac->ih2.m = -1;
-    triac->fh2.h = -1;
-    triac->fh2.m = -1;
-    triac->ih3.h = -1;
-    triac->ih3.m = -1;
-    triac->fh3.h = -1;
-    triac->fh3.m = -1;
-    triac->ih4.h = -1;
-    triac->ih4.m = -1;
-    triac->fh4.h = -1;
-    triac->fh4.m = -1;
-    triac->checkh1 = pdFALSE;
-    triac->checkh2 = pdFALSE;
-    triac->checkh3 = pdFALSE;
-    triac->checkh4 = pdFALSE;
-}
-
-void init_vegeflor(vegeflor_t *vegeflor)
-{
-    vegeflor->modo = FLOR;
-}
 
 void init_red(red_t *red)
 {
@@ -101,39 +77,14 @@ void init_red(red_t *red)
     strcpy(red->PASS, "-");
 }
 
-void init_hora(hora_t *hora)
+void print_pwm()
 {
-    hora->hr.h = -1;
-
-    hora->hr.m = -1;
-}
-
-void print_pwm(pwm_t *pwm)
-{
-    ESP_LOGW(TAG, "%d", pwm->intensidad);
-    ESP_LOGW(TAG, "Horario 1: Encendido:%d:%d Apagado: %d:%d", pwm->ih1.h, pwm->ih1.m, pwm->fh1.h, pwm->fh1.m);
-    if (pwm->modo == MANUAL)
-    {
-        ESP_LOGW(TAG, "MODO MANUAL");
-    }
-    else
-    {
-        ESP_LOGW(TAG, "MODO AUTOMATICO");
-    }
-    if (pwm->dia == pdTRUE)
-    {
-        ESP_LOGW(TAG, "SIMULACION AMANECER / ATARDECER SI");
-    }
-    else
-    {
-        ESP_LOGW(TAG, "SIMULACION AMANECER / ATARDECER NO");
-    }
 }
 
 void print_triac(triac_t *triac)
 {
 
-    ESP_LOGW(TAG, "Horario 1: Inicio:%d:%d Final: %d:%d", triac->ih1.h, triac->ih1.m, triac->fh1.h, triac->fh1.m);
+    /*ESP_LOGW(TAG, "Horario 1: Inicio:%d:%d Final: %d:%d", triac->ih1.h, triac->ih1.m, triac->fh1.h, triac->fh1.m);
     ESP_LOGW(TAG, "Horario 2: Inicio:%d:%d Final: %d:%d", triac->ih2.h, triac->ih2.m, triac->fh2.h, triac->fh2.m);
     ESP_LOGW(TAG, "Horario 3: Inicio:%d:%d Final: %d:%d", triac->ih3.h, triac->ih3.m, triac->fh3.h, triac->fh3.m);
     ESP_LOGW(TAG, "Horario 4: Inicio:%d:%d Final: %d:%d", triac->ih4.h, triac->ih4.m, triac->fh4.h, triac->fh4.m);
@@ -180,20 +131,20 @@ void print_triac(triac_t *triac)
     else
     {
         ESP_LOGW(TAG, "HORARIO 4 HABILITADO");
-    }
+    }*/
 }
 
 void print_vegeflor(vegeflor_t *vegeflor)
 {
 
-    if (vegeflor->modo == VEGE)
+    /*if (vegeflor->modo == VEGE)
     {
         ESP_LOGW(TAG, "MODO VEGETACION");
     }
     else
     {
         ESP_LOGW(TAG, "MODO FLORACION");
-    }
+    }*/
 }
 
 void print_red(red_t *red)
@@ -207,10 +158,10 @@ void print_red(red_t *red)
 void print_hora(hora_t *hora)
 {
 
-    ESP_LOGW(HORA, "Hora: %d:%d", hora->hr.h, hora->hr.m);
+    // ESP_LOGW(HORA, "Hora: %d:%d", hora->hr.h, hora->hr.m);
 }
 
-void analyze_token_pwm(char *token, pwm_t *pwm)
+void analyze_token_pwm(char *token)
 {
     int dh, dm; // unidades y decenas de horas y minutos
     uint8_t inten;
@@ -220,7 +171,6 @@ void analyze_token_pwm(char *token, pwm_t *pwm)
         ESP_LOGI(PWM, "%d", strlen(token));
         if (strlen(token) == 7) // caso de que sea un numero de un solo digito
         {
-            pwm->intensidad = atoi(&token[6]);
             inten = (uint8_t)atoi(&token[6]);
             global_manager_set_pwm_power_value_auto(inten, pdFALSE);
         }
@@ -229,12 +179,10 @@ void analyze_token_pwm(char *token, pwm_t *pwm)
             dh = atoi(&token[6]);
             inten = (uint8_t)atoi(&token[6]);
             ESP_LOGI(TAG, "%d", dh);
-            pwm->intensidad = dh;
             global_manager_set_pwm_power_value_auto(inten, pdFALSE);
         }
         else if (strlen(token) == 9) // caso 100
         {
-            pwm->intensidad = 100;
             global_manager_set_pwm_power_value_auto(100, pdFALSE);
         }
         else
@@ -247,17 +195,14 @@ void analyze_token_pwm(char *token, pwm_t *pwm)
     case 'm':
         if (token[10] == 'A')
         {
-            pwm->modo = AUTOMATICO;
             global_manager_set_pwm_mode_auto();
         }
         else if (token[10] == 'M')
         {
-            pwm->modo = MANUAL;
             global_manager_set_pwm_mode_manual_on();
         }
         else if (token[10] == 'O')
         {
-            pwm->modo = APAGADO;
             global_manager_set_pwm_mode_off();
         }
         else
@@ -269,8 +214,6 @@ void analyze_token_pwm(char *token, pwm_t *pwm)
         dh = atoi(&token[7]);
         dm = atoi(&token[12]);
 
-        pwm->ih1.h = dh;
-        pwm->ih1.m = dm;
         pwm_hora.turn_on_time.tm_hour = dh;
         pwm_hora.turn_on_time.tm_min = dm;
 
@@ -279,8 +222,6 @@ void analyze_token_pwm(char *token, pwm_t *pwm)
         dh = atoi(&token[7]);
         dm = atoi(&token[12]);
 
-        pwm->fh1.h = dh;
-        pwm->fh1.m = dm;
         pwm_hora.turn_off_time.tm_hour = dh;
         pwm_hora.turn_off_time.tm_min = dm;
 
@@ -288,12 +229,10 @@ void analyze_token_pwm(char *token, pwm_t *pwm)
     case 'O':
         if (token[9] == 'S')
         {
-            pwm->dia = pdTRUE;
             global_manager_update_simul_day_function_status(SIMUL_DAY_ON, pdFALSE);
         }
         else
         {
-            pwm->dia = pdFALSE;
             global_manager_update_simul_day_function_status(SIMUL_DAY_OFF, pdFALSE);
         }
 
@@ -303,7 +242,7 @@ void analyze_token_pwm(char *token, pwm_t *pwm)
     }
 }
 
-void analyze_token_triac(char *token, triac_t *triac)
+void analyze_token_triac(char *token)
 {
     int dh, dm; // unidades y decenas de horas y minutos
     ESP_LOGI(TRIAC, "%d", strlen(token));
@@ -312,17 +251,14 @@ void analyze_token_triac(char *token, triac_t *triac)
     case 'm':                 // Parseo modo
         if (token[12] == 'S') // caso de que sea un numero de un solo digito
         {
-            triac->modo = SI;
             global_manager_set_triac_mode_manual_on(pdFALSE);
         }
         else if (token[12] == 'N')
         {
-            triac->modo = NO;
             global_manager_set_triac_mode_off(pdFALSE);
         }
         else if (token[12] == 'A')
         {
-            triac->modo = AUTOMATICO;
             global_manager_set_triac_mode_auto(pdFALSE);
         }
         else
@@ -334,43 +270,37 @@ void analyze_token_triac(char *token, triac_t *triac)
     case 'c':
         if (token[9] == '1')
         {
-            triac->checkh1 = pdTRUE;
-            triac_h1.enable = pdTRUE;
+            ESP_LOGE(TRIAC, "ENTRE EN ENABLE DE H1");
+            triac_h1.enable = 1;
         }
         else
         {
-            triac->checkh1 = pdFALSE;
-            triac_h1.enable = pdFALSE;
+            ESP_LOGE(TRIAC, "ENTRE EN DISENABLE DE H1");
+            triac_h1.enable = 0;
         }
         if (token[9] == '2')
         {
-            triac->checkh2 = pdTRUE;
-            triac_h2.enable = pdTRUE;
+            triac_h2.enable = 1;
         }
         else
         {
-            triac->checkh2 = pdFALSE;
-            triac_h4.enable = pdFALSE;
+            triac_h4.enable = 0;
         }
         if (token[9] == '3')
         {
-            triac->checkh3 = pdTRUE;
-            triac_h3.enable = pdTRUE;
+            triac_h3.enable = 1;
         }
         else
         {
-            triac->checkh3 = pdFALSE;
-            triac_h3.enable = pdFALSE;
+            triac_h3.enable = 0;
         }
         if (token[9] == '4')
         {
-            triac->checkh4 = pdTRUE;
-            triac_h4.enable = pdTRUE;
+            triac_h4.enable = 1;
         }
         else
         {
-            triac->checkh4 = pdFALSE;
-            triac_h4.enable = pdFALSE;
+            triac_h4.enable = 0;
         }
         // else
         //{
@@ -383,29 +313,25 @@ void analyze_token_triac(char *token, triac_t *triac)
         dm = atoi(&token[9]);
         if (token[2] == '1')
         {
-            triac->ih1.h = dh;
-            triac->ih1.m = dm;
+
             triac_h1.turn_on_time.tm_hour = dh;
             triac_h1.turn_on_time.tm_min = dm;
         }
         else if (token[2] == '2')
         {
-            triac->ih2.h = dh;
-            triac->ih2.m = dm;
+
             triac_h2.turn_on_time.tm_hour = dh;
             triac_h2.turn_on_time.tm_min = dm;
         }
         else if (token[2] == '3')
         {
-            triac->ih3.h = dh;
-            triac->ih3.m = dm;
+
             triac_h3.turn_on_time.tm_hour = dh;
             triac_h3.turn_on_time.tm_min = dm;
         }
         else if (token[2] == '4')
         {
-            triac->ih4.h = dh;
-            triac->ih4.m = dm;
+
             triac_h4.turn_on_time.tm_hour = dh;
             triac_h4.turn_on_time.tm_min = dm;
         }
@@ -419,29 +345,25 @@ void analyze_token_triac(char *token, triac_t *triac)
         dm = atoi(&token[9]);
         if (token[2] == '1')
         {
-            triac->fh1.h = dh;
-            triac->fh1.m = dm;
+
             triac_h1.turn_off_time.tm_hour = dh;
             triac_h1.turn_off_time.tm_min = dm;
         }
         else if (token[2] == '2')
         {
-            triac->fh2.h = dh;
-            triac->fh2.m = dm;
+
             triac_h2.turn_off_time.tm_hour = dh;
             triac_h2.turn_off_time.tm_min = dm;
         }
         else if (token[2] == '3')
         {
-            triac->fh3.h = dh;
-            triac->fh3.m = dm;
+
             triac_h3.turn_off_time.tm_hour = dh;
             triac_h3.turn_off_time.tm_min = dm;
         }
         else if (token[2] == '4')
         {
-            triac->fh4.h = dh;
-            triac->fh4.m = dm;
+
             triac_h4.turn_off_time.tm_hour = dh;
             triac_h4.turn_off_time.tm_min = dm;
         }
@@ -456,7 +378,7 @@ void analyze_token_triac(char *token, triac_t *triac)
     }
 }
 
-void parse_pwm(char *buff, pwm_t *pwm)
+void parse_pwm(char *buff)
 {
     // el & es el separador de los campos
     ESP_LOGI(PWM, "Testeo del parseo de PWM");
@@ -465,7 +387,7 @@ void parse_pwm(char *buff, pwm_t *pwm)
     token = strtok(buff, delim);
     while (token != NULL)
     {
-        analyze_token_pwm(token, pwm);
+        analyze_token_pwm(token);
         ESP_LOGI(PWM, "%s", token);
         token = strtok(NULL, delim);
     }
@@ -473,7 +395,7 @@ void parse_pwm(char *buff, pwm_t *pwm)
     ESP_LOGI(PWM, "Salgo del parseo");
 };
 
-void parse_triac(char *buff, triac_t *triac)
+void parse_triac(char *buff)
 {
     // el & es el separador de los campos
     ESP_LOGI(TRIAC, "Testeo del parseo de TRIAC");
@@ -482,7 +404,7 @@ void parse_triac(char *buff, triac_t *triac)
     token = strtok(buff, delim);
     while (token != NULL)
     {
-        analyze_token_triac(token, triac);
+        analyze_token_triac(token);
         ESP_LOGI(TRIAC, "%s", token);
         token = strtok(NULL, delim);
     }
@@ -494,19 +416,17 @@ void parse_triac(char *buff, triac_t *triac)
     ESP_LOGI(TRIAC, "Salgo del parseo");
 }
 
-void parse_vegeflor(char *buff, vegeflor_t *vegeflor)
+void parse_vegeflor(char *buff)
 {
     // el & es el separador de los campos
     ESP_LOGI(VEGEFLOR, "Testeo del parseo de VEGEFLOR");
     if (buff[14] == 'V')
     {
-        vegeflor->modo = VEGE;
-        global_manager_set_rele_vege_status_off(pdFALSE);
+        global_manager_set_rele_vege_status_on(pdFALSE);
     }
     else if (buff[14] == 'F')
     {
-        vegeflor->modo = FLOR;
-        global_manager_set_rele_vege_status_on(pdFALSE);
+        global_manager_set_rele_vege_status_off(pdFALSE);
     }
     else
     {
@@ -519,7 +439,7 @@ void parse_red(char *buff, red_t *red)
 {
     // el & es el separador de los campos
     ESP_LOGI(TAG, "Testeo del parseo de RED");
-    uint8_t status;
+    uint8_t status = 0;
     char *e;
     int j = 0;
     int len = strlen(buff);
@@ -549,15 +469,13 @@ void parse_red(char *buff, red_t *red)
     ESP_LOGI(TAG, "Salgo del parseo de RED");
 };
 
-void parse_hora(char *buff, hora_t *hora, struct tm *aux)
+void parse_hora(char *buff, struct tm *aux)
 {
     // el & es el separador de los campos
     ESP_LOGI(HORA, "Entro al parseo de HORA");
 
-    hora->hr.h = atoi(&buff[5]);
-    aux->tm_hour = hora->hr.h;
-    hora->hr.m = atoi(&buff[10]);
-    aux->tm_min = hora->hr.m;
+    aux->tm_hour = atoi(&buff[5]);
+    aux->tm_min = atoi(&buff[10]);
     current_time_manager_set_current_time(*aux, pdFALSE);
 
     ESP_LOGI(HORA, "Salgo del parseo HORA");
@@ -702,8 +620,7 @@ esp_err_t pwm_post_handler(httpd_req_t *req)
             // Procesar los datos recibidos, por ejemplo, almacenarlos en una variable
         }
         ESP_LOGI(TAG, "%s", buff);
-        parse_pwm(buff, &pwm);
-        print_pwm(&pwm);
+        parse_pwm(buff);
         ESP_LOGI(TAG, "Salgo del PWM HANDLER");
 
         //  aca irian las funciones de Gaston
@@ -790,8 +707,7 @@ esp_err_t triac_post_handler(httpd_req_t *req)
             // Procesar los datos recibidos, por ejemplo, almacenarlos en una variable
         }
         ESP_LOGI(TAG, "%s", buff);
-        parse_triac(buff, &triac);
-        print_triac(&triac);
+        parse_triac(buff);
         ESP_LOGI(TAG, "Salgo del TRIAC HANDLER");
 
         //  aca irian las funciones de Gaston
@@ -834,8 +750,7 @@ esp_err_t vegeflor_post_handler(httpd_req_t *req)
             // Procesar los datos recibidos, por ejemplo, almacenarlos en una variable
         }
         ESP_LOGI(TAG, "%s", buff);
-        parse_vegeflor(buff, &vegeflor);
-        print_vegeflor(&vegeflor);
+        parse_vegeflor(buff);
         ESP_LOGI(TAG, "Salgo del VEGEFLOR HANDLER");
 
         //  aca irian las funciones de Gaston
@@ -878,8 +793,7 @@ esp_err_t hora_post_handler(httpd_req_t *req)
             // Procesar los datos recibidos, por ejemplo, almacenarlos en una variable
         }
         ESP_LOGI(TAG, "%s", buff);
-        parse_hora(buff, &hora, &aux_hora);
-        print_hora(&hora);
+        parse_hora(buff, &aux_hora);
         ESP_LOGI(TAG, "Salgo del HORA HANDLER");
 
         //  aca irian las funciones de Gaston
@@ -890,217 +804,278 @@ esp_err_t hora_post_handler(httpd_req_t *req)
 //----------HANDLERS PARA LEER LOS DATOS------------//
 esp_err_t red_data_handler(httpd_req_t *req)
 {
+    uint8_t status = 0;
+    status = global_manager_get_net_info(red.ID, red.PASS);
+    if (status == 1)
+    {
+        cJSON *json_object = cJSON_CreateObject();
+        cJSON_AddStringToObject(json_object, "ID", red.ID);
+        cJSON_AddStringToObject(json_object, "PASS", red.PASS);
+        char *json_str = cJSON_Print(json_object);
+        ESP_LOGI(TAG, "JSON ES: %s", json_str);
+        cJSON_Delete(json_object);
 
-    cJSON *json_object = cJSON_CreateObject();
+        httpd_resp_set_type(req, "application/json");
+        httpd_resp_send(req, json_str, strlen(json_str));
 
-    cJSON_AddStringToObject(json_object, "ID", red.ID);
-    cJSON_AddStringToObject(json_object, "PASS", red.PASS);
+        free(json_str);
 
-    char *json_str = cJSON_Print(json_object);
-    ESP_LOGI(TAG, "JSON ES: %s", json_str);
-    cJSON_Delete(json_object);
-
-    httpd_resp_set_type(req, "application/json");
-    httpd_resp_send(req, json_str, strlen(json_str));
-
-    free(json_str);
-
-    return ESP_OK;
+        return ESP_OK;
+    }
+    else
+    {
+        ESP_LOGI(TAG, "ERROR EN OBTENER SSID y PASSWORD");
+        return ESP_FAIL;
+    }
 }
 
 esp_err_t pwm_data_handler(httpd_req_t *req)
 {
     char *modo;
-    cJSON *json_object = cJSON_CreateObject();
-    cJSON_AddNumberToObject(json_object, "intensidad", pwm.intensidad);
-    cJSON_AddNumberToObject(json_object, "ih1h", pwm.ih1.h);
-    cJSON_AddNumberToObject(json_object, "ih1m", pwm.ih1.m);
-    cJSON_AddNumberToObject(json_object, "fh1h", pwm.fh1.h);
-    cJSON_AddNumberToObject(json_object, "fh1m", pwm.fh1.m);
-    if (pwm.modo == MANUAL)
+    uint8_t status = 0;
+    status = global_manager_get_pwm_info(&modo_pwm, &pwm_info);
+    if (status == 1)
     {
-        modo = "Manual";
-    }
-    else if (pwm.modo == APAGADO)
-    {
-        modo = "OFF";
-    }
-    else
-    {
-        modo = "Automatico";
-    }
-    cJSON_AddStringToObject(json_object, "Modo", modo);
-    if (pwm.dia == pdTRUE)
-    {
-        modo = "Si";
-    }
-    else
-    {
-        modo = "No";
-    }
-    cJSON_AddStringToObject(json_object, "DIA", modo);
+        cJSON *json_object = cJSON_CreateObject();
+        cJSON_AddNumberToObject(json_object, "intensidad", pwm_info.percent_power);
 
-    char *json_str = cJSON_Print(json_object);
-    ESP_LOGI(TAG, "JSON ES: %s", json_str);
-    cJSON_Delete(json_object);
-
-    httpd_resp_set_type(req, "application/json");
-    httpd_resp_send(req, json_str, strlen(json_str));
-
-    free(json_str);
-    return ESP_OK;
-}
-
-esp_err_t triac_data_handler(httpd_req_t *req)
-{
-    char *modo;
-    cJSON *json_object = cJSON_CreateObject();
-    if (triac.modo == SI)
-    {
-        modo = "Encendido";
-        cJSON_AddStringToObject(json_object, "Modo", modo);
-        cJSON_AddStringToObject(json_object, "ih1h", "-");
-        cJSON_AddStringToObject(json_object, "ih1m", "-");
-        cJSON_AddStringToObject(json_object, "fh1h", "-");
-        cJSON_AddStringToObject(json_object, "fh1m", "-");
-        //
-        cJSON_AddStringToObject(json_object, "ih2h", "-");
-        cJSON_AddStringToObject(json_object, "ih2m", "-");
-        cJSON_AddStringToObject(json_object, "fh2h", "-");
-        cJSON_AddStringToObject(json_object, "fh2m", "-");
-        //
-        cJSON_AddStringToObject(json_object, "ih3h", "-");
-        cJSON_AddStringToObject(json_object, "ih3m", "-");
-        cJSON_AddStringToObject(json_object, "fh3h", "-");
-        cJSON_AddStringToObject(json_object, "fh3m", "-");
-        //
-        cJSON_AddStringToObject(json_object, "ih4h", "-");
-        cJSON_AddStringToObject(json_object, "ih4m", "-");
-        cJSON_AddStringToObject(json_object, "fh4h", "-");
-        cJSON_AddStringToObject(json_object, "fh4m", "-");
-    }
-    else if (triac.modo == NO)
-    {
-        modo = "Apagado";
-        cJSON_AddStringToObject(json_object, "Modo", modo);
-        cJSON_AddStringToObject(json_object, "ih1h", "-");
-        cJSON_AddStringToObject(json_object, "ih1m", "-");
-        cJSON_AddStringToObject(json_object, "fh1h", "-");
-        cJSON_AddStringToObject(json_object, "fh1m", "-");
-        //
-        cJSON_AddStringToObject(json_object, "ih2h", "-");
-        cJSON_AddStringToObject(json_object, "ih2m", "-");
-        cJSON_AddStringToObject(json_object, "fh2h", "-");
-        cJSON_AddStringToObject(json_object, "fh2m", "-");
-        //
-        cJSON_AddStringToObject(json_object, "ih3h", "-");
-        cJSON_AddStringToObject(json_object, "ih3m", "-");
-        cJSON_AddStringToObject(json_object, "fh3h", "-");
-        cJSON_AddStringToObject(json_object, "fh3m", "-");
-        //
-        cJSON_AddStringToObject(json_object, "ih4h", "-");
-        cJSON_AddStringToObject(json_object, "ih4m", "-");
-        cJSON_AddStringToObject(json_object, "fh4h", "-");
-        cJSON_AddStringToObject(json_object, "fh4m", "-");
-    }
-    else
-    {
-        modo = "Automatico";
-        cJSON_AddStringToObject(json_object, "Modo", modo);
-        if (triac.checkh1 == pdTRUE)
+        if (modo_pwm == MANUAL_ON)
         {
-            cJSON_AddNumberToObject(json_object, "ih1h", triac.ih1.h);
-            cJSON_AddNumberToObject(json_object, "ih1m", triac.ih1.m);
-            cJSON_AddNumberToObject(json_object, "fh1h", triac.fh1.h);
-            cJSON_AddNumberToObject(json_object, "fh1m", triac.fh1.m);
-        }
-        else
-        {
+            modo = "Manual";
             cJSON_AddStringToObject(json_object, "ih1h", "-");
             cJSON_AddStringToObject(json_object, "ih1m", "-");
             cJSON_AddStringToObject(json_object, "fh1h", "-");
             cJSON_AddStringToObject(json_object, "fh1m", "-");
         }
-        if (triac.checkh2 == pdTRUE)
+        else if (modo_pwm == MANUAL_OFF)
         {
-            cJSON_AddNumberToObject(json_object, "ih2h", triac.ih2.h);
-            cJSON_AddNumberToObject(json_object, "ih2m", triac.ih2.m);
-            cJSON_AddNumberToObject(json_object, "fh2h", triac.fh2.h);
-            cJSON_AddNumberToObject(json_object, "fh2m", triac.fh2.m);
+            modo = "OFF";
+            cJSON_AddStringToObject(json_object, "ih1h", "-");
+            cJSON_AddStringToObject(json_object, "ih1m", "-");
+            cJSON_AddStringToObject(json_object, "fh1h", "-");
+            cJSON_AddStringToObject(json_object, "fh1m", "-");
+        }
+        else if (modo_pwm == AUTOMATIC)
+        {
+            modo = "Automatico";
+            cJSON_AddNumberToObject(json_object, "ih1h", pwm_info.turn_on_time.tm_hour);
+            cJSON_AddNumberToObject(json_object, "ih1m", pwm_info.turn_on_time.tm_min);
+            cJSON_AddNumberToObject(json_object, "fh1h", pwm_info.turn_off_time.tm_hour);
+            cJSON_AddNumberToObject(json_object, "fh1m", pwm_info.turn_off_time.tm_min);
         }
         else
         {
+            modo = "Indefinido";
+            cJSON_AddStringToObject(json_object, "ih1h", "-");
+            cJSON_AddStringToObject(json_object, "ih1m", "-");
+            cJSON_AddStringToObject(json_object, "fh1h", "-");
+            cJSON_AddStringToObject(json_object, "fh1m", "-");
+        }
+        cJSON_AddStringToObject(json_object, "Modo", modo);
+        if (pwm_info.simul_day_status == SIMUL_DAY_ON)
+        {
+            modo = "Si";
+        }
+        else
+        {
+            modo = "No";
+        }
+        cJSON_AddStringToObject(json_object, "DIA", modo);
+
+        char *json_str = cJSON_Print(json_object);
+        ESP_LOGI(TAG, "JSON ES: %s", json_str);
+        cJSON_Delete(json_object);
+
+        httpd_resp_set_type(req, "application/json");
+        httpd_resp_send(req, json_str, strlen(json_str));
+
+        free(json_str);
+        return ESP_OK;
+    }
+    else
+    {
+        ESP_LOGI(TAG, "ERROR EN OBTENER PWM");
+        return ESP_FAIL;
+    }
+}
+
+esp_err_t triac_data_handler(httpd_req_t *req)
+{
+    char *modo;
+    uint8_t status = 0;
+    status = global_manager_get_triac_info(&modo_triac, &triac_auto_info);
+    if (status == 1)
+    {
+        cJSON *json_object = cJSON_CreateObject();
+        if (modo_triac == MANUAL_ON)
+        {
+            modo = "Encendido";
+            cJSON_AddStringToObject(json_object, "Modo", modo);
+            cJSON_AddStringToObject(json_object, "ih1h", "-");
+            cJSON_AddStringToObject(json_object, "ih1m", "-");
+            cJSON_AddStringToObject(json_object, "fh1h", "-");
+            cJSON_AddStringToObject(json_object, "fh1m", "-");
+            //
             cJSON_AddStringToObject(json_object, "ih2h", "-");
             cJSON_AddStringToObject(json_object, "ih2m", "-");
             cJSON_AddStringToObject(json_object, "fh2h", "-");
             cJSON_AddStringToObject(json_object, "fh2m", "-");
-        }
-        if (triac.checkh3 == pdTRUE)
-        {
-            cJSON_AddNumberToObject(json_object, "ih3h", triac.ih3.h);
-            cJSON_AddNumberToObject(json_object, "ih3m", triac.ih3.m);
-            cJSON_AddNumberToObject(json_object, "fh3h", triac.fh3.h);
-            cJSON_AddNumberToObject(json_object, "fh3m", triac.fh3.m);
-        }
-        else
-        {
+            //
             cJSON_AddStringToObject(json_object, "ih3h", "-");
             cJSON_AddStringToObject(json_object, "ih3m", "-");
             cJSON_AddStringToObject(json_object, "fh3h", "-");
             cJSON_AddStringToObject(json_object, "fh3m", "-");
-        }
-        if (triac.checkh4 == pdTRUE)
-        {
-            cJSON_AddNumberToObject(json_object, "ih4h", triac.ih4.h);
-            cJSON_AddNumberToObject(json_object, "ih4m", triac.ih4.m);
-            cJSON_AddNumberToObject(json_object, "fh4h", triac.fh4.h);
-            cJSON_AddNumberToObject(json_object, "fh4m", triac.fh4.m);
-        }
-        else
-        {
+            //
             cJSON_AddStringToObject(json_object, "ih4h", "-");
             cJSON_AddStringToObject(json_object, "ih4m", "-");
             cJSON_AddStringToObject(json_object, "fh4h", "-");
             cJSON_AddStringToObject(json_object, "fh4m", "-");
         }
+        else if (modo_triac == MANUAL_OFF)
+        {
+            modo = "Apagado";
+            cJSON_AddStringToObject(json_object, "Modo", modo);
+            cJSON_AddStringToObject(json_object, "ih1h", "-");
+            cJSON_AddStringToObject(json_object, "ih1m", "-");
+            cJSON_AddStringToObject(json_object, "fh1h", "-");
+            cJSON_AddStringToObject(json_object, "fh1m", "-");
+            //
+            cJSON_AddStringToObject(json_object, "ih2h", "-");
+            cJSON_AddStringToObject(json_object, "ih2m", "-");
+            cJSON_AddStringToObject(json_object, "fh2h", "-");
+            cJSON_AddStringToObject(json_object, "fh2m", "-");
+            //
+            cJSON_AddStringToObject(json_object, "ih3h", "-");
+            cJSON_AddStringToObject(json_object, "ih3m", "-");
+            cJSON_AddStringToObject(json_object, "fh3h", "-");
+            cJSON_AddStringToObject(json_object, "fh3m", "-");
+            //
+            cJSON_AddStringToObject(json_object, "ih4h", "-");
+            cJSON_AddStringToObject(json_object, "ih4m", "-");
+            cJSON_AddStringToObject(json_object, "fh4h", "-");
+            cJSON_AddStringToObject(json_object, "fh4m", "-");
+        }
+        else if (modo_triac == AUTOMATIC)
+        {
+            modo = "Automatico";
+            cJSON_AddStringToObject(json_object, "Modo", modo);
+            ESP_LOGE(TAG, "EL VALOR DEL ENABLE DEL H1 ES %d", triac_auto_info.triac_auto[0].enable);
+            if (triac_auto_info.triac_auto[0].enable == 1)
+
+            {
+                ESP_LOGE(TAG, "ENTRE EN ENABLE DEL HORARIO 1");
+                cJSON_AddNumberToObject(json_object, "ih1h", triac_auto_info.triac_auto[0].turn_on_time.tm_hour);
+                cJSON_AddNumberToObject(json_object, "ih1m", triac_auto_info.triac_auto[0].turn_on_time.tm_min);
+                cJSON_AddNumberToObject(json_object, "fh1h", triac_auto_info.triac_auto[0].turn_off_time.tm_hour);
+                cJSON_AddNumberToObject(json_object, "fh1m", triac_auto_info.triac_auto[0].turn_off_time.tm_min);
+            }
+            else
+            {
+                ESP_LOGE(TAG, "ENTRE EN DISENABLE DEL HORARIO 1");
+                cJSON_AddStringToObject(json_object, "ih1h", "-");
+                cJSON_AddStringToObject(json_object, "ih1m", "-");
+                cJSON_AddStringToObject(json_object, "fh1h", "-");
+                cJSON_AddStringToObject(json_object, "fh1m", "-");
+                ESP_LOGE(TAG, "EL HORARIO DE INICIO ES: %d:%d ", triac_auto_info.triac_auto[0].turn_on_time.tm_hour, triac_auto_info.triac_auto[0].turn_on_time.tm_min);
+            }
+            if (triac_auto_info.triac_auto[1].enable == 1)
+            {
+                cJSON_AddNumberToObject(json_object, "ih2h", triac_auto_info.triac_auto[1].turn_on_time.tm_hour);
+                cJSON_AddNumberToObject(json_object, "ih2m", triac_auto_info.triac_auto[1].turn_on_time.tm_min);
+                cJSON_AddNumberToObject(json_object, "fh2h", triac_auto_info.triac_auto[1].turn_off_time.tm_hour);
+                cJSON_AddNumberToObject(json_object, "fh2m", triac_auto_info.triac_auto[1].turn_off_time.tm_min);
+            }
+            else
+            {
+                cJSON_AddStringToObject(json_object, "ih2h", "-");
+                cJSON_AddStringToObject(json_object, "ih2m", "-");
+                cJSON_AddStringToObject(json_object, "fh2h", "-");
+                cJSON_AddStringToObject(json_object, "fh2m", "-");
+            }
+            if (triac_auto_info.triac_auto[2].enable == 1)
+            {
+                cJSON_AddNumberToObject(json_object, "ih3h", triac_auto_info.triac_auto[2].turn_on_time.tm_hour);
+                cJSON_AddNumberToObject(json_object, "ih3m", triac_auto_info.triac_auto[2].turn_on_time.tm_min);
+                cJSON_AddNumberToObject(json_object, "fh3h", triac_auto_info.triac_auto[2].turn_off_time.tm_hour);
+                cJSON_AddNumberToObject(json_object, "fh3m", triac_auto_info.triac_auto[2].turn_off_time.tm_min);
+            }
+            else
+            {
+                cJSON_AddStringToObject(json_object, "ih3h", "-");
+                cJSON_AddStringToObject(json_object, "ih3m", "-");
+                cJSON_AddStringToObject(json_object, "fh3h", "-");
+                cJSON_AddStringToObject(json_object, "fh3m", "-");
+            }
+            if (triac_auto_info.triac_auto[3].enable == 1)
+            {
+                cJSON_AddNumberToObject(json_object, "ih4h", triac_auto_info.triac_auto[3].turn_on_time.tm_hour);
+                cJSON_AddNumberToObject(json_object, "ih4m", triac_auto_info.triac_auto[3].turn_on_time.tm_min);
+                cJSON_AddNumberToObject(json_object, "fh4h", triac_auto_info.triac_auto[3].turn_off_time.tm_hour);
+                cJSON_AddNumberToObject(json_object, "fh4m", triac_auto_info.triac_auto[3].turn_off_time.tm_min);
+            }
+            else
+            {
+                cJSON_AddStringToObject(json_object, "ih4h", "-");
+                cJSON_AddStringToObject(json_object, "ih4m", "-");
+                cJSON_AddStringToObject(json_object, "fh4h", "-");
+                cJSON_AddStringToObject(json_object, "fh4m", "-");
+            }
+        }
+
+        char *json_str = cJSON_Print(json_object);
+        ESP_LOGI(TAG, "JSON ES: %s", json_str);
+        cJSON_Delete(json_object);
+
+        httpd_resp_set_type(req, "application/json");
+        httpd_resp_send(req, json_str, strlen(json_str));
+
+        free(json_str);
+
+        return ESP_OK;
     }
-
-    char *json_str = cJSON_Print(json_object);
-    ESP_LOGI(TAG, "JSON ES: %s", json_str);
-    cJSON_Delete(json_object);
-
-    httpd_resp_set_type(req, "application/json");
-    httpd_resp_send(req, json_str, strlen(json_str));
-
-    free(json_str);
-
-    return ESP_OK;
+    else
+    {
+        ESP_LOGI(TAG, "ERROR EN OBTENER DATOS DE TRIAC");
+        return ESP_FAIL;
+    }
 }
 
 esp_err_t vegeflor_data_handler(httpd_req_t *req)
 {
     char *modo;
-    cJSON *json_object = cJSON_CreateObject();
-    if (vegeflor.modo == VEGE)
+    uint8_t status = 0;
+    status = global_manager_get_rele_vege_info(&rele_status);
+    ESP_LOGE(TAG, "LO QUE ME DEVUELVE LA FUNCION DEL GET RELE ES %d", status);
+    if (status == 1)
     {
-        modo = "Vegetacion";
+        cJSON *json_object = cJSON_CreateObject();
+        ESP_LOGE(TAG, "EL STATUS DEL RELE ES %d", rele_status);
+        if (rele_status == RELE_VEGE_ENABLE)
+        {
+            modo = "Vegetacion";
+        }
+        else
+        {
+            modo = "Floracion";
+        }
+        cJSON_AddStringToObject(json_object, "Modo", modo);
+
+        char *json_str = cJSON_Print(json_object);
+        ESP_LOGI(TAG, "JSON ES: %s", json_str);
+        cJSON_Delete(json_object);
+
+        httpd_resp_set_type(req, "application/json");
+        httpd_resp_send(req, json_str, strlen(json_str));
+
+        free(json_str);
+
+        return ESP_OK;
     }
     else
     {
-        modo = "Floracion";
+        ESP_LOGI(TAG, "ERROR EN OBTENER VEGEFLOR");
+        return ESP_FAIL;
     }
-    cJSON_AddStringToObject(json_object, "Modo", modo);
-
-    char *json_str = cJSON_Print(json_object);
-    ESP_LOGI(TAG, "JSON ES: %s", json_str);
-    cJSON_Delete(json_object);
-
-    httpd_resp_set_type(req, "application/json");
-    httpd_resp_send(req, json_str, strlen(json_str));
-
-    free(json_str);
-
-    return ESP_OK;
 }
 
 esp_err_t version_data_handler(httpd_req_t *req)
@@ -1125,21 +1100,27 @@ esp_err_t version_data_handler(httpd_req_t *req)
 
 esp_err_t hora_data_handler(httpd_req_t *req)
 {
-    cJSON *json_object = cJSON_CreateObject();
 
-    cJSON_AddNumberToObject(json_object, "Hora_h", hora.hr.h);
-    cJSON_AddNumberToObject(json_object, "Hora_m", hora.hr.m);
-
-    char *json_str = cJSON_Print(json_object);
-    ESP_LOGI(TAG, "JSON ES: %s", json_str);
-    cJSON_Delete(json_object);
-
-    httpd_resp_set_type(req, "application/json");
-    httpd_resp_send(req, json_str, strlen(json_str));
-
-    free(json_str);
-
-    return ESP_OK;
+    uint8_t status = 0;
+    status = global_manager_get_current_time_info(&aux_hora);
+    if (status == 1)
+    {
+        cJSON *json_object = cJSON_CreateObject();
+        cJSON_AddNumberToObject(json_object, "Hora_h", aux_hora.tm_hour);
+        cJSON_AddNumberToObject(json_object, "Hora_m", aux_hora.tm_min);
+        char *json_str = cJSON_Print(json_object);
+        ESP_LOGI(TAG, "JSON ES: %s", json_str);
+        cJSON_Delete(json_object);
+        httpd_resp_set_type(req, "application/json");
+        httpd_resp_send(req, json_str, strlen(json_str));
+        free(json_str);
+        return ESP_OK;
+    }
+    else
+    {
+        ESP_LOGI(TAG, "ERROR EN OBTENER HORA");
+        return ESP_FAIL;
+    }
 }
 
 //---------FUNCIONES DEL WEBSERVER-------------//
@@ -1170,16 +1151,7 @@ httpd_handle_t start_webserver(void)
         httpd_register_uri_handler(server, &version_data_uri);
         httpd_register_uri_handler(server, &hora_data_uri);
         httpd_register_uri_handler(server, &hora_post);
-        ESP_LOGI("RED", "INICIO VARIABLE RED");
         init_red(&red);
-        ESP_LOGI(PWM, "INICIO VARIABLE PWM");
-        init_pwm(&pwm);
-        ESP_LOGI(TRIAC, "INICIO VARIABLE TRIAC");
-        init_triac(&triac);
-        ESP_LOGI(VEGEFLOR, "INICIO VARIABLE VEGEFLOR");
-        init_vegeflor(&vegeflor);
-        ESP_LOGI(HORA, "INICIO VARIABLE HORA");
-        init_hora(&hora);
         return server;
     }
 

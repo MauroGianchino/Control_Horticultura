@@ -19,6 +19,8 @@
 #include "lwip/ip4_addr.h"
 #include "esp_mac.h"
 #include "wifi_ap.h"
+#include "../include/global_manager.h"
+#include "../include/web_server.h"
 
 #define EXAMPLE_ESP_WIFI_SSID "Red_Hor"
 #define EXAMPLE_ESP_WIFI_PASS "Horti2505"
@@ -29,6 +31,8 @@
 #define DEFAULT_AP_GATEWAY "192.168.1.1"
 #define DEFAULT_AP_NETMASK "255.255.255.0"
 esp_netif_t *esp_netif_ap = NULL;
+
+//red_t red_things;
 
 void wifi_event_handler(void *arg, esp_event_base_t event_base, int32_t event_id, void *event_data)
 {
@@ -65,6 +69,11 @@ void wifi_init_softap(void)
 
     ESP_ERROR_CHECK(esp_event_handler_instance_register(WIFI_EVENT, ESP_EVENT_ANY_ID, &wifi_event_handler, NULL, NULL)); // aca entra la funcion del handler
 
+    //global_manager_get_net_info(red_things.ID, red_things.PASS);
+
+    // char *ssid = "test_id";
+    // char *password = "test_pass";
+
     wifi_config_t wifi_config = {
         .ap = {
             .ssid = EXAMPLE_ESP_WIFI_SSID,
@@ -83,6 +92,12 @@ void wifi_init_softap(void)
             },
         },
     };
+    // memset((char *)wifi_config.ap.ssid, '\0', sizeof(wifi_config.ap.ssid));
+    // memset((char *)wifi_config.ap.password, '\0', sizeof(wifi_config.ap.password));
+
+    // strncpy((char *)wifi_config.ap.ssid, ssid, sizeof(wifi_config.ap.ssid));
+    // strncpy((char *)wifi_config.ap.password, password, sizeof(wifi_config.ap.password));
+
     if (strlen(EXAMPLE_ESP_WIFI_PASS) == 0)
     {
         wifi_config.ap.authmode = WIFI_AUTH_OPEN;
