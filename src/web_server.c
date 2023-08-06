@@ -902,7 +902,7 @@ esp_err_t pwm_data_handler(httpd_req_t *req)
 esp_err_t triac_data_handler(httpd_req_t *req)
 {
     char *modo;
-    uint8_t status = 0;
+    uint8_t status = 0;  
     status = global_manager_get_triac_info(&modo_triac, &triac_auto_info);
     if (status == 1)
     {
@@ -1131,9 +1131,12 @@ httpd_handle_t start_webserver(void)
     httpd_config_t config = HTTPD_DEFAULT_CONFIG(); // Configuracion por default del server
     config.stack_size = 16384;
     config.max_uri_handlers = 15;
+    config.max_resp_headers = 15;
+
+    esp_err_t ret = httpd_start(&server, &config);
     // Start the httpd server
     ESP_LOGI(TAG, "Starting server on port: '%d'", config.server_port);
-    if (httpd_start(&server, &config) == ESP_OK)
+    if(ret == ESP_OK)
     {
         // Set URI handlers
         ESP_LOGI(TAG, "Registering URI handlers");
@@ -1154,7 +1157,19 @@ httpd_handle_t start_webserver(void)
         init_red(&red);
         return server;
     }
-
+    else if(ret == ESP_ERR_HTTPD_ALLOC_MEM)
+    {
+        ESP_LOGI(TAG, "ESP_ERR_HTTPD_ALLOC_MEM \n");
+    }
+    else if(ret == ESP_ERR_HTTPD_TASK)
+    {
+        ESP_LOGI(TAG, "ESP_ERR_HTTPD_TASK \n");
+    }
+    else 
+    {
+        ESP_LOGI(TAG, "ret = %i \n", (int)ret);
+    }
+    
     ESP_LOGI(TAG, "Error starting server!");
     return NULL;
 }
