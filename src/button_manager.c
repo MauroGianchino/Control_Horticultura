@@ -33,8 +33,8 @@ typedef enum{
     TRIAC_BUTTON_PUSHED,
     TRIAC_BUTTON_PUSHED_3_SEC,
     VEGE_BUTTON_PUSHED,
-    SIMUL_POTE_POS_BUTTON_PUSHED,
-    SIMUL_POTE_NEG_BUTTON_PUSHED,
+    //SIMUL_POTE_POS_BUTTON_PUSHED,
+    //SIMUL_POTE_NEG_BUTTON_PUSHED,
 }cmds_t;
 
 typedef struct{
@@ -45,8 +45,8 @@ typedef struct{
 static QueueHandle_t button_manager_queue;
 
 static TickType_t push_init_time_vege_button;
-static TickType_t push_init_time_simul_pote_pos_button;
-static TickType_t push_init_time_simul_pote_neg_button;
+//static TickType_t push_init_time_simul_pote_pos_button;
+//static TickType_t push_init_time_simul_pote_neg_button;
 
 volatile int triac_button_pressed_time = 0;
 volatile int pwm_button_pressed_time = 0;
@@ -61,8 +61,8 @@ static void wifi_mode_button_interrupt(void *arg);
 static void pwm_button_interrupt(void *arg);
 static void triac_button_interrupt(void *arg);
 static void vege_button_interrupt(void *arg);
-static void simul_pote_pos_button_interrupt(void *arg);
-static void simul_pote_neg_button_interrupt(void *arg);
+//static void simul_pote_pos_button_interrupt(void *arg);
+//static void simul_pote_neg_button_interrupt(void *arg);
 //--------------------DEFINICION DE DATOS INTERNOS------------------------------
 //------------------------------------------------------------------------------
 
@@ -90,12 +90,12 @@ static void config_buttons_isr(void)
     config.intr_type = GPIO_INTR_ANYEDGE;
     gpio_config(&config);
 
-    config.pin_bit_mask = (1ULL << SIMUL_POTE_POS_BUTTON) | (1ULL << SIMUL_POTE_NEG_BUTTON);
+    /*config.pin_bit_mask = (1ULL << SIMUL_POTE_POS_BUTTON) | (1ULL << SIMUL_POTE_NEG_BUTTON);
     config.mode = GPIO_MODE_INPUT;
     config.pull_up_en = GPIO_PULLUP_DISABLE;
     config.pull_down_en = GPIO_PULLDOWN_DISABLE;
     config.intr_type = GPIO_INTR_NEGEDGE;
-    gpio_config(&config);
+    gpio_config(&config);*/
 
     // Configurar la interrupción del botón
     gpio_install_isr_service(0);
@@ -103,12 +103,12 @@ static void config_buttons_isr(void)
     gpio_isr_handler_add(PWM_BUTTON, pwm_button_interrupt, NULL);
     gpio_isr_handler_add(TRIAC_BUTTON, triac_button_interrupt, NULL);
     gpio_isr_handler_add(VEGE_BUTTON, vege_button_interrupt, NULL);
-    gpio_isr_handler_add(SIMUL_POTE_POS_BUTTON, simul_pote_pos_button_interrupt, NULL);
-    gpio_isr_handler_add(SIMUL_POTE_NEG_BUTTON, simul_pote_neg_button_interrupt, NULL);
+    //gpio_isr_handler_add(SIMUL_POTE_POS_BUTTON, simul_pote_pos_button_interrupt, NULL);
+    //gpio_isr_handler_add(SIMUL_POTE_NEG_BUTTON, simul_pote_neg_button_interrupt, NULL);
 
     push_init_time_vege_button = xTaskGetTickCount();
-    push_init_time_simul_pote_pos_button = xTaskGetTickCount();
-    push_init_time_simul_pote_neg_button = xTaskGetTickCount();
+    //push_init_time_simul_pote_pos_button = xTaskGetTickCount();
+    //push_init_time_simul_pote_neg_button = xTaskGetTickCount();
 }
 //------------------------------------------------------------------------------
 static void IRAM_ATTR wifi_mode_button_interrupt(void *arg) 
@@ -199,7 +199,7 @@ static void IRAM_ATTR vege_button_interrupt(void *arg)
     push_init_time_vege_button = current_time;
 }
 //------------------------------------------------------------------------------
-static void IRAM_ATTR simul_pote_pos_button_interrupt(void *arg) 
+/*static void IRAM_ATTR simul_pote_pos_button_interrupt(void *arg) 
 {
     TickType_t current_time = xTaskGetTickCountFromISR();
     button_events_t ev;
@@ -210,9 +210,9 @@ static void IRAM_ATTR simul_pote_pos_button_interrupt(void *arg)
         xQueueSendFromISR(button_manager_queue, &ev, pdFALSE);
     }
     push_init_time_simul_pote_pos_button = current_time;
-}
+}*/
 //------------------------------------------------------------------------------
-static void IRAM_ATTR simul_pote_neg_button_interrupt(void *arg) 
+/*static void IRAM_ATTR simul_pote_neg_button_interrupt(void *arg) 
 {
     TickType_t current_time = xTaskGetTickCountFromISR();
     button_events_t ev;
@@ -223,7 +223,7 @@ static void IRAM_ATTR simul_pote_neg_button_interrupt(void *arg)
         xQueueSendFromISR(button_manager_queue, &ev, pdFALSE);
     }
     push_init_time_simul_pote_neg_button = current_time;  
-}
+}*/
 //------------------------------------------------------------------------------
 void button_event_manager_task(void * pvParameters)
 {
@@ -303,7 +303,7 @@ void button_event_manager_task(void * pvParameters)
                         rele_vege_status = RELE_VEGE_DISABLE;
                     }
                     break;
-                case SIMUL_POTE_POS_BUTTON_PUSHED:
+                /*case SIMUL_POTE_POS_BUTTON_PUSHED:
                     #ifdef DIGITAL_POTE
                         if(pwm_percent_power < MAX_PERCENTAGE_POWER_VALUE - 5)
                         {
@@ -320,7 +320,7 @@ void button_event_manager_task(void * pvParameters)
                             global_manager_set_pwm_power_value_manual(pwm_percent_power);
                         }   
                     #endif            
-                    break;
+                    break;*/
                 default:
                 break;
             }

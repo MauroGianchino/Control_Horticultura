@@ -20,7 +20,7 @@
 //------------------------------------------------------------------------------
 #define DEBUG_MODULE 1
 
-#define QUEUE_ELEMENT_QUANTITY 20
+#define QUEUE_ELEMENT_QUANTITY 10
 #define SECOND_1 1000
 #define UPDATE_TIME 15 // 15 seconds
 
