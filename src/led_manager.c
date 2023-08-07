@@ -16,7 +16,7 @@
 //------------------------------------------------------------------------------
 #define DEBUG_MODULE 1
 
-#define QUEUE_ELEMENT_QUANTITY 20
+#define QUEUE_ELEMENT_QUANTITY 10
 
 #define MANUAL_PWM_TIME 3000000
 #define MANUAL_TRIAC_TIME 3000000

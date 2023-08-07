@@ -15,7 +15,7 @@
 #include "../include/global_manager.h"
 //--------------------MACROS Y DEFINES------------------------------------------
 //------------------------------------------------------------------------------
-#define QUEUE_ELEMENT_QUANTITY 50
+#define QUEUE_ELEMENT_QUANTITY 30
 
 #define NVS_NAMESPACE "device"
 #define MAX_VALUE_LENGTH 80

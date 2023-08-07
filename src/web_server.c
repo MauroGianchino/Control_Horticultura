@@ -273,34 +273,17 @@ void analyze_token_triac(char *token)
             ESP_LOGE(TRIAC, "ENTRE EN ENABLE DE H1");
             triac_h1.enable = 1;
         }
-        else
-        {
-            ESP_LOGE(TRIAC, "ENTRE EN DISENABLE DE H1");
-            triac_h1.enable = 0;
-        }
         if (token[9] == '2')
         {
             triac_h2.enable = 1;
-        }
-        else
-        {
-            triac_h4.enable = 0;
         }
         if (token[9] == '3')
         {
             triac_h3.enable = 1;
         }
-        else
-        {
-            triac_h3.enable = 0;
-        }
         if (token[9] == '4')
         {
             triac_h4.enable = 1;
-        }
-        else
-        {
-            triac_h4.enable = 0;
         }
         // else
         //{
@@ -408,10 +391,14 @@ void parse_triac(char *buff)
         ESP_LOGI(TRIAC, "%s", token);
         token = strtok(NULL, delim);
     }
-    global_manager_update_auto_triac_calendar(triac_h1, 1, pdFALSE);
-    global_manager_update_auto_triac_calendar(triac_h2, 2, pdFALSE);
-    global_manager_update_auto_triac_calendar(triac_h3, 3, pdFALSE);
-    global_manager_update_auto_triac_calendar(triac_h4, 4, pdFALSE);
+    if(triac_h1.enable != 1)triac_h1.enable = 0;
+    if(triac_h2.enable != 1)triac_h2.enable = 0;
+    if(triac_h3.enable != 1)triac_h3.enable = 0;
+    if(triac_h4.enable != 1)triac_h4.enable = 0;
+    global_manager_update_auto_triac_calendar(triac_h1, 1, false);
+    global_manager_update_auto_triac_calendar(triac_h2, 2, false);
+    global_manager_update_auto_triac_calendar(triac_h3, 3, false);
+    global_manager_update_auto_triac_calendar(triac_h4, 4, false);
 
     ESP_LOGI(TRIAC, "Salgo del parseo");
 }

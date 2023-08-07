@@ -24,7 +24,7 @@
 //------------------------------------------------------------------------------
 #define DEBUG_MODULE 1
 
-#define QUEUE_ELEMENT_QUANTITY 100
+#define QUEUE_ELEMENT_QUANTITY 50
 
 #define TIMEOUT_MS 500
 //------------------- TYPEDEF --------------------------------------------------

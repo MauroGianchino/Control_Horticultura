@@ -14,7 +14,7 @@
 //------------------------------------------------------------------------------
 #define DEBUG_MODULE 1
 
-#define QUEUE_ELEMENT_QUANTITY 20
+#define QUEUE_ELEMENT_QUANTITY 15
 
 #define PWM_TIMER LEDC_TIMER_0
 #define PWM_MODE LEDC_HIGH_SPEED_MODE
