@@ -24,7 +24,7 @@
 //------------------------------------------------------------------------------
 #define DEBUG_MODULE 1
 
-#define QUEUE_ELEMENT_QUANTITY 200
+#define QUEUE_ELEMENT_QUANTITY 100
 
 #define TIMEOUT_MS 500
 //------------------- TYPEDEF --------------------------------------------------
@@ -72,7 +72,7 @@ typedef struct
 
 typedef struct
 {
-    char ssid[40];
+    char ssid[33];
     char password[40];
     output_mode_t pwm_mode;
     pwm_auto_info_t pwm_auto;
@@ -749,7 +749,7 @@ static void global_manager_task(void *arg)
 void global_manager_init(void)
 {
     global_manager_queue = xQueueCreate(QUEUE_ELEMENT_QUANTITY, sizeof(global_event_t));
-    response_queue = xQueueCreate(QUEUE_ELEMENT_QUANTITY, sizeof(global_event_t));
+    response_queue = xQueueCreate(QUEUE_ELEMENT_QUANTITY, sizeof(response_event_t));
 
     xTaskCreate(global_manager_task, "global_manager_task", configMINIMAL_STACK_SIZE * 15,
                 NULL, configMAX_PRIORITIES - 1, NULL);
