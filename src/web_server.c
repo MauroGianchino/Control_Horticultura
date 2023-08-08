@@ -69,6 +69,15 @@ rele_output_status_t rele_status; // variable para leer el estado del relé
 
 //----------FUNCIONES------------//
 
+void reset_triac_h(triac_config_info_t *triac_h)
+{
+    triac_h->enable = 0;
+    triac_h->turn_off_time.tm_hour = 0;
+    triac_h->turn_off_time.tm_min = 0;
+    triac_h->turn_on_time.tm_hour = 0;
+    triac_h->turn_on_time.tm_min = 0;
+}
+
 void init_red(red_t *red)
 {
     memset(red->ID, '\0', sizeof(red->ID));
@@ -306,6 +315,10 @@ void parse_triac(char *buff)
 {
     // el & es el separador de los campos
     ESP_LOGI(TRIAC, "Testeo del parseo de TRIAC");
+    reset_triac_h(&triac_h1);
+    reset_triac_h(&triac_h2);
+    reset_triac_h(&triac_h3);
+    reset_triac_h(&triac_h4);
     char delim[2] = "&";
     char *token;
     token = strtok(buff, delim);

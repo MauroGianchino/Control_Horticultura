@@ -12,6 +12,9 @@
 #include <esp_wifi.h>
 #include <esp_system.h>
 #include "nvs_flash.h"
+#include "../include/version.h"
+#include "../include/current_time_manager.h"
+#include "../include/global_manager.h"
 
 typedef struct red
 {
@@ -44,3 +47,4 @@ void parse_hora(char *, struct tm *);
 void analyze_token_pwm(char *);
 void analyze_token_triac(char *);
 void init_red(red_t *);
+void reset_triac_h(triac_config_info_t *);
