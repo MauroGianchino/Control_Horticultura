@@ -32,7 +32,7 @@
 #define DEFAULT_AP_NETMASK "255.255.255.0"
 esp_netif_t *esp_netif_ap = NULL;
 
-//red_t red_things;
+// red_t red_things;
 
 void wifi_event_handler(void *arg, esp_event_base_t event_base, int32_t event_id, void *event_data)
 {
@@ -69,7 +69,7 @@ void wifi_init_softap(void)
 
     ESP_ERROR_CHECK(esp_event_handler_instance_register(WIFI_EVENT, ESP_EVENT_ANY_ID, &wifi_event_handler, NULL, NULL)); // aca entra la funcion del handler
 
-    //global_manager_get_net_info(red_things.ID, red_things.PASS);
+    // global_manager_get_net_info(red_things.ID, red_things.PASS);
 
     // char *ssid = "test_id";
     // char *password = "test_pass";

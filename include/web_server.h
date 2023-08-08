@@ -15,8 +15,8 @@
 
 typedef struct red
 {
-    char ID[33];   // maximo 32 caracteres
-    char PASS[33]; // maximo 32 caracteres
+    char ID[32];   // maximo 32 caracteres
+    char PASS[64]; // maximo 64 caracteres
 } red_t;
 
 esp_err_t index_get_handler(httpd_req_t *);
@@ -44,7 +44,3 @@ void parse_hora(char *, struct tm *);
 void analyze_token_pwm(char *);
 void analyze_token_triac(char *);
 void init_red(red_t *);
-void print_pwm();
-void print_vegeflor(vegeflor_t *);
-void print_red(red_t *);
-void print_hora(hora_t *);

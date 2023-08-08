@@ -77,88 +77,12 @@ void init_red(red_t *red)
     strcpy(red->PASS, "-");
 }
 
-void print_pwm()
-{
-}
-
-void print_triac(triac_t *triac)
-{
-
-    /*ESP_LOGW(TAG, "Horario 1: Inicio:%d:%d Final: %d:%d", triac->ih1.h, triac->ih1.m, triac->fh1.h, triac->fh1.m);
-    ESP_LOGW(TAG, "Horario 2: Inicio:%d:%d Final: %d:%d", triac->ih2.h, triac->ih2.m, triac->fh2.h, triac->fh2.m);
-    ESP_LOGW(TAG, "Horario 3: Inicio:%d:%d Final: %d:%d", triac->ih3.h, triac->ih3.m, triac->fh3.h, triac->fh3.m);
-    ESP_LOGW(TAG, "Horario 4: Inicio:%d:%d Final: %d:%d", triac->ih4.h, triac->ih4.m, triac->fh4.h, triac->fh4.m);
-    if (triac->modo == SI)
-    {
-        ESP_LOGW(TAG, "TRIAC ACTIVADO");
-    }
-    else if (triac->modo == NO)
-    {
-        ESP_LOGW(TAG, "TRIAC DESACTIVADO");
-    }
-    else
-    {
-        ESP_LOGW(TAG, "TRIAC EN AUTOMATICO");
-    }
-    if (triac->checkh1 == pdFALSE)
-    {
-        ESP_LOGW(TAG, "HORARIO 1 DESHABILITADO");
-    }
-    else
-    {
-        ESP_LOGW(TAG, "HORARIO 1 HABILITADO");
-    }
-    if (triac->checkh2 == pdFALSE)
-    {
-        ESP_LOGW(TAG, "HORARIO 2 DESHABILITADO");
-    }
-    else
-    {
-        ESP_LOGW(TAG, "HORARIO 2 HABILITADO");
-    }
-    if (triac->checkh3 == pdFALSE)
-    {
-        ESP_LOGW(TAG, "HORARIO 3 DESHABILITADO");
-    }
-    else
-    {
-        ESP_LOGW(TAG, "HORARIO 3 HABILITADO");
-    }
-    if (triac->checkh4 == pdFALSE)
-    {
-        ESP_LOGW(TAG, "HORARIO 4 DESHABILITADO");
-    }
-    else
-    {
-        ESP_LOGW(TAG, "HORARIO 4 HABILITADO");
-    }*/
-}
-
-void print_vegeflor(vegeflor_t *vegeflor)
-{
-
-    /*if (vegeflor->modo == VEGE)
-    {
-        ESP_LOGW(TAG, "MODO VEGETACION");
-    }
-    else
-    {
-        ESP_LOGW(TAG, "MODO FLORACION");
-    }*/
-}
-
 void print_red(red_t *red)
 {
 
     ESP_LOGW(TAG, "ID:%s", red->ID);
 
     ESP_LOGW(TAG, "PASS:%s", red->PASS);
-}
-
-void print_hora(hora_t *hora)
-{
-
-    // ESP_LOGW(HORA, "Hora: %d:%d", hora->hr.h, hora->hr.m);
 }
 
 void analyze_token_pwm(char *token)
@@ -248,8 +172,8 @@ void analyze_token_triac(char *token)
     ESP_LOGI(TRIAC, "%d", strlen(token));
     switch (token[0])
     {
-    case 'm':                 // Parseo modo
-        if (token[12] == 'S') // caso de que sea un numero de un solo digito
+    case 'm': // Parseo modo
+        if (token[12] == 'S')
         {
             global_manager_set_triac_mode_manual_on(pdFALSE);
         }
@@ -391,10 +315,14 @@ void parse_triac(char *buff)
         ESP_LOGI(TRIAC, "%s", token);
         token = strtok(NULL, delim);
     }
-    if(triac_h1.enable != 1)triac_h1.enable = 0;
-    if(triac_h2.enable != 1)triac_h2.enable = 0;
-    if(triac_h3.enable != 1)triac_h3.enable = 0;
-    if(triac_h4.enable != 1)triac_h4.enable = 0;
+    if (triac_h1.enable != 1)
+        triac_h1.enable = 0;
+    if (triac_h2.enable != 1)
+        triac_h2.enable = 0;
+    if (triac_h3.enable != 1)
+        triac_h3.enable = 0;
+    if (triac_h4.enable != 1)
+        triac_h4.enable = 0;
     global_manager_update_auto_triac_calendar(triac_h1, 1, false);
     global_manager_update_auto_triac_calendar(triac_h2, 2, false);
     global_manager_update_auto_triac_calendar(triac_h3, 3, false);
@@ -889,7 +817,7 @@ esp_err_t pwm_data_handler(httpd_req_t *req)
 esp_err_t triac_data_handler(httpd_req_t *req)
 {
     char *modo;
-    uint8_t status = 0;  
+    uint8_t status = 0;
     status = global_manager_get_triac_info(&modo_triac, &triac_auto_info);
     if (status == 1)
     {
@@ -1123,7 +1051,7 @@ httpd_handle_t start_webserver(void)
     esp_err_t ret = httpd_start(&server, &config);
     // Start the httpd server
     ESP_LOGI(TAG, "Starting server on port: '%d'", config.server_port);
-    if(ret == ESP_OK)
+    if (ret == ESP_OK)
     {
         // Set URI handlers
         ESP_LOGI(TAG, "Registering URI handlers");
@@ -1144,19 +1072,19 @@ httpd_handle_t start_webserver(void)
         init_red(&red);
         return server;
     }
-    else if(ret == ESP_ERR_HTTPD_ALLOC_MEM)
+    else if (ret == ESP_ERR_HTTPD_ALLOC_MEM)
     {
         ESP_LOGI(TAG, "ESP_ERR_HTTPD_ALLOC_MEM \n");
     }
-    else if(ret == ESP_ERR_HTTPD_TASK)
+    else if (ret == ESP_ERR_HTTPD_TASK)
     {
         ESP_LOGI(TAG, "ESP_ERR_HTTPD_TASK \n");
     }
-    else 
+    else
     {
         ESP_LOGI(TAG, "ret = %i \n", (int)ret);
     }
-    
+
     ESP_LOGI(TAG, "Error starting server!");
     return NULL;
 }
