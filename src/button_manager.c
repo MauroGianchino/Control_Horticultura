@@ -10,6 +10,8 @@
 #include "sdkconfig.h"
 #include "esp_log.h"
 
+#include "esp_timer.h"
+
 #include "../include/button_manager.h"
 #include "../include/board_def.h"
 #include "../include/global_manager.h"
@@ -17,7 +19,7 @@
 //------------------------------------------------------------------------------
 #define QUEUE_ELEMENT_QUANTITY 20
 
-#define TIEMPO_ANTIRREBOTE_MS 40
+#define TIEMPO_ANTIRREBOTE_MS 50
 #define TIEMPO_PULSADO_MS 3000
 
 //#define DEBUG_MODULE
@@ -49,8 +51,8 @@ static TickType_t push_init_time_vege_button;
 //static TickType_t push_init_time_simul_pote_neg_button;
 
 volatile int triac_button_pressed_time = 0;
-volatile int pwm_button_pressed_time = 0;
 volatile int wifi_button_pressed_time = 0;
+volatile int64_t start_time = 0;
 //--------------------DECLARACION DE FUNCIONES INTERNAS-------------------------
 //------------------------------------------------------------------------------
 static void button_event_manager_task(void * pvParameters);
@@ -138,24 +140,28 @@ static void IRAM_ATTR wifi_mode_button_interrupt(void *arg)
 static void IRAM_ATTR pwm_button_interrupt(void *arg) 
 {
     button_events_t ev;
-    uint32_t currentTime = xTaskGetTickCountFromISR() * portTICK_PERIOD_MS; 
+    int64_t time_now = esp_timer_get_time();
 
     if(gpio_get_level(PWM_BUTTON) == 0)
     {
-        pwm_button_pressed_time += currentTime;
+        start_time = time_now;
     }
     else
     {
-        if(currentTime - pwm_button_pressed_time >= TIEMPO_PULSADO_MS)
+        if (start_time != 0)
         {
-            ev.cmd = PWM_BUTTON_PUSHED_3_SEC;
+            int64_t diff = time_now - start_time;
+            if (diff > 3000000)  // 3 seconds expressed in microseconds
+            { 
+                ev.cmd = PWM_BUTTON_PUSHED_3_SEC;
+            }
+            else if (diff > 30000)  // 30ms seconds expressed in microseconds
+            {
+                 ev.cmd = PWM_BUTTON_PUSHED;
+            }
+            start_time = 0;
+            xQueueSendFromISR(button_manager_queue, &ev, pdFALSE);
         }
-        else if(currentTime - pwm_button_pressed_time >= TIEMPO_ANTIRREBOTE_MS)
-        {
-            ev.cmd = PWM_BUTTON_PUSHED;
-        }
-        pwm_button_pressed_time = 0;
-        xQueueSendFromISR(button_manager_queue, &ev, pdFALSE);
     }
 }
 //------------------------------------------------------------------------------
@@ -247,14 +253,14 @@ void button_event_manager_task(void * pvParameters)
                 case CMD_UNDEFINED:
                     break;
                 case WIFI_BUTTON_PUSHED:
-                    gpio_set_level(GPIO_NUM_4, 1);
-                    gpio_set_level(GPIO_NUM_5, 0);
-                    printf("WIFI BUTTON PUSHED\n");
+                    //gpio_set_level(GPIO_NUM_4, 1);
+                    //gpio_set_level(GPIO_NUM_5, 0);
+                    //printf("WIFI BUTTON PUSHED\n");
                     break;
                 case WIFI_BUTTON_PUSHED_3_SEC:
-                    gpio_set_level(GPIO_NUM_4, 0);
-                    gpio_set_level(GPIO_NUM_5, 1);
-                    printf("WIFI BUTTON PUSHED 3 sec\n");
+                    //gpio_set_level(GPIO_NUM_4, 0);
+                    //gpio_set_level(GPIO_NUM_5, 1);
+                    //printf("WIFI BUTTON PUSHED 3 sec\n");
                     break;
                 case PWM_BUTTON_PUSHED:
                     if(pwm_status == MANUAL_OFF)
