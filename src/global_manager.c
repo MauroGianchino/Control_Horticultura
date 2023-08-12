@@ -514,6 +514,19 @@ static void global_manager_task(void *arg)
             case GET_CONFIG_PWM_INFO:
                 resp_ev.pwm_mode = global_info.pwm_mode;
                 resp_ev.pwm_auto = global_info.pwm_auto;
+                if(global_info.pwm_mode == AUTOMATIC)
+                {
+                    resp_ev.pwm_auto.percent_power = global_info.pwm_auto.percent_power;
+                }
+                else if(global_info.pwm_mode == MANUAL_ON)
+                {
+                    resp_ev.pwm_auto.percent_power = global_info.pwm_manual_percent_power;
+                }
+                else
+                {
+                    resp_ev.pwm_auto.percent_power = 0;
+                }
+                
                 xQueueSend(response_queue, &resp_ev, 10);
                 break;
             case GET_CONFIG_TRIAC_INFO:
@@ -827,8 +840,8 @@ void global_manager_set_rele_vege_status_on(bool read_from_flash)
 void global_manager_set_pwm_power_value_manual(uint8_t power_percentage_value)
 {
     global_event_t ev;
-    if (power_percentage_value >= 98)
-        power_percentage_value = 98;
+    if (power_percentage_value >= 100)
+        power_percentage_value = 100;
     ev.cmd = SET_MANUAL_PWM_POWER;
     ev.value = power_percentage_value;
     xQueueSend(global_manager_queue, &ev, 10);
@@ -837,8 +850,8 @@ void global_manager_set_pwm_power_value_manual(uint8_t power_percentage_value)
 void global_manager_set_pwm_power_value_auto(uint8_t power_percentage_value, bool read_from_flash)
 {
     global_event_t ev;
-    if (power_percentage_value >= 98)
-        power_percentage_value = 98;
+    if (power_percentage_value >= 100)
+        power_percentage_value = 100;
     ev.cmd = SET_AUTO_PWM_POWER;
     ev.value_read_from_flash = read_from_flash;
     ev.value = power_percentage_value;
