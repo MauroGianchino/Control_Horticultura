@@ -112,6 +112,8 @@ static void get_triac_info(void);
 static uint8_t wait_triac_info_response(output_mode_t *triac_mode, triac_auto_info_t *triac_auto);
 static void get_rele_vege_info(void);
 static uint8_t wait_rele_vege_info_response(rele_output_status_t *rele_vege_status);
+
+static uint8_t check_later_hour(struct tm hour_1, struct tm hour_2);
 //------------------- DEFINICION DE DATOS LOCALES ------------------------------
 //------------------------------------------------------------------------------
 
@@ -119,6 +121,23 @@ static uint8_t wait_rele_vege_info_response(rele_output_status_t *rele_vege_stat
 //------------------------------------------------------------------------------
 
 //------------------- DEFINICION DE FUNCIONES LOCALES --------------------------
+//------------------------------------------------------------------------------
+// Si devuelve 1 hour_1 es mas tarde que hour_2
+static uint8_t check_later_hour(struct tm hour_1, struct tm hour_2)
+{
+    if(hour_1.tm_hour > hour_2.tm_hour)
+    {
+        return 1;
+    }
+    else if((hour_1.tm_hour == hour_2.tm_hour) && ((hour_1.tm_min > hour_2.tm_min)))
+    {
+        return 1;
+    }
+    else
+    {
+        return 0;
+    }
+}
 //------------------------------------------------------------------------------
 static void nv_init_ssid_ap_wifi(void)
 {
@@ -900,23 +919,30 @@ uint8_t global_manager_set_wifi_password(char *wifi_password, bool read_from_fla
 void global_manager_update_auto_pwm_calendar(calendar_auto_mode_t calendar, bool read_from_flash)
 {
     global_event_t ev;
-    ev.cmd = UPDATE_PWM_CALENDAR;
-    ev.value_read_from_flash = read_from_flash;
-    ev.pwm_turn_on_time = calendar.turn_on_time;
-    ev.pwm_turn_off_time = calendar.turn_off_time;
-    xQueueSend(global_manager_queue, &ev, 10);
+    if(check_later_hour(calendar.turn_off_time, calendar.turn_on_time))
+    {
+        ev.cmd = UPDATE_PWM_CALENDAR;
+        ev.value_read_from_flash = read_from_flash;
+        ev.pwm_turn_on_time = calendar.turn_on_time;
+        ev.pwm_turn_off_time = calendar.turn_off_time;
+        xQueueSend(global_manager_queue, &ev, 10);
+    }
+    
 }
 //------------------------------------------------------------------------------
 void global_manager_update_auto_triac_calendar(triac_config_info_t triac_info, uint8_t triac_num, bool read_from_flash)
 {
     global_event_t ev;
-    ev.cmd = UPDATE_TRIAC_CALENDAR;
-    ev.value_read_from_flash = read_from_flash;
-    ev.triac_info.enable = triac_info.enable;
-    ev.triac_info.turn_off_time = triac_info.turn_off_time;
-    ev.triac_info.turn_on_time = triac_info.turn_on_time;
-    ev.triac_num = triac_num;
-    xQueueSend(global_manager_queue, &ev, 10);
+    if(check_later_hour(triac_info.turn_off_time, triac_info.turn_on_time))
+    {
+        ev.cmd = UPDATE_TRIAC_CALENDAR;
+        ev.value_read_from_flash = read_from_flash;
+        ev.triac_info.enable = triac_info.enable;
+        ev.triac_info.turn_off_time = triac_info.turn_off_time;
+        ev.triac_info.turn_on_time = triac_info.turn_on_time;
+        ev.triac_num = triac_num;
+        xQueueSend(global_manager_queue, &ev, 10);
+    }
 }
 //------------------------------------------------------------------------------
 static void get_net_info(void)
