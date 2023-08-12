@@ -114,6 +114,7 @@ static void get_rele_vege_info(void);
 static uint8_t wait_rele_vege_info_response(rele_output_status_t *rele_vege_status);
 
 static uint8_t check_later_hour(struct tm hour_1, struct tm hour_2);
+static uint8_t check_30_min_difference_between_hours(struct tm hour_1, struct tm hour_2);
 //------------------- DEFINICION DE DATOS LOCALES ------------------------------
 //------------------------------------------------------------------------------
 
@@ -130,6 +131,23 @@ static uint8_t check_later_hour(struct tm hour_1, struct tm hour_2)
         return 1;
     }
     else if((hour_1.tm_hour == hour_2.tm_hour) && ((hour_1.tm_min > hour_2.tm_min)))
+    {
+        return 1;
+    }
+    else
+    {
+        return 0;
+    }
+}
+//------------------------------------------------------------------------------
+// Si devuelve 1 hay una diferencia mayor a 30 minutos entre hour_1 y hour_2 y hour_1 es mayor que hour_2
+static uint8_t check_30_min_difference_between_hours(struct tm hour_1, struct tm hour_2)
+{
+    if((hour_1.tm_hour == hour_2.tm_hour) && ((hour_1.tm_min - 30 > hour_2.tm_min)))
+    {
+        return 1;
+    }
+    else if((hour_1.tm_hour > hour_2.tm_hour) && ((hour_1.tm_min + 60 - hour_2.tm_min) > 30))
     {
         return 1;
     }
@@ -723,14 +741,18 @@ static void global_manager_task(void *arg)
                 global_info.pwm_auto.simul_day_status = global_ev.simul_day_function_status;
                 break;
             case UPDATE_PWM_CALENDAR:
-                if (((global_ev.pwm_turn_on_time.tm_hour != global_info.pwm_auto.turn_on_time.tm_hour) || (global_ev.pwm_turn_on_time.tm_min != global_info.pwm_auto.turn_on_time.tm_min) || (global_ev.pwm_turn_off_time.tm_hour != global_info.pwm_auto.turn_off_time.tm_hour) || (global_ev.pwm_turn_off_time.tm_min != global_info.pwm_auto.turn_off_time.tm_min)) && (global_ev.value_read_from_flash == false))
+                if(((check_30_min_difference_between_hours(global_ev.pwm_turn_off_time, global_ev.pwm_turn_on_time)) && (global_info.pwm_auto.simul_day_status == SIMUL_DAY_ON)) || (global_info.pwm_auto.simul_day_status == SIMUL_DAY_OFF))
                 {
-                    pwm_auto_info.turn_on_time = global_ev.pwm_turn_on_time;
-                    pwm_auto_info.turn_off_time = global_ev.pwm_turn_off_time;
-                    nv_save_pwm_calendar(pwm_auto_info);
+                    if (((global_ev.pwm_turn_on_time.tm_hour != global_info.pwm_auto.turn_on_time.tm_hour) || (global_ev.pwm_turn_on_time.tm_min != global_info.pwm_auto.turn_on_time.tm_min) || (global_ev.pwm_turn_off_time.tm_hour != global_info.pwm_auto.turn_off_time.tm_hour) || (global_ev.pwm_turn_off_time.tm_min != global_info.pwm_auto.turn_off_time.tm_min)) && (global_ev.value_read_from_flash == false))
+                    {
+                        pwm_auto_info.turn_on_time = global_ev.pwm_turn_on_time;
+                        pwm_auto_info.turn_off_time = global_ev.pwm_turn_off_time;
+                        nv_save_pwm_calendar(pwm_auto_info);
+                    }
+                    global_info.pwm_auto.turn_on_time = global_ev.pwm_turn_on_time;
+                    global_info.pwm_auto.turn_off_time = global_ev.pwm_turn_off_time;
                 }
-                global_info.pwm_auto.turn_on_time = global_ev.pwm_turn_on_time;
-                global_info.pwm_auto.turn_off_time = global_ev.pwm_turn_off_time;
+                
 #ifdef DEBUG_MODULE
                 // printf("PWM ON calendar: %s", asctime(&global_info.pwm_auto.turn_on_time));
                 // printf("PWM OFF calendar: %s", asctime(&global_info.pwm_auto.turn_off_time));
