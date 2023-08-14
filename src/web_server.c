@@ -740,7 +740,7 @@ esp_err_t red_data_handler(httpd_req_t *req)
         cJSON_AddStringToObject(json_object, "ID", red.ID);
         cJSON_AddStringToObject(json_object, "PASS", red.PASS);
         char *json_str = cJSON_Print(json_object);
-        ESP_LOGI(TAG, "JSON ES: %s", json_str);
+        ESP_LOGI("RED", "JSON ES: %s", json_str);
         cJSON_Delete(json_object);
 
         httpd_resp_set_type(req, "application/json");
@@ -811,7 +811,7 @@ esp_err_t pwm_data_handler(httpd_req_t *req)
         cJSON_AddStringToObject(json_object, "DIA", modo);
 
         char *json_str = cJSON_Print(json_object);
-        ESP_LOGI(TAG, "JSON ES: %s", json_str);
+        ESP_LOGI(PWM, "JSON ES: %s", json_str);
         cJSON_Delete(json_object);
 
         httpd_resp_set_type(req, "application/json");
@@ -838,22 +838,26 @@ esp_err_t triac_data_handler(httpd_req_t *req)
         if (modo_triac == MANUAL_ON)
         {
             modo = "Encendido";
+            cJSON_AddBoolToObject(json_object, "cb1", triac_auto_info.triac_auto[0].enable);
             cJSON_AddStringToObject(json_object, "Modo", modo);
             cJSON_AddStringToObject(json_object, "ih1h", "-");
             cJSON_AddStringToObject(json_object, "ih1m", "-");
             cJSON_AddStringToObject(json_object, "fh1h", "-");
             cJSON_AddStringToObject(json_object, "fh1m", "-");
             //
+            cJSON_AddBoolToObject(json_object, "cb2", triac_auto_info.triac_auto[1].enable);
             cJSON_AddStringToObject(json_object, "ih2h", "-");
             cJSON_AddStringToObject(json_object, "ih2m", "-");
             cJSON_AddStringToObject(json_object, "fh2h", "-");
             cJSON_AddStringToObject(json_object, "fh2m", "-");
             //
+            cJSON_AddBoolToObject(json_object, "cb3", triac_auto_info.triac_auto[2].enable);
             cJSON_AddStringToObject(json_object, "ih3h", "-");
             cJSON_AddStringToObject(json_object, "ih3m", "-");
             cJSON_AddStringToObject(json_object, "fh3h", "-");
             cJSON_AddStringToObject(json_object, "fh3m", "-");
             //
+            cJSON_AddBoolToObject(json_object, "cb4", triac_auto_info.triac_auto[3].enable);
             cJSON_AddStringToObject(json_object, "ih4h", "-");
             cJSON_AddStringToObject(json_object, "ih4m", "-");
             cJSON_AddStringToObject(json_object, "fh4h", "-");
@@ -862,22 +866,26 @@ esp_err_t triac_data_handler(httpd_req_t *req)
         else if (modo_triac == MANUAL_OFF)
         {
             modo = "Apagado";
+            cJSON_AddBoolToObject(json_object, "cb1", triac_auto_info.triac_auto[0].enable);
             cJSON_AddStringToObject(json_object, "Modo", modo);
             cJSON_AddStringToObject(json_object, "ih1h", "-");
             cJSON_AddStringToObject(json_object, "ih1m", "-");
             cJSON_AddStringToObject(json_object, "fh1h", "-");
             cJSON_AddStringToObject(json_object, "fh1m", "-");
             //
+            cJSON_AddBoolToObject(json_object, "cb2", triac_auto_info.triac_auto[1].enable);
             cJSON_AddStringToObject(json_object, "ih2h", "-");
             cJSON_AddStringToObject(json_object, "ih2m", "-");
             cJSON_AddStringToObject(json_object, "fh2h", "-");
             cJSON_AddStringToObject(json_object, "fh2m", "-");
             //
+            cJSON_AddBoolToObject(json_object, "cb3", triac_auto_info.triac_auto[2].enable);
             cJSON_AddStringToObject(json_object, "ih3h", "-");
             cJSON_AddStringToObject(json_object, "ih3m", "-");
             cJSON_AddStringToObject(json_object, "fh3h", "-");
             cJSON_AddStringToObject(json_object, "fh3m", "-");
             //
+            cJSON_AddBoolToObject(json_object, "cb4", triac_auto_info.triac_auto[3].enable);
             cJSON_AddStringToObject(json_object, "ih4h", "-");
             cJSON_AddStringToObject(json_object, "ih4m", "-");
             cJSON_AddStringToObject(json_object, "fh4h", "-");
@@ -887,11 +895,12 @@ esp_err_t triac_data_handler(httpd_req_t *req)
         {
             modo = "Automatico";
             cJSON_AddStringToObject(json_object, "Modo", modo);
-            ESP_LOGE(TAG, "EL VALOR DEL ENABLE DEL H1 ES %d", triac_auto_info.triac_auto[0].enable);
+            // ESP_LOGE(TAG, "EL VALOR DEL ENABLE DEL H1 ES %d", triac_auto_info.triac_auto[0].enable);
             if (triac_auto_info.triac_auto[0].enable == 1)
 
             {
-                ESP_LOGE(TAG, "ENTRE EN ENABLE DEL HORARIO 1");
+                // ESP_LOGE(TAG, "ENTRE EN ENABLE DEL HORARIO 1");
+                cJSON_AddBoolToObject(json_object, "cb1", triac_auto_info.triac_auto[0].enable);
                 cJSON_AddNumberToObject(json_object, "ih1h", triac_auto_info.triac_auto[0].turn_on_time.tm_hour);
                 cJSON_AddNumberToObject(json_object, "ih1m", triac_auto_info.triac_auto[0].turn_on_time.tm_min);
                 cJSON_AddNumberToObject(json_object, "fh1h", triac_auto_info.triac_auto[0].turn_off_time.tm_hour);
@@ -899,15 +908,17 @@ esp_err_t triac_data_handler(httpd_req_t *req)
             }
             else
             {
-                ESP_LOGE(TAG, "ENTRE EN DISENABLE DEL HORARIO 1");
+                // ESP_LOGE(TAG, "ENTRE EN DISENABLE DEL HORARIO 1");
+                cJSON_AddBoolToObject(json_object, "cb1", triac_auto_info.triac_auto[0].enable);
                 cJSON_AddStringToObject(json_object, "ih1h", "-");
                 cJSON_AddStringToObject(json_object, "ih1m", "-");
                 cJSON_AddStringToObject(json_object, "fh1h", "-");
                 cJSON_AddStringToObject(json_object, "fh1m", "-");
-                ESP_LOGE(TAG, "EL HORARIO DE INICIO ES: %d:%d ", triac_auto_info.triac_auto[0].turn_on_time.tm_hour, triac_auto_info.triac_auto[0].turn_on_time.tm_min);
+                // ESP_LOGE(TAG, "EL HORARIO DE INICIO ES: %d:%d ", triac_auto_info.triac_auto[0].turn_on_time.tm_hour, triac_auto_info.triac_auto[0].turn_on_time.tm_min);
             }
             if (triac_auto_info.triac_auto[1].enable == 1)
             {
+                cJSON_AddBoolToObject(json_object, "cb2", triac_auto_info.triac_auto[1].enable);
                 cJSON_AddNumberToObject(json_object, "ih2h", triac_auto_info.triac_auto[1].turn_on_time.tm_hour);
                 cJSON_AddNumberToObject(json_object, "ih2m", triac_auto_info.triac_auto[1].turn_on_time.tm_min);
                 cJSON_AddNumberToObject(json_object, "fh2h", triac_auto_info.triac_auto[1].turn_off_time.tm_hour);
@@ -915,6 +926,7 @@ esp_err_t triac_data_handler(httpd_req_t *req)
             }
             else
             {
+                cJSON_AddBoolToObject(json_object, "cb2", triac_auto_info.triac_auto[1].enable);
                 cJSON_AddStringToObject(json_object, "ih2h", "-");
                 cJSON_AddStringToObject(json_object, "ih2m", "-");
                 cJSON_AddStringToObject(json_object, "fh2h", "-");
@@ -922,6 +934,7 @@ esp_err_t triac_data_handler(httpd_req_t *req)
             }
             if (triac_auto_info.triac_auto[2].enable == 1)
             {
+                cJSON_AddBoolToObject(json_object, "cb3", triac_auto_info.triac_auto[2].enable);
                 cJSON_AddNumberToObject(json_object, "ih3h", triac_auto_info.triac_auto[2].turn_on_time.tm_hour);
                 cJSON_AddNumberToObject(json_object, "ih3m", triac_auto_info.triac_auto[2].turn_on_time.tm_min);
                 cJSON_AddNumberToObject(json_object, "fh3h", triac_auto_info.triac_auto[2].turn_off_time.tm_hour);
@@ -929,6 +942,7 @@ esp_err_t triac_data_handler(httpd_req_t *req)
             }
             else
             {
+                cJSON_AddBoolToObject(json_object, "cb3", triac_auto_info.triac_auto[2].enable);
                 cJSON_AddStringToObject(json_object, "ih3h", "-");
                 cJSON_AddStringToObject(json_object, "ih3m", "-");
                 cJSON_AddStringToObject(json_object, "fh3h", "-");
@@ -936,6 +950,7 @@ esp_err_t triac_data_handler(httpd_req_t *req)
             }
             if (triac_auto_info.triac_auto[3].enable == 1)
             {
+                cJSON_AddBoolToObject(json_object, "cb4", triac_auto_info.triac_auto[3].enable);
                 cJSON_AddNumberToObject(json_object, "ih4h", triac_auto_info.triac_auto[3].turn_on_time.tm_hour);
                 cJSON_AddNumberToObject(json_object, "ih4m", triac_auto_info.triac_auto[3].turn_on_time.tm_min);
                 cJSON_AddNumberToObject(json_object, "fh4h", triac_auto_info.triac_auto[3].turn_off_time.tm_hour);
@@ -943,6 +958,7 @@ esp_err_t triac_data_handler(httpd_req_t *req)
             }
             else
             {
+                cJSON_AddBoolToObject(json_object, "cb4", triac_auto_info.triac_auto[3].enable);
                 cJSON_AddStringToObject(json_object, "ih4h", "-");
                 cJSON_AddStringToObject(json_object, "ih4m", "-");
                 cJSON_AddStringToObject(json_object, "fh4h", "-");
@@ -951,7 +967,7 @@ esp_err_t triac_data_handler(httpd_req_t *req)
         }
 
         char *json_str = cJSON_Print(json_object);
-        ESP_LOGI(TAG, "JSON ES: %s", json_str);
+        ESP_LOGI(TRIAC, "JSON ES: %s", json_str);
         cJSON_Delete(json_object);
 
         httpd_resp_set_type(req, "application/json");
@@ -989,7 +1005,7 @@ esp_err_t vegeflor_data_handler(httpd_req_t *req)
         cJSON_AddStringToObject(json_object, "Modo", modo);
 
         char *json_str = cJSON_Print(json_object);
-        ESP_LOGI(TAG, "JSON ES: %s", json_str);
+        ESP_LOGI(VEGEFLOR, "JSON ES: %s", json_str);
         cJSON_Delete(json_object);
 
         httpd_resp_set_type(req, "application/json");
@@ -1037,7 +1053,7 @@ esp_err_t hora_data_handler(httpd_req_t *req)
         cJSON_AddNumberToObject(json_object, "Hora_h", aux_hora.tm_hour);
         cJSON_AddNumberToObject(json_object, "Hora_m", aux_hora.tm_min);
         char *json_str = cJSON_Print(json_object);
-        ESP_LOGI(TAG, "JSON ES: %s", json_str);
+        ESP_LOGI(HORA, "JSON ES: %s", json_str);
         cJSON_Delete(json_object);
         httpd_resp_set_type(req, "application/json");
         httpd_resp_send(req, json_str, strlen(json_str));

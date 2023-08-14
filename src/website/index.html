@@ -14,7 +14,7 @@
     <span><strong>Nombre de la Red:</strong> </span><span id="ID"></span>
     <br><br>
     <span><strong>Contraseña de la Red:</strong> </span><span id="PASS"></span>
-    <h2>Intensidad de luz</h2>
+    <h2>Potencia de luz</h2>
     <span><strong>Intensidad:</strong> </span><span id="PWM_Intensidad"></span>
     <br><br>
     <span><strong>Modo:</strong> </span><span id="PWM_modo"></span>
@@ -25,7 +25,7 @@
     <br><br>
     <span><strong>Amanecer / Atardecer:</strong> </span><span id="PWM_DIA"></span>
     <br><br>
-    <h2>Salida 220V</h2>
+    <h2>Control 220V</h2>
     <span><strong>Modo:</strong> </span><span id="TRIAC_modo"></span>
     <br>
     <p>Horario 1</p>
@@ -69,7 +69,63 @@
                     document.getElementById("Hora_h").textContent = formatNumber(data.Hora_h);
                     document.getElementById("Hora_m").textContent = formatNumber(data.Hora_m);
                 })
-            }, 1000)
+                fetch("/data_pwm").then(res => {
+                    if (!res.ok)
+                        console.error("Error en adquirir los datos del pwm")
+                    return res.json()
+                }).then(data => {
+                    console.log(data)
+                    document.getElementById("PWM_Intensidad").textContent = data.intensidad;
+                    document.getElementById("PWM_modo").textContent = data.Modo;
+                    document.getElementById("PWM_horarioih").textContent = formatNumber(data.ih1h);
+                    document.getElementById("PWM_horarioim").textContent = formatNumber(data.ih1m);
+                    document.getElementById("PWM_horariofh").textContent = formatNumber(data.fh1h);
+                    document.getElementById("PWM_horariofm").textContent = formatNumber(data.fh1m);
+                    document.getElementById("PWM_DIA").textContent = data.DIA;
+                })
+                fetch("/data_triac").then(res => {
+                    if (!res.ok)
+                        console.error("Error en adquirir los datos del triac")
+                    return res.json()
+                }).then(data => {
+                    console.log(data)
+                    document.getElementById("TRIAC_modo").textContent = data.Modo;
+                    document.getElementById("TRIAC_horarioi1_h").textContent = formatNumber(data.ih1h);
+                    document.getElementById("TRIAC_horarioi1_m").textContent = formatNumber(data.ih1m);
+                    document.getElementById("TRIAC_horariof1_h").textContent = formatNumber(data.fh1h);
+                    document.getElementById("TRIAC_horariof1_m").textContent = formatNumber(data.fh1m);
+                    document.getElementById("TRIAC_horarioi2_h").textContent = formatNumber(data.ih2h);
+                    document.getElementById("TRIAC_horarioi2_m").textContent = formatNumber(data.ih2m);
+                    document.getElementById("TRIAC_horariof2_h").textContent = formatNumber(data.fh2h);
+                    document.getElementById("TRIAC_horariof2_m").textContent = formatNumber(data.fh2m);
+                    document.getElementById("TRIAC_horarioi3_h").textContent = formatNumber(data.ih3h);
+                    document.getElementById("TRIAC_horarioi3_m").textContent = formatNumber(data.ih3m);
+                    document.getElementById("TRIAC_horariof3_h").textContent = formatNumber(data.fh3h);
+                    document.getElementById("TRIAC_horariof3_m").textContent = formatNumber(data.fh3m);
+                    document.getElementById("TRIAC_horarioi4_h").textContent = formatNumber(data.ih4h);
+                    document.getElementById("TRIAC_horarioi4_m").textContent = formatNumber(data.ih4m);
+                    document.getElementById("TRIAC_horariof4_h").textContent = formatNumber(data.fh4h);
+                    document.getElementById("TRIAC_horariof4_m").textContent = formatNumber(data.fh4m);
+                })
+                fetch("/data_red").then(res => {
+                    if (!res.ok)
+                        console.error("Error en adquirir los datos de red")
+                    return res.json()
+                }).then(data => {
+                    console.log(data);
+                    document.getElementById("ID").textContent = data.ID;
+                    document.getElementById("PASS").textContent = data.PASS;
+
+                })
+                fetch("/data_vegeflor").then(res => {
+                    if (!res.ok)
+                        console.error("Error en adquirir los datos de vegeflor")
+                    return res.json()
+                }).then(data => {
+                    console.log(data)
+                    document.getElementById("VEGEFLOR_modo").textContent = data.Modo;
+                })
+            }, 2000)
 
             fetch("/version").then(res => {
                 if (!res.ok)
@@ -79,64 +135,6 @@
                 console.log(data)
                 document.getElementById("Version").textContent = data.Version;
             })
-
-            fetch("/data_pwm").then(res => {
-                if (!res.ok)
-                    console.error("Error en adquirir los datos del pwm")
-                return res.json()
-            }).then(data => {
-                console.log(data)
-                document.getElementById("PWM_Intensidad").textContent = data.intensidad;
-                document.getElementById("PWM_modo").textContent = data.Modo;
-                document.getElementById("PWM_horarioih").textContent = formatNumber(data.ih1h);
-                document.getElementById("PWM_horarioim").textContent = formatNumber(data.ih1m);
-                document.getElementById("PWM_horariofh").textContent = formatNumber(data.fh1h);
-                document.getElementById("PWM_horariofm").textContent = formatNumber(data.fh1m);
-                document.getElementById("PWM_DIA").textContent = data.DIA;
-            })
-            fetch("/data_triac").then(res => {
-                if (!res.ok)
-                    console.error("Error en adquirir los datos del triac")
-                return res.json()
-            }).then(data => {
-                console.log(data)
-                document.getElementById("TRIAC_modo").textContent = data.Modo;
-                document.getElementById("TRIAC_horarioi1_h").textContent = formatNumber(data.ih1h);
-                document.getElementById("TRIAC_horarioi1_m").textContent = formatNumber(data.ih1m);
-                document.getElementById("TRIAC_horariof1_h").textContent = formatNumber(data.fh1h);
-                document.getElementById("TRIAC_horariof1_m").textContent = formatNumber(data.fh1m);
-                document.getElementById("TRIAC_horarioi2_h").textContent = formatNumber(data.ih2h);
-                document.getElementById("TRIAC_horarioi2_m").textContent = formatNumber(data.ih2m);
-                document.getElementById("TRIAC_horariof2_h").textContent = formatNumber(data.fh2h);
-                document.getElementById("TRIAC_horariof2_m").textContent = formatNumber(data.fh2m);
-                document.getElementById("TRIAC_horarioi3_h").textContent = formatNumber(data.ih3h);
-                document.getElementById("TRIAC_horarioi3_m").textContent = formatNumber(data.ih3m);
-                document.getElementById("TRIAC_horariof3_h").textContent = formatNumber(data.fh3h);
-                document.getElementById("TRIAC_horariof3_m").textContent = formatNumber(data.fh3m);
-                document.getElementById("TRIAC_horarioi4_h").textContent = formatNumber(data.ih4h);
-                document.getElementById("TRIAC_horarioi4_m").textContent = formatNumber(data.ih4m);
-                document.getElementById("TRIAC_horariof4_h").textContent = formatNumber(data.fh4h);
-                document.getElementById("TRIAC_horariof4_m").textContent = formatNumber(data.fh4m);
-            })
-            fetch("/data_red").then(res => {
-                if (!res.ok)
-                    console.error("Error en adquirir los datos de red")
-                return res.json()
-            }).then(data => {
-                console.log(data);
-                document.getElementById("ID").textContent = data.ID;
-                document.getElementById("PASS").textContent = data.PASS;
-
-            })
-            fetch("/data_vegeflor").then(res => {
-                if (!res.ok)
-                    console.error("Error en adquirir los datos de vegeflor")
-                return res.json()
-            }).then(data => {
-                console.log(data)
-                document.getElementById("VEGEFLOR_modo").textContent = data.Modo;
-            })
-
         })
 
     </script>
