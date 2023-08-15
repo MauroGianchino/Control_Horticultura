@@ -126,11 +126,11 @@ static uint8_t check_30_min_difference_between_hours(struct tm hour_1, struct tm
 // Si devuelve 1 hour_1 es mas tarde que hour_2
 static uint8_t check_later_hour(struct tm hour_1, struct tm hour_2)
 {
-    if(hour_1.tm_hour > hour_2.tm_hour)
+    if (hour_1.tm_hour > hour_2.tm_hour)
     {
         return 1;
     }
-    else if((hour_1.tm_hour == hour_2.tm_hour) && ((hour_1.tm_min > hour_2.tm_min)))
+    else if ((hour_1.tm_hour == hour_2.tm_hour) && ((hour_1.tm_min > hour_2.tm_min)))
     {
         return 1;
     }
@@ -143,11 +143,11 @@ static uint8_t check_later_hour(struct tm hour_1, struct tm hour_2)
 // Si devuelve 1 hay una diferencia mayor a 30 minutos entre hour_1 y hour_2 y hour_1 es mayor que hour_2
 static uint8_t check_30_min_difference_between_hours(struct tm hour_1, struct tm hour_2)
 {
-    if((hour_1.tm_hour == hour_2.tm_hour) && ((hour_1.tm_min - 30 > hour_2.tm_min)))
+    if ((hour_1.tm_hour == hour_2.tm_hour) && ((hour_1.tm_min - 30 > hour_2.tm_min)))
     {
         return 1;
     }
-    else if((hour_1.tm_hour > hour_2.tm_hour) && ((hour_1.tm_min + 60 - hour_2.tm_min) > 30))
+    else if ((hour_1.tm_hour > hour_2.tm_hour) && ((hour_1.tm_min + 60 - hour_2.tm_min) > 30))
     {
         return 1;
     }
@@ -551,11 +551,11 @@ static void global_manager_task(void *arg)
             case GET_CONFIG_PWM_INFO:
                 resp_ev.pwm_mode = global_info.pwm_mode;
                 resp_ev.pwm_auto = global_info.pwm_auto;
-                if(global_info.pwm_mode == AUTOMATIC)
+                if (global_info.pwm_mode == AUTOMATIC)
                 {
                     resp_ev.pwm_auto.percent_power = global_info.pwm_auto.percent_power;
                 }
-                else if(global_info.pwm_mode == MANUAL_ON)
+                else if (global_info.pwm_mode == MANUAL_ON)
                 {
                     resp_ev.pwm_auto.percent_power = global_info.pwm_manual_percent_power;
                 }
@@ -563,7 +563,8 @@ static void global_manager_task(void *arg)
                 {
                     resp_ev.pwm_auto.percent_power = 0;
                 }
-                
+                ESP_LOGE("PWM", "la hora del pwm es: %d", global_info.pwm_auto.turn_on_time.tm_hour);
+                ESP_LOGE("PWM", "la hora del pwm es: %d", global_info.pwm_auto.turn_on_time.tm_min);
                 xQueueSend(response_queue, &resp_ev, 10);
                 break;
             case GET_CONFIG_TRIAC_INFO:
@@ -741,7 +742,7 @@ static void global_manager_task(void *arg)
                 global_info.pwm_auto.simul_day_status = global_ev.simul_day_function_status;
                 break;
             case UPDATE_PWM_CALENDAR:
-                if(((check_30_min_difference_between_hours(global_ev.pwm_turn_off_time, global_ev.pwm_turn_on_time)) && (global_info.pwm_auto.simul_day_status == SIMUL_DAY_ON)) || (global_info.pwm_auto.simul_day_status == SIMUL_DAY_OFF))
+                if (((check_30_min_difference_between_hours(global_ev.pwm_turn_off_time, global_ev.pwm_turn_on_time)) && (global_info.pwm_auto.simul_day_status == SIMUL_DAY_ON)) || (global_info.pwm_auto.simul_day_status == SIMUL_DAY_OFF))
                 {
                     if (((global_ev.pwm_turn_on_time.tm_hour != global_info.pwm_auto.turn_on_time.tm_hour) || (global_ev.pwm_turn_on_time.tm_min != global_info.pwm_auto.turn_on_time.tm_min) || (global_ev.pwm_turn_off_time.tm_hour != global_info.pwm_auto.turn_off_time.tm_hour) || (global_ev.pwm_turn_off_time.tm_min != global_info.pwm_auto.turn_off_time.tm_min)) && (global_ev.value_read_from_flash == false))
                     {
@@ -752,7 +753,7 @@ static void global_manager_task(void *arg)
                     global_info.pwm_auto.turn_on_time = global_ev.pwm_turn_on_time;
                     global_info.pwm_auto.turn_off_time = global_ev.pwm_turn_off_time;
                 }
-                
+
 #ifdef DEBUG_MODULE
                 // printf("PWM ON calendar: %s", asctime(&global_info.pwm_auto.turn_on_time));
                 // printf("PWM OFF calendar: %s", asctime(&global_info.pwm_auto.turn_off_time));
@@ -766,6 +767,7 @@ static void global_manager_task(void *arg)
                     nv_save_triac_calendar(global_ev.triac_info, global_ev.triac_num);
                 }
                 global_info.triac_auto.triac_auto[triac_index].enable = global_ev.triac_info.enable;
+                ESP_LOGE("GLOBALMANAGER", " EL ENABLE DEL 1 ES %d", global_ev.triac_info.enable);
                 global_info.triac_auto.triac_auto[triac_index].turn_off_time = global_ev.triac_info.turn_off_time;
                 global_info.triac_auto.triac_auto[triac_index].turn_on_time = global_ev.triac_info.turn_on_time;
                 break;
@@ -941,7 +943,7 @@ uint8_t global_manager_set_wifi_password(char *wifi_password, bool read_from_fla
 void global_manager_update_auto_pwm_calendar(calendar_auto_mode_t calendar, bool read_from_flash)
 {
     global_event_t ev;
-    if(check_later_hour(calendar.turn_off_time, calendar.turn_on_time))
+    if (check_later_hour(calendar.turn_off_time, calendar.turn_on_time))
     {
         ev.cmd = UPDATE_PWM_CALENDAR;
         ev.value_read_from_flash = read_from_flash;
@@ -949,18 +951,19 @@ void global_manager_update_auto_pwm_calendar(calendar_auto_mode_t calendar, bool
         ev.pwm_turn_off_time = calendar.turn_off_time;
         xQueueSend(global_manager_queue, &ev, 10);
     }
-    
 }
 //------------------------------------------------------------------------------
 void global_manager_update_auto_triac_calendar(triac_config_info_t triac_info, uint8_t triac_num, bool read_from_flash)
 {
     global_event_t ev;
-    if(check_later_hour(triac_info.turn_off_time, triac_info.turn_on_time))
+    if (check_later_hour(triac_info.turn_off_time, triac_info.turn_on_time))
     {
         ev.cmd = UPDATE_TRIAC_CALENDAR;
         ev.value_read_from_flash = read_from_flash;
         ev.triac_info.enable = triac_info.enable;
+        ESP_LOGE("ASD", " EL ENABLE DEL 1 ES %d asd", triac_info.enable);
         ev.triac_info.turn_off_time = triac_info.turn_off_time;
+        ESP_LOGE("ASD", " hora de off %d", triac_info.turn_off_time.tm_hour);
         ev.triac_info.turn_on_time = triac_info.turn_on_time;
         ev.triac_num = triac_num;
         xQueueSend(global_manager_queue, &ev, 10);

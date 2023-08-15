@@ -182,11 +182,11 @@ void analyze_token_triac(char *token)
     switch (token[0])
     {
     case 'm': // Parseo modo
-        if (token[12] == 'S')
+        if (token[12] == 'E')
         {
             global_manager_set_triac_mode_manual_on(pdFALSE);
         }
-        else if (token[12] == 'N')
+        else if (token[12] == 'A' && token[13] == 'p')
         {
             global_manager_set_triac_mode_off(pdFALSE);
         }
@@ -315,10 +315,18 @@ void parse_triac(char *buff)
 {
     // el & es el separador de los campos
     ESP_LOGI(TRIAC, "Testeo del parseo de TRIAC");
-    reset_triac_h(&triac_h1);
-    reset_triac_h(&triac_h2);
-    reset_triac_h(&triac_h3);
-    reset_triac_h(&triac_h4);
+    int status = global_manager_get_triac_info(&modo_triac, &triac_auto_info);
+
+    triac_auto_info.triac_auto[0].enable = 0;
+    triac_auto_info.triac_auto[1].enable = 0;
+    triac_auto_info.triac_auto[2].enable = 0;
+    triac_auto_info.triac_auto[3].enable = 0;
+
+    triac_h1 = triac_auto_info.triac_auto[0];
+    triac_h2 = triac_auto_info.triac_auto[1];
+    triac_h3 = triac_auto_info.triac_auto[2];
+    triac_h4 = triac_auto_info.triac_auto[3];
+
     char delim[2] = "&";
     char *token;
     token = strtok(buff, delim);
@@ -336,6 +344,7 @@ void parse_triac(char *buff)
         triac_h3.enable = 0;
     if (triac_h4.enable != 1)
         triac_h4.enable = 0;
+    ESP_LOGE(TRIAC, " EL ENABLE DEL 1 ES %d", triac_h1.enable);
     global_manager_update_auto_triac_calendar(triac_h1, 1, false);
     global_manager_update_auto_triac_calendar(triac_h2, 2, false);
     global_manager_update_auto_triac_calendar(triac_h3, 3, false);
@@ -838,133 +847,37 @@ esp_err_t triac_data_handler(httpd_req_t *req)
         if (modo_triac == MANUAL_ON)
         {
             modo = "Encendido";
-            cJSON_AddBoolToObject(json_object, "cb1", triac_auto_info.triac_auto[0].enable);
-            cJSON_AddStringToObject(json_object, "Modo", modo);
-            cJSON_AddStringToObject(json_object, "ih1h", "-");
-            cJSON_AddStringToObject(json_object, "ih1m", "-");
-            cJSON_AddStringToObject(json_object, "fh1h", "-");
-            cJSON_AddStringToObject(json_object, "fh1m", "-");
-            //
-            cJSON_AddBoolToObject(json_object, "cb2", triac_auto_info.triac_auto[1].enable);
-            cJSON_AddStringToObject(json_object, "ih2h", "-");
-            cJSON_AddStringToObject(json_object, "ih2m", "-");
-            cJSON_AddStringToObject(json_object, "fh2h", "-");
-            cJSON_AddStringToObject(json_object, "fh2m", "-");
-            //
-            cJSON_AddBoolToObject(json_object, "cb3", triac_auto_info.triac_auto[2].enable);
-            cJSON_AddStringToObject(json_object, "ih3h", "-");
-            cJSON_AddStringToObject(json_object, "ih3m", "-");
-            cJSON_AddStringToObject(json_object, "fh3h", "-");
-            cJSON_AddStringToObject(json_object, "fh3m", "-");
-            //
-            cJSON_AddBoolToObject(json_object, "cb4", triac_auto_info.triac_auto[3].enable);
-            cJSON_AddStringToObject(json_object, "ih4h", "-");
-            cJSON_AddStringToObject(json_object, "ih4m", "-");
-            cJSON_AddStringToObject(json_object, "fh4h", "-");
-            cJSON_AddStringToObject(json_object, "fh4m", "-");
         }
-        else if (modo_triac == MANUAL_OFF)
+        if (modo_triac == MANUAL_OFF)
         {
             modo = "Apagado";
-            cJSON_AddBoolToObject(json_object, "cb1", triac_auto_info.triac_auto[0].enable);
-            cJSON_AddStringToObject(json_object, "Modo", modo);
-            cJSON_AddStringToObject(json_object, "ih1h", "-");
-            cJSON_AddStringToObject(json_object, "ih1m", "-");
-            cJSON_AddStringToObject(json_object, "fh1h", "-");
-            cJSON_AddStringToObject(json_object, "fh1m", "-");
-            //
-            cJSON_AddBoolToObject(json_object, "cb2", triac_auto_info.triac_auto[1].enable);
-            cJSON_AddStringToObject(json_object, "ih2h", "-");
-            cJSON_AddStringToObject(json_object, "ih2m", "-");
-            cJSON_AddStringToObject(json_object, "fh2h", "-");
-            cJSON_AddStringToObject(json_object, "fh2m", "-");
-            //
-            cJSON_AddBoolToObject(json_object, "cb3", triac_auto_info.triac_auto[2].enable);
-            cJSON_AddStringToObject(json_object, "ih3h", "-");
-            cJSON_AddStringToObject(json_object, "ih3m", "-");
-            cJSON_AddStringToObject(json_object, "fh3h", "-");
-            cJSON_AddStringToObject(json_object, "fh3m", "-");
-            //
-            cJSON_AddBoolToObject(json_object, "cb4", triac_auto_info.triac_auto[3].enable);
-            cJSON_AddStringToObject(json_object, "ih4h", "-");
-            cJSON_AddStringToObject(json_object, "ih4m", "-");
-            cJSON_AddStringToObject(json_object, "fh4h", "-");
-            cJSON_AddStringToObject(json_object, "fh4m", "-");
         }
-        else if (modo_triac == AUTOMATIC)
+        if (modo_triac == AUTOMATIC)
         {
             modo = "Automatico";
-            cJSON_AddStringToObject(json_object, "Modo", modo);
-            // ESP_LOGE(TAG, "EL VALOR DEL ENABLE DEL H1 ES %d", triac_auto_info.triac_auto[0].enable);
-            if (triac_auto_info.triac_auto[0].enable == 1)
-
-            {
-                // ESP_LOGE(TAG, "ENTRE EN ENABLE DEL HORARIO 1");
-                cJSON_AddBoolToObject(json_object, "cb1", triac_auto_info.triac_auto[0].enable);
-                cJSON_AddNumberToObject(json_object, "ih1h", triac_auto_info.triac_auto[0].turn_on_time.tm_hour);
-                cJSON_AddNumberToObject(json_object, "ih1m", triac_auto_info.triac_auto[0].turn_on_time.tm_min);
-                cJSON_AddNumberToObject(json_object, "fh1h", triac_auto_info.triac_auto[0].turn_off_time.tm_hour);
-                cJSON_AddNumberToObject(json_object, "fh1m", triac_auto_info.triac_auto[0].turn_off_time.tm_min);
-            }
-            else
-            {
-                // ESP_LOGE(TAG, "ENTRE EN DISENABLE DEL HORARIO 1");
-                cJSON_AddBoolToObject(json_object, "cb1", triac_auto_info.triac_auto[0].enable);
-                cJSON_AddStringToObject(json_object, "ih1h", "-");
-                cJSON_AddStringToObject(json_object, "ih1m", "-");
-                cJSON_AddStringToObject(json_object, "fh1h", "-");
-                cJSON_AddStringToObject(json_object, "fh1m", "-");
-                // ESP_LOGE(TAG, "EL HORARIO DE INICIO ES: %d:%d ", triac_auto_info.triac_auto[0].turn_on_time.tm_hour, triac_auto_info.triac_auto[0].turn_on_time.tm_min);
-            }
-            if (triac_auto_info.triac_auto[1].enable == 1)
-            {
-                cJSON_AddBoolToObject(json_object, "cb2", triac_auto_info.triac_auto[1].enable);
-                cJSON_AddNumberToObject(json_object, "ih2h", triac_auto_info.triac_auto[1].turn_on_time.tm_hour);
-                cJSON_AddNumberToObject(json_object, "ih2m", triac_auto_info.triac_auto[1].turn_on_time.tm_min);
-                cJSON_AddNumberToObject(json_object, "fh2h", triac_auto_info.triac_auto[1].turn_off_time.tm_hour);
-                cJSON_AddNumberToObject(json_object, "fh2m", triac_auto_info.triac_auto[1].turn_off_time.tm_min);
-            }
-            else
-            {
-                cJSON_AddBoolToObject(json_object, "cb2", triac_auto_info.triac_auto[1].enable);
-                cJSON_AddStringToObject(json_object, "ih2h", "-");
-                cJSON_AddStringToObject(json_object, "ih2m", "-");
-                cJSON_AddStringToObject(json_object, "fh2h", "-");
-                cJSON_AddStringToObject(json_object, "fh2m", "-");
-            }
-            if (triac_auto_info.triac_auto[2].enable == 1)
-            {
-                cJSON_AddBoolToObject(json_object, "cb3", triac_auto_info.triac_auto[2].enable);
-                cJSON_AddNumberToObject(json_object, "ih3h", triac_auto_info.triac_auto[2].turn_on_time.tm_hour);
-                cJSON_AddNumberToObject(json_object, "ih3m", triac_auto_info.triac_auto[2].turn_on_time.tm_min);
-                cJSON_AddNumberToObject(json_object, "fh3h", triac_auto_info.triac_auto[2].turn_off_time.tm_hour);
-                cJSON_AddNumberToObject(json_object, "fh3m", triac_auto_info.triac_auto[2].turn_off_time.tm_min);
-            }
-            else
-            {
-                cJSON_AddBoolToObject(json_object, "cb3", triac_auto_info.triac_auto[2].enable);
-                cJSON_AddStringToObject(json_object, "ih3h", "-");
-                cJSON_AddStringToObject(json_object, "ih3m", "-");
-                cJSON_AddStringToObject(json_object, "fh3h", "-");
-                cJSON_AddStringToObject(json_object, "fh3m", "-");
-            }
-            if (triac_auto_info.triac_auto[3].enable == 1)
-            {
-                cJSON_AddBoolToObject(json_object, "cb4", triac_auto_info.triac_auto[3].enable);
-                cJSON_AddNumberToObject(json_object, "ih4h", triac_auto_info.triac_auto[3].turn_on_time.tm_hour);
-                cJSON_AddNumberToObject(json_object, "ih4m", triac_auto_info.triac_auto[3].turn_on_time.tm_min);
-                cJSON_AddNumberToObject(json_object, "fh4h", triac_auto_info.triac_auto[3].turn_off_time.tm_hour);
-                cJSON_AddNumberToObject(json_object, "fh4m", triac_auto_info.triac_auto[3].turn_off_time.tm_min);
-            }
-            else
-            {
-                cJSON_AddBoolToObject(json_object, "cb4", triac_auto_info.triac_auto[3].enable);
-                cJSON_AddStringToObject(json_object, "ih4h", "-");
-                cJSON_AddStringToObject(json_object, "ih4m", "-");
-                cJSON_AddStringToObject(json_object, "fh4h", "-");
-                cJSON_AddStringToObject(json_object, "fh4m", "-");
-            }
         }
+        ESP_LOGE(TRIAC, " EL ENABLE DEL 1 ES %d", triac_auto_info.triac_auto[0].enable);
+        cJSON_AddStringToObject(json_object, "Modo", modo);
+        cJSON_AddBoolToObject(json_object, "cb1", triac_auto_info.triac_auto[0].enable);
+        cJSON_AddNumberToObject(json_object, "ih1h", triac_auto_info.triac_auto[0].turn_on_time.tm_hour);
+        cJSON_AddNumberToObject(json_object, "ih1m", triac_auto_info.triac_auto[0].turn_on_time.tm_min);
+        cJSON_AddNumberToObject(json_object, "fh1h", triac_auto_info.triac_auto[0].turn_off_time.tm_hour);
+        cJSON_AddNumberToObject(json_object, "fh1m", triac_auto_info.triac_auto[0].turn_off_time.tm_min);
+        cJSON_AddBoolToObject(json_object, "cb2", triac_auto_info.triac_auto[1].enable);
+        cJSON_AddNumberToObject(json_object, "ih2h", triac_auto_info.triac_auto[1].turn_on_time.tm_hour);
+        cJSON_AddNumberToObject(json_object, "ih2m", triac_auto_info.triac_auto[1].turn_on_time.tm_min);
+        cJSON_AddNumberToObject(json_object, "fh2h", triac_auto_info.triac_auto[1].turn_off_time.tm_hour);
+        cJSON_AddNumberToObject(json_object, "fh2m", triac_auto_info.triac_auto[1].turn_off_time.tm_min);
+        cJSON_AddBoolToObject(json_object, "cb3", triac_auto_info.triac_auto[2].enable);
+        cJSON_AddNumberToObject(json_object, "ih3h", triac_auto_info.triac_auto[2].turn_on_time.tm_hour);
+        cJSON_AddNumberToObject(json_object, "ih3m", triac_auto_info.triac_auto[2].turn_on_time.tm_min);
+        cJSON_AddNumberToObject(json_object, "fh3h", triac_auto_info.triac_auto[2].turn_off_time.tm_hour);
+        cJSON_AddNumberToObject(json_object, "fh3m", triac_auto_info.triac_auto[2].turn_off_time.tm_min);
+        cJSON_AddBoolToObject(json_object, "cb4", triac_auto_info.triac_auto[3].enable);
+        cJSON_AddNumberToObject(json_object, "ih4h", triac_auto_info.triac_auto[3].turn_on_time.tm_hour);
+        cJSON_AddNumberToObject(json_object, "ih4m", triac_auto_info.triac_auto[3].turn_on_time.tm_min);
+        cJSON_AddNumberToObject(json_object, "fh4h", triac_auto_info.triac_auto[3].turn_off_time.tm_hour);
+        cJSON_AddNumberToObject(json_object, "fh4m", triac_auto_info.triac_auto[3].turn_off_time.tm_min);
 
         char *json_str = cJSON_Print(json_object);
         ESP_LOGI(TRIAC, "JSON ES: %s", json_str);
@@ -989,11 +902,9 @@ esp_err_t vegeflor_data_handler(httpd_req_t *req)
     char *modo;
     uint8_t status = 0;
     status = global_manager_get_rele_vege_info(&rele_status);
-    ESP_LOGE(TAG, "LO QUE ME DEVUELVE LA FUNCION DEL GET RELE ES %d", status);
     if (status == 1)
     {
         cJSON *json_object = cJSON_CreateObject();
-        ESP_LOGE(TAG, "EL STATUS DEL RELE ES %d", rele_status);
         if (rele_status == RELE_VEGE_ENABLE)
         {
             modo = "Vegetacion";

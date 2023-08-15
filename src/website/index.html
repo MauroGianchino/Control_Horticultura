@@ -28,16 +28,20 @@
     <h2>Control 220V</h2>
     <span><strong>Modo:</strong> </span><span id="TRIAC_modo"></span>
     <br>
-    <p>Horario 1</p>
+    <p id="h1e" style="display: none;">Horario 1 Habilitado</p>
+    <p id="h1d" style="display: none;">Horario 1 Deshabilitado</p>
     <span><strong>Encendido:</strong> </span><span id="TRIAC_horarioi1_h"></span>:<span id="TRIAC_horarioi1_m"></span>
     <span><strong>Apagado:</strong> </span><span id="TRIAC_horariof1_h"></span>:<span id="TRIAC_horariof1_m"></span>
-    <p>Horario 2</p>
+    <p id="h2e" style="display: none;">Horario 2 Habilitado</p>
+    <p id="h2d" style="display: none;">Horario 2 Deshabilitado</p>
     <span><strong>Encendido:</strong> </span><span id="TRIAC_horarioi2_h"></span>:<span id="TRIAC_horarioi2_m"></span>
     <span><strong>Apagado:</strong> </span><span id="TRIAC_horariof2_h"></span>:<span id="TRIAC_horariof2_m"></span>
-    <p>Horario 3</p>
+    <p id="h3e" style="display: none;">Horario 3 Habilitado</p>
+    <p id="h3d" style="display: none;">Horario 3 Deshabilitado</p>
     <span><strong>Encendido:</strong> </span><span id="TRIAC_horarioi3_h"></span>:<span id="TRIAC_horarioi3_m"></span>
     <span><strong>Apagado:</strong> </span><span id="TRIAC_horariof3_h"></span>:<span id="TRIAC_horariof3_m"></span>
-    <p>Horario 4</p>
+    <p id="h4e" style="display: none;">Horario 4 Habilitado</p>
+    <p id="h4d" style="display: none;">Horario 4 Deshabilitado</p>
     <span><strong>Encendido:</strong> </span><span id="TRIAC_horarioi4_h"></span>:<span id="TRIAC_horarioi4_m"></span>
     <span><strong>Apagado:</strong> </span><span id="TRIAC_horariof4_h"></span>:<span id="TRIAC_horariof4_m"></span>
     <h2>Vegetacion/Floracion</h2>
@@ -90,6 +94,30 @@
                 }).then(data => {
                     console.log(data)
                     document.getElementById("TRIAC_modo").textContent = data.Modo;
+                    if (data.cb1 == true) {
+                        document.getElementById('h1e').style.display = 'block'
+                    }
+                    else {
+                        document.getElementById('h1d').style.display = 'block'
+                    }
+                    if (data.cb2 == true) {
+                        document.getElementById('h2e').style.display = 'block'
+                    }
+                    else {
+                        document.getElementById('h2d').style.display = 'block'
+                    }
+                    if (data.cb3 == true) {
+                        document.getElementById('h3e').style.display = 'block'
+                    }
+                    else {
+                        document.getElementById('h3d').style.display = 'block'
+                    }
+                    if (data.cb4 == true) {
+                        document.getElementById('h4e').style.display = 'block'
+                    }
+                    else {
+                        document.getElementById('h4d').style.display = 'block'
+                    }
                     document.getElementById("TRIAC_horarioi1_h").textContent = formatNumber(data.ih1h);
                     document.getElementById("TRIAC_horarioi1_m").textContent = formatNumber(data.ih1m);
                     document.getElementById("TRIAC_horariof1_h").textContent = formatNumber(data.fh1h);

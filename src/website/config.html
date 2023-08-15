@@ -45,7 +45,7 @@
         <select id="modos_pwm" name="modos_pwm" onchange="habilitarHorario();DeshabilitarRango();">
             <option value="Manual">Manual</option>
             <option value="Automatico">Automatico</option>
-            <option value="OFF" selected>Apagado</option>
+            <option value="OFF">Apagado</option>
         </select><br>
 
         <label>Encendido:</label>
@@ -72,7 +72,7 @@
         toggleHorario('ih4', 'fh4', 'checkboxh4');">
             <option value="Encendido">ACTIVAR</option>
             <option value="Automatico">AUTO</option>
-            <option value="Apagado" selected>NO</option>
+            <option value="Apagado">NO</option>
         </select><br>
         <label>Habilitar Horario 1:</label>
         <input type="checkbox" id="checkboxh1" name="checkboxh1" onchange="toggleHorario('ih1','fh1','checkboxh1')"><br>
@@ -122,8 +122,8 @@
 
         <label>Modo:</label>
         <select id="modo_vegeflor" name="modo_vegeflor">
-            <option value="VEGE" selected>VEGETATIVO</option>
-            <option value="FLORA">FLORACION</option>
+            <option value="Vegetacion">VEGETATIVO</option>
+            <option value="Floracion">FLORACION</option>
         </select><br>
 
         <input type="submit" value="Actualizar">
@@ -134,6 +134,13 @@
         Volver a inicio
     </button>
     <script>
+        function formatNumber(number) { //funcion para agregar un cero si es que el numero es menor a 10 para mostrarlo
+            if (number >= 0 && number < 10) {
+                return '0' + number;
+            } else {
+                return number;
+            }
+        }
         function loadPWM() {
             //document.getElementById("modos_pwm").value = "OFF";
             fetch("/data_pwm").then(res => {
@@ -145,14 +152,14 @@
                 document.getElementById("rangoValor").textContent = data.intensidad;
                 document.getElementById("rango").value = data.intensidad;
                 document.getElementById("modos_pwm").value = data.Modo;
-                document.getElementById("ih_pwm").value = data.ih1h + ":" + data.ih1m;
-                document.getElementById("fh_pwm").value = data.fh1h + ":" + data.fh1m;
+                document.getElementById("ih_pwm").value = formatNumber(data.ih1h) + ":" + formatNumber(data.ih1m);
+                document.getElementById("fh_pwm").value = formatNumber(data.fh1h) + ":" + formatNumber(data.fh1m);
                 document.getElementById("opciones").value = data.DIA;
             })
         }
 
         function loadTriac() {
-            document.getElementById("modos_triac").value = "Apagado";
+            //document.getElementById("modos_triac").value = "Apagado";
             //document.getElementById("checkboxh1").checked = true;
             fetch("/data_triac").then(res => {
                 if (!res.ok)
@@ -165,14 +172,14 @@
                 document.getElementById("checkboxh2").checked = data.cb2;
                 document.getElementById("checkboxh3").checked = data.cb3;
                 document.getElementById("checkboxh4").checked = data.cb4;
-                document.getElementById("ih1").value = data.ih1h + ":" + data.ih1m;
-                document.getElementById("fh1").value = data.fh1h + ":" + data.fh1m;
-                document.getElementById("ih2").value = data.ih2h + ":" + data.ih2m;
-                document.getElementById("fh2").value = data.fh2h + ":" + data.fh2m;
-                document.getElementById("ih3").value = data.ih3h + ":" + data.ih3m;
-                document.getElementById("fh3").value = data.fh3h + ":" + data.fh3m;
-                document.getElementById("ih4").value = data.ih4h + ":" + data.ih4m;
-                document.getElementById("fh4").value = data.fh4h + ":" + data.fh4m;
+                document.getElementById("ih1").value = formatNumber(data.ih1h) + ":" + formatNumber(data.ih1m);
+                document.getElementById("fh1").value = formatNumber(data.fh1h) + ":" + formatNumber(data.fh1m);
+                document.getElementById("ih2").value = formatNumber(data.ih2h) + ":" + formatNumber(data.ih2m);
+                document.getElementById("fh2").value = formatNumber(data.fh2h) + ":" + formatNumber(data.fh2m);
+                document.getElementById("ih3").value = formatNumber(data.ih3h) + ":" + formatNumber(data.ih3m);
+                document.getElementById("fh3").value = formatNumber(data.fh3h) + ":" + formatNumber(data.fh3m);
+                document.getElementById("ih4").value = formatNumber(data.ih4h) + ":" + formatNumber(data.ih4m);
+                document.getElementById("fh4").value = formatNumber(data.fh4h) + ":" + formatNumber(data.fh4m);
             })
 
         }
@@ -197,7 +204,7 @@
                 return res.json()
             }).then(data => {
                 console.log(data)
-                document.getElementById("hora").value = data.Hora_h + ":" + data.Hora_m;
+                document.getElementById("hora").value = formatNumber(data.Hora_h) + ":" + formatNumber(data.Hora_m);
             })
         }
 
