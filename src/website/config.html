@@ -37,7 +37,7 @@
 
     <form action="/pwm" method="post">
         <label for="rango" class="range-label">Intensidad (0%-100%):</label>
-        <input type="range" id="rango" name="rango" min="0" max="100" value="0" onchange="updateRangoValue()" disabled>
+        <input type="range" id="rango" name="rango" min="0" max="100" value="0" onchange="updateRangoValue()">
         <span id="rangoValor">0</span>
         <br>
 
@@ -141,9 +141,10 @@
                 return number;
             }
         }
-        function loadPWM() {
+
+        async function loadPWM() {
             //document.getElementById("modos_pwm").value = "OFF";
-            fetch("/data_pwm").then(res => {
+            /*fetch("/data_pwm").then(res => {
                 if (!res.ok)
                     console.error("Error en adquirir los datos del pwm")
                 return res.json()
@@ -155,18 +156,38 @@
                 document.getElementById("ih_pwm").value = formatNumber(data.ih1h) + ":" + formatNumber(data.ih1m);
                 document.getElementById("fh_pwm").value = formatNumber(data.fh1h) + ":" + formatNumber(data.fh1m);
                 document.getElementById("opciones").value = data.DIA;
-            })
+            })*/
+            try {
+                const result = await fetch("/data_pwm");
+
+                if (!result.ok)
+                    throw new Error("Error en adquirir los datos del pwm [fetch]");
+
+                const data = await result.json();
+                console.log(data);
+                document.getElementById("rangoValor").textContent = data.intensidad;
+                document.getElementById("rango").value = data.intensidad;
+                document.getElementById("modos_pwm").value = data.Modo;
+                document.getElementById("ih_pwm").value = formatNumber(data.ih1h) + ":" + formatNumber(data.ih1m);
+                document.getElementById("fh_pwm").value = formatNumber(data.fh1h) + ":" + formatNumber(data.fh1m);
+                document.getElementById("opciones").value = data.DIA;
+            }
+            catch (e) {
+                console.error("Error en adquirir los datos del pwm", e);
+            }
         }
 
-        function loadTriac() {
+        async function loadTriac() {
             //document.getElementById("modos_triac").value = "Apagado";
             //document.getElementById("checkboxh1").checked = true;
-            fetch("/data_triac").then(res => {
-                if (!res.ok)
-                    console.error("Error en adquirir los datos del triac")
-                return res.json()
-            }).then(data => {
-                console.log(data)
+            try {
+                const result = await fetch("/data_triac")
+                if (!result.ok) {
+                    throw new Error("Error en adquirir los datos del triac [fetch]");
+                }
+
+                const data = await result.json();
+                console.log(data);
                 document.getElementById("modos_triac").value = data.Modo;
                 document.getElementById("checkboxh1").checked = data.cb1;
                 document.getElementById("checkboxh2").checked = data.cb2;
@@ -180,55 +201,74 @@
                 document.getElementById("fh3").value = formatNumber(data.fh3h) + ":" + formatNumber(data.fh3m);
                 document.getElementById("ih4").value = formatNumber(data.ih4h) + ":" + formatNumber(data.ih4m);
                 document.getElementById("fh4").value = formatNumber(data.fh4h) + ":" + formatNumber(data.fh4m);
-            })
+            }
+            catch (e) {
+                console.error("Error en adquirir los datos del triac", e);
+            }
 
         }
 
-        function loadVegeflor() {
+        async function loadVegeflor() {
             //document.getElementById("modo_vegeflor").value = "FLORA"
-            fetch("/data_vegeflor").then(res => {
-                if (!res.ok)
-                    console.error("Error en adquirir los datos de vegeflor")
-                return res.json()
-            }).then(data => {
-                console.log(data)
+            try {
+                const result = await fetch("/data_vegeflor");
+                if (!result.ok) {
+                    throw new Error("Error en adquirir los datos del vegeflor[fetch]");
+                }
+                const data = await result.json();
+                console.log(data);
                 document.getElementById("modo_vegeflor").value = data.Modo;
-            })
+            }
+            catch (e) {
+                console.error("Error en adquirir los datos del vegeflor", e);
+            }
+
         }
 
-        function loadHora() {
+        async function loadHora() {
             // document.getElementById("hora").value = 17/*data.Hora_h*/ + ":" + 25/*data.Hora_m*/;
-            fetch("/data_hora").then(res => {
-                if (!res.ok)
-                    console.error("Error en adquirir los datos de la hora")
-                return res.json()
-            }).then(data => {
-                console.log(data)
+            try {
+                const result = await fetch("/data_hora");
+                if (!result.ok) {
+                    throw new Error("Error en adquirir los datos de la hora [fetch]");
+                }
+                const data = await result.json();
+                console.log(data);
+
                 document.getElementById("hora").value = formatNumber(data.Hora_h) + ":" + formatNumber(data.Hora_m);
-            })
+            }
+            catch (e) {
+                console.error("Error en adquirir los datos de la hora", e);
+            }
+
         }
 
-        function loadRed() {
+        async function loadRed() {
             //document.getElementById("ID").textContent = "testid";
             //document.getElementById("PASS").textContent = "testpass";
-            fetch("/data_red").then(res => {
-                if (!res.ok)
-                    console.error("Error en adquirir los datos de red")
-                return res.json()
-            }).then(data => {
+            try {
+                const result = await fetch("/data_red");
+                if (!result.ok) {
+                    throw new Error("Error en adquirir los datos de la hora [fetch]");
+                }
+                const data = await result.json();
                 console.log(data);
                 document.getElementById("ID").textContent = data.ID;
                 document.getElementById("PASS").textContent = data.PASS;
+            }
+            catch (e) {
+                console.error("Error en adquirir los datos de la red", e);
+            }
 
-            })
+
         }
 
-        function loadValues() {
-            loadPWM();
-            loadTriac();
-            loadVegeflor();
-            loadHora();
-            loadRed();
+        async function loadValues() {
+            await loadPWM();
+            await loadTriac();
+            await loadVegeflor();
+            await loadHora();
+            await loadRed();
         }
 
         function DeshabilitarRango() {
@@ -250,11 +290,12 @@
 
             // Ejecutar una función específica para cada opción
             if (selectedValue == "Automatico") {
-
+                console.log("entre al if del automatico para habilitar horario del pwm");
                 horarioInput_i.disabled = false;
                 horarioInput_f.disabled = false;
             }
             else {
+                console.log("entre al else del automatico para habilitar horario del pwm");
                 horarioInput_i.disabled = true;
                 horarioInput_f.disabled = true;
 
@@ -271,13 +312,14 @@
 
             // Ejecutar una función específica para cada opción
             if (selectedValue == "Automatico") {
-
+                console.log("entre al if del automatico para habilitar los checkbox del triac");
                 c1.disabled = false;
                 c2.disabled = false;
                 c3.disabled = false;
                 c4.disabled = false;
             }
             else {
+                console.log("entre al else del automatico para habilitar los checkbox del triac");
                 c1.disabled = true;
                 c2.disabled = true;
                 c3.disabled = true;
@@ -292,9 +334,11 @@
             const checkbox = document.getElementById(HorarioID);
 
             if (checkbox.checked && document.getElementById("modos_triac").value == "Automatico") {
+                console.log("entre al if del automatico y checkbox checkeado para habilitar los horarios del triac")
                 horarioInput_i.disabled = false;
                 horarioInput_f.disabled = false;
             } else {
+                console.log("entre al else del automatico y checkbox checkeado para habilitar los horarios del triac")
                 horarioInput_i.disabled = true;
                 horarioInput_f.disabled = true;
             }
@@ -308,20 +352,30 @@
         }
 
         function config_pwm() {
+            console.log("Entre al ConfigPWM");
             habilitarHorario();
+            DeshabilitarRango();
+            console.log("Salgo del ConfigPWM");
         }
 
         function config_triac() {
+            console.log("Entre al ConfigTRIAC");
             statusCheckboxs();
+            console.log("Paso el statusCheckbox");
+            console.log("Entro a los toggle horarios");
             toggleHorario('ih1', 'fh1', 'checkboxh1');
             toggleHorario('ih2', 'fh2', 'checkboxh2');
             toggleHorario('ih3', 'fh3', 'checkboxh3');
             toggleHorario('ih4', 'fh4', 'checkboxh4');
+            console.log("Salgo del ConfigTRIAC");
         }
 
-        document.addEventListener("DOMContentLoaded", function () {
-            loadValues();
+        document.addEventListener("DOMContentLoaded", async function () {
+            console.log("Entro al addEventListener");
+            await loadValues();
+            console.log("Ejecuto ConfigPWM");
             config_pwm();
+            console.log("Ejecuto ConfigTRIAC");
             config_triac();
 
         });
