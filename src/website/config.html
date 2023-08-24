@@ -4,135 +4,464 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Proyecto Horticultura</title>
+    <style>
+        * {
+            font-family: sans-serif;
+            margin: 0;
+            padding: 0;
+        }
+
+        body {
+            background-color: rgb(255, 254, 247);
+        }
+
+        .image_box {
+            text-align: center;
+        }
+
+        .imagen {
+            display: block;
+            margin: 15px;
+            width: 85%;
+        }
+
+        input[type="range"] {
+            width: 100%;
+            height: 4px;
+            background-color: #ddd;
+            border: none;
+            outline: none;
+            appearance: none;
+        }
+
+        input[type="range"]::-webkit-slider-thumb {
+            width: 15px;
+            /* Ancho del punto arrastrable */
+            height: 10px;
+            /* Altura del punto arrastrable */
+            background-color: #5a718a;
+            /* Color del punto arrastrable */
+            border-radius: 0;
+            /* Bordes rectos */
+            cursor: pointer;
+            /* Cambiar cursor al pasar el ratón */
+            -webkit-appearance: none;
+            /* Eliminar apariencia nativa */
+        }
+
+        input[type="submit"] {
+            background-color: rgba(54, 54, 54, 0.589);
+            color: white;
+            cursor: pointer;
+            padding: 5px 10px;
+            margin: 5px;
+            font-size: 15px;
+        }
+
+        .submit_box {
+            display: flex;
+            justify-content: center;
+            margin: 5px;
+        }
+
+        select {
+            padding: 2px;
+            font-size: 15px;
+            border: 2px solid gray;
+            border-radius: 5px;
+            background-color: #f2f2f2;
+        }
+
+        input[type="time"] {
+            padding: 2px;
+            font-size: 12px;
+            border: 1px solid gray;
+            border-radius: 5px;
+            width: 80px;
+        }
+
+        table {
+            width: 100%;
+            table-layout: fixed;
+            border-collapse: collapse;
+            margin: 5px;
+
+        }
+
+        th,
+        td,
+        tr {
+            padding: 2px;
+            text-align: center;
+        }
+
+        .RH-form {
+            font-size: 15px;
+            background-color: rgb(238, 238, 238);
+            border-radius: 15px;
+            margin: 15px;
+            padding: 15px;
+            box-shadow: 2px 1.5px 0px 0px #000;
+
+        }
+
+        .RH-form__title {
+            font-size: 17px;
+        }
+
+        .RH-form__data {
+            font-size: 15px;
+            display: flex;
+            flex-direction: column;
+            margin-top: 5px;
+            margin-bottom: 5px;
+        }
+
+        #ID {
+            font-size: 15px;
+        }
+
+        #PASS {
+            font-size: 15px;
+        }
+
+        #nombre {
+            font-size: 12px;
+            border-radius: 5px;
+            padding: 2px;
+            margin: 3px;
+        }
+
+        #Contrasenia {
+            font-size: 12px;
+            border-radius: 5px;
+            padding: 2px;
+            margin: 3px;
+        }
+
+        .Hora-form {
+            font-size: 15px;
+            background-color: rgb(242, 220, 175);
+            border-radius: 15px;
+            margin: 15px;
+            padding: 15px;
+            box-shadow: 2px 1.5px 0px 0px #000;
+        }
+
+        .Hora-form__title {
+            margin-bottom: 5px;
+            font-size: 17px;
+        }
+
+        .PWM-form {
+            font-size: 17px;
+            background-color: rgb(222, 248, 214);
+            border-radius: 15px;
+            margin: 15px;
+            padding: 15px;
+            box-shadow: 2px 1.5px 0px 0px #000;
+
+        }
+
+        .PWM-form__box1 {
+            background-color: rgb(165, 193, 157);
+            border-radius: 15px;
+            padding: 10px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            box-shadow: 1px 1px 1px 1px #000;
+        }
+
+        .PWM-form__h2--range {
+            font-size: 1.5em;
+            background-color: rgb(165, 193, 157);
+            border-radius: 15px;
+            padding: 10px;
+        }
+
+        .PWM-form__box2 {
+            font-size: 15px;
+            margin: 10px;
+        }
+
+        .PWM-h1 {
+            display: flex;
+            justify-content: space-around;
+        }
+
+        #rangoValor {
+            font-size: 70px;
+            color: white;
+
+        }
+
+        #rango {
+            margin-top: 10px;
+            width: 100%;
+        }
+
+        .Triac-form {
+            font-size: 15px;
+            background-color: rgb(161, 181, 216);
+            border-radius: 15px;
+            margin: 15px;
+            padding: 15px;
+            box-shadow: 2px 1.5px 0px 0px #000;
+        }
+
+        .Triac-form__title {
+            font-size: 17;
+        }
+
+        .Triac-form__select {
+            margin-top: 5px;
+        }
+
+        .Triac-h1 {
+            display: flex;
+            justify-content: space-around;
+        }
+
+        .Triac-h2 {
+            display: flex;
+            justify-content: space-around;
+        }
+
+        .Triac-h3 {
+            display: flex;
+            justify-content: space-around;
+        }
+
+        .Triac-h4 {
+            display: flex;
+            justify-content: space-around;
+        }
+
+        .linea1 {
+            display: flex;
+            justify-content: space-around;
+        }
+
+        .vegeflor-form {
+            font-size: 17px;
+            background-color: rgb(211, 200, 234);
+            border-radius: 15px;
+            margin: 15px;
+            padding: 15px;
+            box-shadow: 2px 1.5px 0px 0px #000;
+        }
+
+        .vegeflor-form__form {
+            font-size: 15px;
+            margin-top: 5px;
+
+        }
+
+        .button {
+            background-color: black;
+            color: white;
+            cursor: pointer;
+            padding: 5px 10px;
+            margin: 5px;
+            font-size: 15px;
+        }
+
+        .botonf {
+            display: flex;
+            justify-content: center;
+            margin: 5px;
+        }
+    </style>
 </head>
 
 <body>
-    <h1>Proyecto Horticultura</h1>
-    <h2>Hora</h2>
-    <form action="/hora" method="post">
-        <label>Hora:</label>
-        <input type="time" id="hora" name="hora" value="00:00">
-        <br><br>
-        <input type="submit" value="Actualizar">
+    <div class="image_box">
+        <img src="/logo" class="imagen">
+    </div>
 
+    <div class="RH-form">
+        <div class="RH-form__title">
+            <h2>Datos de red</h2>
+        </div>
+        <div class="RH-form__data">
+            <span id="nombreID"><strong>Nombre:</strong> </span><span id="ID"></span>
+
+            <span id="nombrePASS"><strong>Contraseña:</strong> </span><span id="PASS"></span>
+        </div>
+
+
+        <form action="/red" method="post">
+            <label for="Nombre">Nuevo Nombre:</label>
+            <input type="text" id="nombre" name="nombre" placeholder="Nuevo nombre de Red">
+            <br>
+            <label for="Contraseña">Nueva Contraseña:</label>
+            <input type="text" id="Contrasenia" name="Contrasenia" placeholder="Nueva Contraseña">
+            <br>
+            <div class="submit_box">
+                <input type="submit" value="Actualizar">
+            </div>
+
+        </form>
+    </div>
+    <div class="Hora-form">
+        <div class="Hora-form__title">
+            <h2>Hora del equipo</h2>
+        </div>
+        <form action="/hora" method="post">
+            <label>Hora:</label>
+            <input type="time" id="hora" name="hora" value="00:00">
+            <br>
+            <div class="submit_box">
+                <input type="submit" value="Actualizar">
+            </div>
+
+        </form>
+    </div>
+
+
+    <form action="/pwm" method="post"></form>
+    <div class="PWM-form">
+        <div class="PWM-form__box1">
+            <div class="PWM-form__h2--range">
+                <h2>Potencia</h2>
+                <!--<label for="rango" class="range-label">Intensidad (0%-100%):</label>-->
+                <input type="range" id="rango" name="rango" min="0" max="100" value="0" onchange="updateRangoValue()"
+                    disabled>
+            </div>
+            <div class="PWM-form__Valor">
+                <span id="rangoValor">0</span>
+                <span style="font-size: 30px;
+                color: white;">%</span>
+            </div>
+
+        </div>
+        <div class="PWM-form__box2">
+            <label>Modo:</label>
+            <select id="modos_pwm" name="modos_pwm" onchange="habilitarHorario();DeshabilitarRango();">
+                <option value="Manual">Manual</option>
+                <option value="Automatico">Automatico</option>
+                <option value="OFF">Apagado</option>
+            </select><br>
+            <label>Amanecer / Atardecer:</label>
+            <select id="opciones" name="Opciones">
+                <option value="Si">SI</option>
+                <option value="No">NO</option>
+            </select>
+            <table>
+                <tr>
+                    <th>Encendido</th>
+                    <th>Apagado</th>
+                </tr>
+
+                <tr>
+                    <div class="PWM-h1">
+                        <th><input type="time" id="ih_pwm" name="ih_pwm" value="00:00" disabled></th>
+                        <th><input type="time" id="fh_pwm" name="fh_pwm" value="00:00" disabled></th>
+                    </div>
+                </tr>
+
+            </table>
+
+
+        </div>
+        <div class="submit_box">
+            <input type="submit" value="Actualizar">
+        </div>
+    </div>
     </form>
-    <h2>Red</h2>
-    <span><strong>Nombre de la Red:</strong> </span><span id="ID"></span>
-    <br>
-    <span><strong>Contraseña de la Red:</strong> </span><span id="PASS"></span>
-    <br><br>
-    <form action="/red" method="post">
-        <label for="Nombre">Nuevo Nombre:</label>
-        <input type="text" id="nombre" name="nombre" placeholder="Nuevo Nombre de Red">
-        <br><br>
-        <label for="Contraseña">Nueva Contraseña:</label>
-        <input type="text" id="Contrasenia" name="Contrasenia" placeholder="Nueva contraseña">
-        <br><br>
-        <input type="submit" value="Actualizar">
+    <div class="Triac-form">
+        <div class="Triac-form__title">
+            <h2>Control 220V</h2>
+        </div>
 
-    </form>
-
-    <h2>Potencia de luz</h2>
-
-    <form action="/pwm" method="post">
-        <label for="rango" class="range-label">Intensidad (0%-100%):</label>
-        <input type="range" id="rango" name="rango" min="0" max="100" value="0" onchange="updateRangoValue()">
-        <span id="rangoValor">0</span>
-        <br>
-
-        <label>Modo:</label>
-        <select id="modos_pwm" name="modos_pwm" onchange="habilitarHorario();DeshabilitarRango();">
-            <option value="Manual">Manual</option>
-            <option value="Automatico">Automatico</option>
-            <option value="OFF">Apagado</option>
-        </select><br>
-
-        <label>Encendido:</label>
-        <input type="time" id="ih_pwm" name="ih_pwm" value="00:00" disabled>
-        <br>
-        <label>Apagado:</label>
-        <input type="time" id="fh_pwm" name="fh_pwm" value="00:00" disabled><br>
-
-        <label>Amanecer / Atardecer:</label>
-        <select id="opciones" name="Opciones">
-            <option value="Si">SI</option>
-            <option value="No">NO</option>
-        </select><br>
-
-        <input type="submit" value="Actualizar">
-
-    </form>
-    <h2>Control 220V</h2>
-    <form action="/triac" method="post">
-        <label>Modo:</label>
-        <select id="modos_triac" name="modos_triac" onchange="statusCheckboxs();toggleHorario('ih1', 'fh1', 'checkboxh1');
+        <form action="/triac" method="post">
+            <div class="Triac-form__select">
+                <label>Modo:</label>
+                <select id="modos_triac" name="modos_triac" onchange="statusCheckboxs();toggleHorario('ih1', 'fh1', 'checkboxh1');
         toggleHorario('ih2', 'fh2', 'checkboxh2');
         toggleHorario('ih3', 'fh3', 'checkboxh3');
         toggleHorario('ih4', 'fh4', 'checkboxh4');">
-            <option value="Encendido">ACTIVAR</option>
-            <option value="Automatico">AUTO</option>
-            <option value="Apagado">NO</option>
-        </select><br>
-        <label>Habilitar Horario 1:</label>
-        <input type="checkbox" id="checkboxh1" name="checkboxh1" onchange="toggleHorario('ih1','fh1','checkboxh1')"><br>
+                    <option value="Encendido">ACTIVAR</option>
+                    <option value="Automatico">AUTO</option>
+                    <option value="Apagado">NO</option>
+                </select>
+            </div>
+            <table>
 
-        <label>Encendido:</label>
-        <input type="time" id="ih1" name="ih1" value="00:00">
-        <br>
+                <tr>
+                    <th style="width: 30px;"></th>
+                    <th>Encendido</th>
+                    <th>Apagado</th>
+                    <th style="width: 70px;">Habilitar</th>
+                </tr>
 
-        <label>Apagado:</label>
-        <input type="time" id="fh1" name="fh1" value="00:00"><br>
+                <tr>
+                    <div class="Triac-h1">
+                        <th><label>T1</label></th>
+                        <th><input type="time" id="ih1" name="ih1" value="00:00"></th>
+                        <th><input type="time" id="fh1" name="fh1" value="00:00"></th>
+                        <th><input type="checkbox" id="checkboxh1" name="checkboxh1"
+                                onchange="toggleHorario('ih1','fh1','checkboxh1')"></th>
+                    </div>
+                </tr>
+                <tr>
+                    <div class="Triac-h2">
+                        <th><label>T2</label></th>
+                        <th><input type="time" id="ih2" name="ih2" value="00:00"></th>
+                        <th><input type="time" id="fh2" name="fh2" value="00:00"></th>
+                        <th><input type="checkbox" id="checkboxh2" name="checkboxh2"
+                                onchange="toggleHorario('ih2','fh2','checkboxh2')"></th>
+                    </div>
+                </tr>
+                <tr>
+                    <div class="Triac-h3">
+                        <th><label>T3</label></th>
+                        <th><input type="time" id="ih3" name="ih3" value="00:00"></th>
+                        <th><input type="time" id="fh3" name="fh3" value="00:00"></th>
+                        <th> <input type="checkbox" id="checkboxh3" name="checkboxh3"
+                                onchange="toggleHorario('ih3','fh3','checkboxh3')"></th>
+                    </div>
+                </tr>
+                <tr>
+                    <div class="Triac-h4">
+                        <th><label>T4</label></th>
+                        <th><input type="time" id="ih4" name="ih4" value="00:00"></th>
+                        <th><input type="time" id="fh4" name="fh4" value="00:00"></th>
+                        <th> <input type="checkbox" id="checkboxh4" name="checkboxh4"
+                                onchange="toggleHorario('ih4','fh4','checkboxh4')"></th>
+                    </div>
+                </tr>
+            </table>
+            <div class="submit_box">
+                <input type="submit" value="Actualizar">
+            </div>
 
-        <label>Habilitar Horario 2:</label>
-        <input type="checkbox" id="checkboxh2" name="checkboxh2" onchange="toggleHorario('ih2','fh2','checkboxh2')"><br>
+        </form>
+    </div>
+    <div class="vegeflor-form">
+        <h2>Vegetacion/Floracion</h2>
+        <div class="vegeflor-form__form">
+            <form action="/vegeflor" method="post">
 
-        <label>Encendido:</label>
-        <input type="time" id="ih2" name="ih2" value="00:00">
-        <br>
+                <label>Modo:</label>
+                <select id="modo_vegeflor" name="modo_vegeflor">
+                    <option value="Vegetacion">VEGETATIVO</option>
+                    <option value="Floracion">FLORACION</option>
+                </select>
+                <div class="submit_box">
+                    <input type="submit" value="Actualizar">
+                </div>
 
-        <label>Apagado:</label>
-        <input type="time" id="fh2" name="fh2" value="00:00"><br>
+            </form>
+        </div>
+    </div>
+    <div class="botonf">
+        <button class="button" onclick="window.location.href ='/index'">
+            Volver a inicio
+        </button>
+    </div>
 
-        <label>Habilitar Horario 3:</label>
-        <input type="checkbox" id="checkboxh3" name="checkboxh3" onchange="toggleHorario('ih3','fh3','checkboxh3')"><br>
-
-        <label>Encendido:</label>
-        <input type="time" id="ih3" name="ih3" value="00:00">
-        <br>
-
-        <label>Apagado:</label>
-        <input type="time" id="fh3" name="fh3" value="00:00"><br>
-
-        <label>Habilitar Horario 4:</label>
-        <input type="checkbox" id="checkboxh4" name="checkboxh4" onchange="toggleHorario('ih4','fh4','checkboxh4')"><br>
-
-        <label>Encendido:</label>
-        <input type="time" id="ih4" name="ih4" value="00:00">
-        <br>
-
-        <label>Apagado:</label>
-        <input type="time" id="fh4" name="fh4" value="00:00"><br>
-
-        <input type="submit" value="Actualizar">
-
-    </form>
-    <h2>Vegetacion/Floracion</h2>
-    <form action="/vegeflor" method="post">
-
-        <label>Modo:</label>
-        <select id="modo_vegeflor" name="modo_vegeflor">
-            <option value="Vegetacion">VEGETATIVO</option>
-            <option value="Floracion">FLORACION</option>
-        </select><br>
-
-        <input type="submit" value="Actualizar">
-
-    </form>
-    <br>
-    <button onclick="window.location.href ='/index'">
-        Volver a inicio
-    </button>
     <script>
         function formatNumber(number) { //funcion para agregar un cero si es que el numero es menor a 10 para mostrarlo
             if (number >= 0 && number < 10) {
@@ -143,20 +472,6 @@
         }
 
         async function loadPWM() {
-            //document.getElementById("modos_pwm").value = "OFF";
-            /*fetch("/data_pwm").then(res => {
-                if (!res.ok)
-                    console.error("Error en adquirir los datos del pwm")
-                return res.json()
-            }).then(data => {
-                console.log(data)
-                document.getElementById("rangoValor").textContent = data.intensidad;
-                document.getElementById("rango").value = data.intensidad;
-                document.getElementById("modos_pwm").value = data.Modo;
-                document.getElementById("ih_pwm").value = formatNumber(data.ih1h) + ":" + formatNumber(data.ih1m);
-                document.getElementById("fh_pwm").value = formatNumber(data.fh1h) + ":" + formatNumber(data.fh1m);
-                document.getElementById("opciones").value = data.DIA;
-            })*/
             try {
                 const result = await fetch("/data_pwm");
 

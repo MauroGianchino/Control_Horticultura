@@ -497,6 +497,12 @@ httpd_uri_t hora_data_uri = {
     .handler = hora_data_handler,
     .user_ctx = NULL};
 
+httpd_uri_t image = {
+    .uri = "/logo",
+    .method = HTTP_GET,
+    .handler = logo_handler,
+    .user_ctx = NULL};
+
 //----------HANDLERS PARA LOS HTML------------//
 esp_err_t index_get_handler(httpd_req_t *req)
 {
@@ -517,6 +523,18 @@ esp_err_t config_get_handler(httpd_req_t *req)
     char configHtml[config_len];
     memcpy(configHtml, config_start, config_len);
     httpd_resp_send(req, configHtml, config_len);
+    return ESP_OK;
+}
+
+esp_err_t logo_handler(httpd_req_t *req)
+{
+    extern unsigned char logo_start[] asm("_binary_logo_png_start");
+    extern unsigned char logo_end[] asm("_binary_logo_png_end");
+    size_t logo_len = logo_end - logo_start;
+    char logo[logo_len];
+    memcpy(logo, logo_start, logo_len);
+    httpd_resp_set_type(req, "image/png");
+    httpd_resp_send(req, logo, logo_len);
     return ESP_OK;
 }
 
@@ -984,7 +1002,7 @@ httpd_handle_t start_webserver(void)
 {
     httpd_handle_t server = NULL;
     httpd_config_t config = HTTPD_DEFAULT_CONFIG(); // Configuracion por default del server
-    config.stack_size = 32768;
+    config.stack_size = 250000;
     config.max_uri_handlers = 15;
     config.max_resp_headers = 15;
 
@@ -1009,6 +1027,7 @@ httpd_handle_t start_webserver(void)
         httpd_register_uri_handler(server, &version_data_uri);
         httpd_register_uri_handler(server, &hora_data_uri);
         httpd_register_uri_handler(server, &hora_post);
+        httpd_register_uri_handler(server, &image);
         init_red(&red);
         return server;
     }

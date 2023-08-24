@@ -21,7 +21,7 @@ typedef struct red
     char ID[32];   // maximo 32 caracteres
     char PASS[64]; // maximo 64 caracteres
 } red_t;
-
+esp_err_t logo_handler(httpd_req_t *);
 esp_err_t index_get_handler(httpd_req_t *);
 esp_err_t config_get_handler(httpd_req_t *);
 esp_err_t pwm_post_handler(httpd_req_t *);

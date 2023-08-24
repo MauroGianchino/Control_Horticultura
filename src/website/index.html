@@ -5,15 +5,31 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Proyecto Horticultura-Inicio</title>
+    <style>
+        .image_box {
+            text-align: center;
+        }
+
+        .imagen {
+            display: block;
+            margin: 15px;
+            width: 85%;
+        }
+    </style>
 </head>
 
 <body>
-    <h1>Inicio</h1>
-    <strong>Hora: </strong><span id="Hora_h"></span>:<span id="Hora_m"></span>
-    <h2>Red</h2>
-    <span><strong>Nombre de la Red:</strong> </span><span id="ID"></span>
-    <br><br>
-    <span><strong>Contraseña de la Red:</strong> </span><span id="PASS"></span>
+    <div class="image_box">
+        <img src="/logo" class="imagen">
+    </div>
+    <div>
+        <strong>Hora: </strong><span id="Hora_h"></span>:<span id="Hora_m"></span>
+        <span><strong>Nombre de la Red:</strong> </span><span id="ID"></span>
+        <span><strong>Contraseña de la Red:</strong> </span><span id="PASS"></span>
+        <span><strong>Versión:</strong> </span><span id="Version"></span>
+    </div>
+
+
     <h2>Potencia de luz</h2>
     <span><strong>Intensidad:</strong> </span><span id="PWM_Intensidad"></span>
     <br><br>
@@ -27,7 +43,6 @@
     <br><br>
     <h2>Control 220V</h2>
     <span><strong>Modo:</strong> </span><span id="TRIAC_modo"></span>
-    <br>
     <p id="h1e" style="display: none;">Horario 1 Habilitado</p>
     <p id="h1d" style="display: none;">Horario 1 Deshabilitado</p>
     <span><strong>Encendido:</strong> </span><span id="TRIAC_horarioi1_h"></span>:<span id="TRIAC_horarioi1_m"></span>
@@ -51,7 +66,7 @@
         Configuracion
     </button>
     <br><br>
-    <span><strong>Versión:</strong> </span><span id="Version"></span>
+
 
 
     <script>
