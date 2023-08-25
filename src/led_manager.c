@@ -110,13 +110,27 @@ static void timer_led_toggle_triac_callback(void* arg)
 //------------------------------------------------------------------------------
 static void config_led_power_up(void)
 {
-    gpio_set_direction(DEVICE_ON_LED, GPIO_MODE_OUTPUT);
+    gpio_config_t io_conf;
+    io_conf.intr_type = GPIO_INTR_DISABLE; // desactivar interrupción
+    io_conf.mode = GPIO_MODE_OUTPUT; // establecer en modo salida
+    io_conf.pin_bit_mask = (1ULL << DEVICE_ON_LED); // configurar pin
+    io_conf.pull_down_en = 0; // desactivar pull-down
+    io_conf.pull_up_en = 0; // desactivar pull-up
+    gpio_config(&io_conf);
+
     gpio_set_level(DEVICE_ON_LED, LED_OFF);
 }
 //------------------------------------------------------------------------------
 static void config_led_pwm_status(void)
 {
-    gpio_set_direction(PWM_OUTPUT_STATUS_LED, GPIO_MODE_OUTPUT);
+    gpio_config_t io_conf;
+    io_conf.intr_type = GPIO_INTR_DISABLE; // desactivar interrupción
+    io_conf.mode = GPIO_MODE_OUTPUT; // establecer en modo salida
+    io_conf.pin_bit_mask = (1ULL << PWM_OUTPUT_STATUS_LED); // configurar pin
+    io_conf.pull_down_en = 0; // desactivar pull-down
+    io_conf.pull_up_en = 0; // desactivar pull-up
+    gpio_config(&io_conf);
+
     gpio_set_level(PWM_OUTPUT_STATUS_LED, LED_OFF);
 
     esp_timer_create_args_t timer_pwm_args = {
@@ -137,13 +151,27 @@ static void config_led_pwm_status(void)
 //------------------------------------------------------------------------------
 static void config_led_rele_vege_status_up(void)
 {
-    gpio_set_direction(RELE_VEGE_STATUS_LED, GPIO_MODE_OUTPUT);
+    gpio_config_t io_conf;
+    io_conf.intr_type = GPIO_INTR_DISABLE; // desactivar interrupción
+    io_conf.mode = GPIO_MODE_OUTPUT; // establecer en modo salida
+    io_conf.pin_bit_mask = (1ULL << RELE_VEGE_STATUS_LED); // configurar pin
+    io_conf.pull_down_en = 0; // desactivar pull-down
+    io_conf.pull_up_en = 0; // desactivar pull-up
+    gpio_config(&io_conf);
+
     gpio_set_level(RELE_VEGE_STATUS_LED, LED_OFF);
 }
 //------------------------------------------------------------------------------
 static void config_led_triac_status(void)
 {
-    gpio_set_direction(TRIAC_OUTPUT_STATUS_LED, GPIO_MODE_OUTPUT);
+    gpio_config_t io_conf;
+    io_conf.intr_type = GPIO_INTR_DISABLE; // desactivar interrupción
+    io_conf.mode = GPIO_MODE_OUTPUT; // establecer en modo salida
+    io_conf.pin_bit_mask = (1ULL << TRIAC_OUTPUT_STATUS_LED); // configurar pin
+    io_conf.pull_down_en = 0; // desactivar pull-down
+    io_conf.pull_up_en = 0; // desactivar pull-up
+    gpio_config(&io_conf);
+
     gpio_set_level(TRIAC_OUTPUT_STATUS_LED, LED_OFF);
 
     esp_timer_create_args_t timer_triac_args = {
@@ -157,8 +185,21 @@ static void config_led_triac_status(void)
 //------------------------------------------------------------------------------
 static void config_led_wifi_status(void)
 {
-    gpio_set_direction(WIFI_STATUS_1_LED, GPIO_MODE_OUTPUT);
-    gpio_set_direction(WIFI_STATUS_2_LED, GPIO_MODE_OUTPUT);
+    gpio_config_t io_conf;
+    io_conf.intr_type = GPIO_INTR_DISABLE; // desactivar interrupción
+    io_conf.mode = GPIO_MODE_OUTPUT; // establecer en modo salida
+    io_conf.pin_bit_mask = (1ULL << WIFI_STATUS_1_LED); // configurar pin
+    io_conf.pull_down_en = 0; // desactivar pull-down
+    io_conf.pull_up_en = 0; // desactivar pull-up
+    gpio_config(&io_conf);
+
+    io_conf.intr_type = GPIO_INTR_DISABLE; // desactivar interrupción
+    io_conf.mode = GPIO_MODE_OUTPUT; // establecer en modo salida
+    io_conf.pin_bit_mask = (1ULL << WIFI_STATUS_2_LED); // configurar pin
+    io_conf.pull_down_en = 0; // desactivar pull-down
+    io_conf.pull_up_en = 0; // desactivar pull-up
+    gpio_config(&io_conf);
+
     gpio_set_level(WIFI_STATUS_1_LED, LED_OFF);
     gpio_set_level(WIFI_STATUS_2_LED, LED_OFF);
 }
