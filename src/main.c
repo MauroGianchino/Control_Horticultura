@@ -1,10 +1,6 @@
 #include "freertos/FreeRTOS.h"
 #include "freertos/task.h"
 #include "freertos/event_groups.h"
-#include "esp_wifi.h"
-#include "esp_http_server.h"
-#include "../include/wifi_ap.h"
-#include "../include/web_server.h"
 #include "../include/led_manager.h"
 #include "../include/button_manager.h"
 #include "../include/global_manager.h"
@@ -17,6 +13,10 @@
 #include "../include/triac_manager.h"
 #include "../include/vege_manager.h"
 #include "../include/current_time_manager.h"
+#include "esp_wifi.h"
+#include "esp_http_server.h"
+#include "../include/wifi_ap.h"
+#include "../include/web_server.h"
 
 void app_main()
 {

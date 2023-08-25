@@ -84,6 +84,7 @@ static void config_buttons_isr(void)
     config.pull_down_en = GPIO_PULLDOWN_DISABLE;
     config.intr_type = GPIO_INTR_POSEDGE;
     gpio_config(&config);
+    
 
     config.pin_bit_mask = (1ULL << WIFI_MODE_BUTTON) | (1ULL << PWM_BUTTON) | (1ULL << TRIAC_BUTTON);
     config.mode = GPIO_MODE_INPUT;

@@ -15,6 +15,7 @@
 //--------------------MACROS Y DEFINES------------------------------------------
 //------------------------------------------------------------------------------
 #define DEBUG_MODULE
+#define GPIO_OUTPUT_PIN_SEL  (1ULL << RELE_OUTPUT)
 //------------------- TYPEDEF --------------------------------------------------
 //------------------------------------------------------------------------------
 
@@ -38,7 +39,14 @@
 //------------------------------------------------------------------------------
 void vege_manager_init(void)
 {
-    gpio_set_direction(RELE_OUTPUT, GPIO_MODE_OUTPUT);
+    gpio_config_t io_conf;
+    io_conf.intr_type = GPIO_INTR_DISABLE; // desactivar interrupción
+    io_conf.mode = GPIO_MODE_OUTPUT; // establecer en modo salida
+    io_conf.pin_bit_mask = GPIO_OUTPUT_PIN_SEL; // configurar pin
+    io_conf.pull_down_en = 0; // desactivar pull-down
+    io_conf.pull_up_en = 0; // desactivar pull-up
+    gpio_config(&io_conf);
+
     gpio_set_level(RELE_OUTPUT, 0);
 }
 //------------------------------------------------------------------------------
