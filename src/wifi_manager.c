@@ -22,19 +22,10 @@
 //#define DEBUG_MODULE
 //------------------------------TYPEDEF-----------------------------------------
 //------------------------------------------------------------------------------
-typedef enum{
-    CMD_UNDEFINED,
-    SET_SSID,
-    SET_PASSWORD,
-}cmds_t;
 
-typedef struct{
-    cmds_t cmd;
-    char str_value[80];
-}wifi_maanger_events_t;
 //--------------------DECLARACION DE DATOS INTERNOS-----------------------------
 //------------------------------------------------------------------------------
-static QueueHandle_t wifi_manager_queue;
+//static QueueHandle_t wifi_manager_queue;
 //--------------------DECLARACION DE FUNCIONES INTERNAS-------------------------
 //------------------------------------------------------------------------------
 static void wifi_manager_task(void * pvParameters);
@@ -51,54 +42,27 @@ static void wifi_manager_task(void * pvParameters);
 //------------------------------------------------------------------------------
 void wifi_manager_task(void * pvParameters)
 {
-    wifi_maanger_events_t ev;
-    char ssid[64];
-    char password[64];
-    bool set_ssid = false;
-    bool set_password = false;
+    //wifi_maanger_events_t ev;
     static httpd_handle_t server = NULL;
+
+    vTaskDelay(100 / portTICK_PERIOD_MS);
+
+    wifi_init_softap(); // Inicio el AP
+    ESP_ERROR_CHECK(esp_event_handler_register(IP_EVENT, IP_EVENT_AP_STAIPASSIGNED, &connect_handler, &server));
 
     while(true)
     {
-        if(xQueueReceive(wifi_manager_queue, &ev, 1000 / portTICK_PERIOD_MS) == pdTRUE)
-        {
-            switch(ev.cmd)
-            {
-                case CMD_UNDEFINED:
-                    break;
-                case SET_SSID:
-                    strcpy(ssid, ev.str_value);
-                    set_ssid = true;
-                    break;
-                case SET_PASSWORD:
-                    strcpy(password, ev.str_value);
-                    set_password = true;
-                    break;
-                default:
-                break;
-            }
-        }
-        else
-        {
-            if((set_ssid == true) && (set_password == true))
-            {
-                set_ssid = false;
-                set_password = false;
-
-                wifi_init_softap(); // Inicio el AP
-                ESP_ERROR_CHECK(esp_event_handler_register(IP_EVENT, IP_EVENT_AP_STAIPASSIGNED, &connect_handler, &server));
-            }
-        }
+        vTaskDelay(10 / portTICK_PERIOD_MS);
     }
 }
 //--------------------DEFINICION DE FUNCIONES EXTERNAS--------------------------
 //------------------------------------------------------------------------------
 void wifi_manager_init(void)
 {
-    wifi_manager_queue = xQueueCreate(QUEUE_ELEMENT_QUANTITY, sizeof(wifi_maanger_events_t));
+   // wifi_manager_queue = xQueueCreate(QUEUE_ELEMENT_QUANTITY, sizeof(wifi_maanger_events_t));
 
     xTaskCreate(wifi_manager_task, "wifi_manager_task", 
-               configMINIMAL_STACK_SIZE*5, NULL, configMAX_PRIORITIES, NULL);             
+               configMINIMAL_STACK_SIZE*10, NULL, configMAX_PRIORITIES, NULL);             
 }
 //--------------------FIN DEL ARCHIVO-------------------------------------------
 //------------------------------------------------------------------------------

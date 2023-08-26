@@ -13,14 +13,15 @@
 #include "../include/triac_manager.h"
 #include "../include/vege_manager.h"
 #include "../include/current_time_manager.h"
-#include "esp_wifi.h"
-#include "esp_http_server.h"
-#include "../include/wifi_ap.h"
-#include "../include/web_server.h"
+#include "../include/wifi_manager.h"
+//#include "esp_wifi.h"
+//#include "esp_http_server.h"
+//#include "../include/wifi_ap.h"
+//#include "../include/web_server.h"
 
 void app_main()
 {
-  static httpd_handle_t server = NULL;
+  //static httpd_handle_t server = NULL;
   nv_flash_manager_init();
   global_manager_init();
   led_manager_init();
@@ -31,9 +32,11 @@ void app_main()
   pwm_manager_init();
   triac_manager_init();
   vege_manager_init();
-  current_time_manager_init();
-  wifi_init_softap(); // Inicio el AP
-  ESP_ERROR_CHECK(esp_event_handler_register(IP_EVENT, IP_EVENT_AP_STAIPASSIGNED, &connect_handler, &server));
+  current_time_manager_init();  
+  //wifi_init_softap(); // Inicio el AP
+  //ESP_ERROR_CHECK(esp_event_handler_register(IP_EVENT, IP_EVENT_AP_STAIPASSIGNED, &connect_handler, &server));
+
+  wifi_manager_init();
 
   while (true)
   {

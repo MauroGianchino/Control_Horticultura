@@ -25,7 +25,8 @@
         "type_traits": "c",
         "utility": "c",
         "nv_flash_manager.h": "c",
-        "nv_flash_driver.h": "c"
+        "nv_flash_driver.h": "c",
+        "wifi_ap.h": "c"
     },
     "C_Cpp.errorSquiggles": "disabled"
 }

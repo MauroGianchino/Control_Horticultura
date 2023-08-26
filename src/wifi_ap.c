@@ -21,6 +21,9 @@
 #include "wifi_ap.h"
 #include "../include/global_manager.h"
 #include "../include/web_server.h"
+#include "../include/nv_flash_manager.h"
+//------------------------------------------------------------------------------
+#define DEBUG_MODULE
 
 #define EXAMPLE_ESP_WIFI_SSID "Red_Hor"
 #define EXAMPLE_ESP_WIFI_PASS "Horti2505"
@@ -30,10 +33,109 @@
 #define DEFAULT_AP_IP "192.168.1.1"
 #define DEFAULT_AP_GATEWAY "192.168.1.1"
 #define DEFAULT_AP_NETMASK "255.255.255.0"
+//------------------------------------------------------------------------------
 esp_netif_t *esp_netif_ap = NULL;
 
 // red_t red_things;
+//------------------------------------------------------------------------------
+static uint8_t nv_get_ssid_ap_wifi(char *ssid);
+static uint8_t nv_get_password_ap_wifi(char *password);
+//------------------------------------------------------------------------------
+static uint8_t nv_get_ssid_ap_wifi(char *ssid)
+{
+    char ssid_aux[DEVICE_SSID_MAX_LENGTH];
+    bool read_ok = false;
+    uint8_t retries_max = 5;
+    uint8_t retries = 0;
 
+    memset(ssid_aux, '\0', sizeof(ssid_aux));
+
+    do{
+        vTaskDelay(100 / portTICK_PERIOD_MS);
+        if (read_str_from_flash(WIFI_AP_SSID_KEY, ssid_aux))
+        {
+            #ifdef DEBUG_MODULE
+                printf("ssid read: %s \n", ssid_aux);
+            #endif
+            strcpy(ssid, ssid_aux);
+            read_ok = true;
+        }
+        else
+        {
+            retries++;
+            read_ok = false;
+            #ifdef DEBUG_MODULE
+                printf("ssid not_read \n");
+            #endif
+        }
+    }while((read_ok == false) && (retries < retries_max));
+
+    #ifdef DEBUG_MODULE
+        if(retries == retries_max)
+        {
+            printf("ssid not_read, max retries reached \n");
+        }
+    #endif
+    
+    if(read_ok == true)
+    {
+        return 1;
+    }
+    
+    strcpy(ssid, EXAMPLE_ESP_WIFI_SSID);
+    return 0;
+}
+//------------------------------------------------------------------------------
+static uint8_t nv_get_password_ap_wifi(char *password)
+{
+    char password_aux[DEVICE_PASS_MAX_LENGTH];
+    bool read_ok = false;
+    uint8_t retries_max = 5;
+    uint8_t retries = 0;
+
+    memset(password_aux, '\0', sizeof(password_aux));
+
+    do{
+        vTaskDelay(100 / portTICK_PERIOD_MS);
+        if (read_str_from_flash(WIFI_AP_PASSWORD_KEY, password_aux))
+        {
+            #ifdef DEBUG_MODULE
+                printf("password read: %s \n", password_aux);
+            #endif
+            if(strlen(password_aux) < 8)
+            {
+                strcpy(password, EXAMPLE_ESP_WIFI_PASS);
+                return 0;
+            }
+            strcpy(password, password_aux);
+            read_ok = true;
+        }
+        else
+        {
+            retries++;
+            read_ok = false;
+            #ifdef DEBUG_MODULE
+                printf("password not_read \n");
+            #endif
+        }
+    }while((read_ok == false) && (retries < retries_max));
+
+    #ifdef DEBUG_MODULE
+        if(retries == retries_max)
+        {
+            printf("password not_read, max retries reached \n");
+        }
+    #endif
+    
+    if(read_ok == true)
+    {
+        return 1;
+    }
+    
+    strcpy(password, EXAMPLE_ESP_WIFI_PASS);
+    return 0;
+}
+//------------------------------------------------------------------------------
 void wifi_event_handler(void *arg, esp_event_base_t event_base, int32_t event_id, void *event_data)
 {
 
@@ -50,7 +152,7 @@ void wifi_event_handler(void *arg, esp_event_base_t event_base, int32_t event_id
         ESP_LOGI(TAG, "station " MACSTR " leave, AID=%d", MAC2STR(event->mac), event->aid);
     }
 }
-
+//------------------------------------------------------------------------------
 void wifi_init_softap(void)
 {
     // 1-Fase de inicio de WiFi
@@ -71,8 +173,8 @@ void wifi_init_softap(void)
 
     // global_manager_get_net_info(red_things.ID, red_things.PASS);
 
-    // char *ssid = "test_id";
-    // char *password = "test_pass";
+    char ssid[50];
+    char password[50];
 
     wifi_config_t wifi_config = {
         .ap = {
@@ -92,12 +194,21 @@ void wifi_init_softap(void)
             },
         },
     };
-    // memset((char *)wifi_config.ap.ssid, '\0', sizeof(wifi_config.ap.ssid));
-    // memset((char *)wifi_config.ap.password, '\0', sizeof(wifi_config.ap.password));
 
-    // strncpy((char *)wifi_config.ap.ssid, ssid, sizeof(wifi_config.ap.ssid));
-    // strncpy((char *)wifi_config.ap.password, password, sizeof(wifi_config.ap.password));
+    nv_get_ssid_ap_wifi((char *)ssid);
 
+    memset((char *)wifi_config.ap.ssid, '\0', sizeof(wifi_config.ap.ssid));
+    memcpy((char *)wifi_config.ap.ssid, ssid, strlen(ssid));
+    wifi_config.ap.ssid_len = strlen(ssid);
+
+    nv_get_password_ap_wifi((char *)password);
+    memset((char *)wifi_config.ap.password, '\0', sizeof(wifi_config.ap.password));
+    strncpy((char *)wifi_config.ap.password, password, strlen(password));
+    //printf("strlen(password) %d \n",strlen(password));
+
+    //memset((char *)wifi_config.ap.password, '\0', sizeof(wifi_config.ap.password));
+    //strncpy((char *)wifi_config.ap.password, password, sizeof(wifi_config.ap.password));
+    
     if (strlen(EXAMPLE_ESP_WIFI_PASS) == 0)
     {
         wifi_config.ap.authmode = WIFI_AUTH_OPEN;
@@ -121,3 +232,4 @@ void wifi_init_softap(void)
 
     ESP_LOGI(TAG, "wifi_init_softap finished. SSID:%s password:%s channel:%d", EXAMPLE_ESP_WIFI_SSID, EXAMPLE_ESP_WIFI_PASS, EXAMPLE_ESP_WIFI_CHANNEL);
 }
+//------------------------------------------------------------------------------
