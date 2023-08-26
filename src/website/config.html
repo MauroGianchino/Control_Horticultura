@@ -285,9 +285,13 @@
             <h2>Datos de red</h2>
         </div>
         <div class="RH-form__data">
-            <span id="nombreID"><strong>Nombre:</strong> </span><span id="ID"></span>
+            <div class="RH-form__data--ID">
+                <span id="nombreID"><strong>Nombre:</strong> </span><span id="ID"></span>
+            </div>
+            <div class="RH-form__data--PASS">
+                <span id="nombrePASS"><strong>Contraseña:</strong> </span><span id="PASS"></span>
+            </div>
 
-            <span id="nombrePASS"><strong>Contraseña:</strong> </span><span id="PASS"></span>
         </div>
 
 
@@ -320,55 +324,55 @@
     </div>
 
 
-    <form action="/pwm" method="post"></form>
-    <div class="PWM-form">
-        <div class="PWM-form__box1">
-            <div class="PWM-form__h2--range">
-                <h2>Potencia</h2>
-                <!--<label for="rango" class="range-label">Intensidad (0%-100%):</label>-->
-                <input type="range" id="rango" name="rango" min="0" max="100" value="0" onchange="updateRangoValue()"
-                    disabled>
-            </div>
-            <div class="PWM-form__Valor">
-                <span id="rangoValor">0</span>
-                <span style="font-size: 30px;
+    <form action="/pwm" method="post">
+        <div class="PWM-form">
+            <div class="PWM-form__box1">
+                <div class="PWM-form__h2--range">
+                    <h2>Potencia</h2>
+                    <!--<label for="rango" class="range-label">Intensidad (0%-100%):</label>-->
+                    <input type="range" id="rango" name="rango" min="0" max="100" value="0"
+                        onchange="updateRangoValue()" disabled>
+                </div>
+                <div class="PWM-form__Valor">
+                    <span id="rangoValor">0</span>
+                    <span style="font-size: 30px;
                 color: white;">%</span>
+                </div>
+
             </div>
+            <div class="PWM-form__box2">
+                <label>Modo:</label>
+                <select id="modos_pwm" name="modos_pwm" onchange="habilitarHorario();DeshabilitarRango();">
+                    <option value="Manual">Manual</option>
+                    <option value="Automatico">Automatico</option>
+                    <option value="OFF">Apagado</option>
+                </select><br>
+                <label>Amanecer / Atardecer:</label>
+                <select id="opciones" name="Opciones">
+                    <option value="Si">SI</option>
+                    <option value="No">NO</option>
+                </select>
+                <table>
+                    <tr>
+                        <th>Encendido</th>
+                        <th>Apagado</th>
+                    </tr>
 
+                    <tr>
+                        <div class="PWM-h1">
+                            <th><input type="time" id="ih_pwm" name="ih_pwm" value="00:00" disabled></th>
+                            <th><input type="time" id="fh_pwm" name="fh_pwm" value="00:00" disabled></th>
+                        </div>
+                    </tr>
+
+                </table>
+
+
+            </div>
+            <div class="submit_box">
+                <input type="submit" value="Actualizar">
+            </div>
         </div>
-        <div class="PWM-form__box2">
-            <label>Modo:</label>
-            <select id="modos_pwm" name="modos_pwm" onchange="habilitarHorario();DeshabilitarRango();">
-                <option value="Manual">Manual</option>
-                <option value="Automatico">Automatico</option>
-                <option value="OFF">Apagado</option>
-            </select><br>
-            <label>Amanecer / Atardecer:</label>
-            <select id="opciones" name="Opciones">
-                <option value="Si">SI</option>
-                <option value="No">NO</option>
-            </select>
-            <table>
-                <tr>
-                    <th>Encendido</th>
-                    <th>Apagado</th>
-                </tr>
-
-                <tr>
-                    <div class="PWM-h1">
-                        <th><input type="time" id="ih_pwm" name="ih_pwm" value="00:00" disabled></th>
-                        <th><input type="time" id="fh_pwm" name="fh_pwm" value="00:00" disabled></th>
-                    </div>
-                </tr>
-
-            </table>
-
-
-        </div>
-        <div class="submit_box">
-            <input type="submit" value="Actualizar">
-        </div>
-    </div>
     </form>
     <div class="Triac-form">
         <div class="Triac-form__title">

@@ -4,8 +4,17 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Proyecto Horticultura-Inicio</title>
     <style>
+        * {
+            font-family: sans-serif;
+            margin: 0;
+            padding: 0;
+        }
+
+        body {
+            background-color: rgb(255, 254, 247);
+        }
+
         .image_box {
             text-align: center;
         }
@@ -15,59 +24,219 @@
             margin: 15px;
             width: 85%;
         }
+
+        .Datos_Equipo {
+            background-color: rgb(151, 221, 253);
+            display: flex;
+            flex-direction: column;
+            box-shadow: 2px 1.5px 0px 0px #000;
+            border-radius: 10px;
+            margin: 15px;
+            padding: 10px;
+
+        }
+
+        .Datos_Equipo__Hora {
+            margin: 2px;
+            padding: 2px;
+        }
+
+        .Datos_Equipo__NombreRed {
+            margin: 2px;
+            padding: 2px;
+        }
+
+        .Datos_Equipo__ContraseniaRed {
+            margin: 2px;
+            padding: 2px;
+        }
+
+        .Datos_Equipo__Version {
+            margin: 2px;
+            padding: 2px;
+        }
+
+        .Potencia-Vege {
+            background-color: rgb(166, 248, 146);
+            display: flex;
+            flex-direction: column;
+            box-shadow: 2px 1.5px 0px 0px #000;
+            border-radius: 10px;
+            margin: 15px;
+            padding: 10px;
+        }
+
+        .Potencia-Vege__Potencia {
+            margin: 2px;
+            padding: 2px;
+        }
+
+        .Potencia-Vege__Modopwm {
+            margin: 2px;
+            padding: 2px;
+        }
+
+        .Potencia-Vege__Horarios {
+            display: flex;
+            margin: 2px;
+            padding: 2px;
+        }
+
+        .Potencia-Vege__Horarios--Apagado {
+            margin-left: 15px;
+        }
+
+        .Potencia-Vege__dia {
+            margin: 2px;
+            padding: 2px;
+        }
+
+        .Potencia-Vege__ModoVEGE {
+            margin: 2px;
+            padding: 2px;
+        }
+
+        .Triac {
+            background-color: rgb(248, 246, 146);
+            display: flex;
+            flex-direction: column;
+            box-shadow: 2px 1.5px 0px 0px #000;
+            border-radius: 10px;
+            margin: 15px;
+            padding: 10px;
+        }
+
+        .Triac__modo {
+            margin: 2px;
+            padding: 2px;
+        }
+
+        .botonf {
+            display: flex;
+            justify-content: center;
+            margin: 5px;
+        }
+
+        .button {
+            background-color: black;
+            color: white;
+            cursor: pointer;
+            padding: 5px 10px;
+            margin: 5px;
+            font-size: 15px;
+        }
     </style>
 </head>
 
 <body>
     <div class="image_box">
-        <img src="/logo" class="imagen">
-    </div>
-    <div>
-        <strong>Hora: </strong><span id="Hora_h"></span>:<span id="Hora_m"></span>
-        <span><strong>Nombre de la Red:</strong> </span><span id="ID"></span>
-        <span><strong>Contraseña de la Red:</strong> </span><span id="PASS"></span>
-        <span><strong>Versión:</strong> </span><span id="Version"></span>
+        <img src="logo" class="imagen">
     </div>
 
+    <div class="Datos_Equipo">
+        <div class="Datos_Equipo__Hora">
+            <strong>Hora:</strong><span id="Hora_h">--</span>:<span id="Hora_m">--</span>
+        </div>
+        <div class="Datos_Equipo__NombreRed">
+            <strong>Red/Equipo:</strong> <span id="ID">---</span>
+        </div>
+        <div class="Datos_Equipo__ContraseniaRed">
+            <strong>Contraseña:</strong> <span id="PASS">---</span>
+        </div>
+        <div class="Datos_Equipo__Version">
+            <strong>Versión:</strong> <span id="Version">--</span>
+        </div>
+    </div>
+    <div class="Potencia-Vege">
+        <div class="Potencia-Vege__Potencia">
+            <strong>Potencia:</strong><span id="PWM_Intensidad"> --</span>%
+        </div>
+        <div class="Potencia-Vege__Modopwm">
+            <strong>Modo:</strong> <span id="PWM_modo"> ---</span>
+        </div>
+        <div class="Potencia-Vege__Horarios">
+            <div class="Potencia-Vege__Horarios--Encendido">
+                <strong>Encendido:</strong><span id="PWM_horarioih"> --</span>:<span id="PWM_horarioim"> --</span>
+            </div>
+            <div class="Potencia-Vege__Horarios--Apagado">
+                <strong>Apagado:</strong><span id="PWM_horariofh"> --</span>:<span id="PWM_horariofm"> --</span>
+            </div>
+        </div>
+        <div class="Potencia-Vege__dia">
+            <strong>Amanecer / Atardecer:</strong><span id="PWM_DIA"> ---</span>
+        </div>
+        <div class="Potencia-Vege__ModoVEGE">
+            <strong>Etapa:</strong><span id="VEGEFLOR_modo"> ---</span>
+        </div>
+    </div>
+    <div class="Triac">
 
-    <h2>Potencia de luz</h2>
-    <span><strong>Intensidad:</strong> </span><span id="PWM_Intensidad"></span>
-    <br><br>
-    <span><strong>Modo:</strong> </span><span id="PWM_modo"></span>
-    <br><br>
-    <span><strong>Encendido:</strong> </span><span id="PWM_horarioih"></span>:<span id="PWM_horarioim"></span>
-    <br><br>
-    <span><strong>Apagado:</strong> </span><span id="PWM_horariofh"></span>:<span id="PWM_horariofm"></span>
-    <br><br>
-    <span><strong>Amanecer / Atardecer:</strong> </span><span id="PWM_DIA"></span>
-    <br><br>
-    <h2>Control 220V</h2>
-    <span><strong>Modo:</strong> </span><span id="TRIAC_modo"></span>
-    <p id="h1e" style="display: none;">Horario 1 Habilitado</p>
-    <p id="h1d" style="display: none;">Horario 1 Deshabilitado</p>
-    <span><strong>Encendido:</strong> </span><span id="TRIAC_horarioi1_h"></span>:<span id="TRIAC_horarioi1_m"></span>
-    <span><strong>Apagado:</strong> </span><span id="TRIAC_horariof1_h"></span>:<span id="TRIAC_horariof1_m"></span>
-    <p id="h2e" style="display: none;">Horario 2 Habilitado</p>
-    <p id="h2d" style="display: none;">Horario 2 Deshabilitado</p>
-    <span><strong>Encendido:</strong> </span><span id="TRIAC_horarioi2_h"></span>:<span id="TRIAC_horarioi2_m"></span>
-    <span><strong>Apagado:</strong> </span><span id="TRIAC_horariof2_h"></span>:<span id="TRIAC_horariof2_m"></span>
-    <p id="h3e" style="display: none;">Horario 3 Habilitado</p>
-    <p id="h3d" style="display: none;">Horario 3 Deshabilitado</p>
-    <span><strong>Encendido:</strong> </span><span id="TRIAC_horarioi3_h"></span>:<span id="TRIAC_horarioi3_m"></span>
-    <span><strong>Apagado:</strong> </span><span id="TRIAC_horariof3_h"></span>:<span id="TRIAC_horariof3_m"></span>
-    <p id="h4e" style="display: none;">Horario 4 Habilitado</p>
-    <p id="h4d" style="display: none;">Horario 4 Deshabilitado</p>
-    <span><strong>Encendido:</strong> </span><span id="TRIAC_horarioi4_h"></span>:<span id="TRIAC_horarioi4_m"></span>
-    <span><strong>Apagado:</strong> </span><span id="TRIAC_horariof4_h"></span>:<span id="TRIAC_horariof4_m"></span>
-    <h2>Vegetacion/Floracion</h2>
-    <span><strong>Modo:</strong> </span><span id="VEGEFLOR_modo"></span>
-    <br><br>
-    <button onclick="window.location.href ='/config'">
-        Configuracion
-    </button>
-    <br><br>
+        <div class="Triac__modo">
+            <strong>Control 220V - </strong>
+            <strong>Modo:</strong><span id="TRIAC_modo"> ---</span>
+        </div>
+        <table>
+
+            <tr>
+                <th style="width: 30px;"></th>
+                <th>Encendido</th>
+                <th>Apagado</th>
+                <th style="width: 70px;">Habilitado</th>
+            </tr>
+
+            <tr>
+                <div class="Triac-h1">
+                    <th><label>T1</label></th>
+                    <th><span id="TRIAC_horarioi1_h"></span>:<span id="TRIAC_horarioi1_m"></span></th>
+                    <th><span id="TRIAC_horariof1_h"></span>:<span id="TRIAC_horariof1_m"></span></th>
+                    <th>
+                        <p id="h1e" style="display: none;color: green;">&#x2714</p>
+                        <p id="h1d" style="display: none;color: red;">X</p>
+                    </th>
+                </div>
+            </tr>
+            <tr>
+                <div class="Triac-h2">
+                    <th><label>T2</label></th>
+                    <th><span id="TRIAC_horarioi2_h">--</span>:<span id="TRIAC_horarioi2_m">--</span></th>
+                    <th><span id="TRIAC_horariof2_h">--</span>:<span id="TRIAC_horariof2_m">--</span></th>
+                    <th>
+                        <p id="h2e" style="display: none;color: green;">&#x2714</p>
+                        <p id="h2d" style="display: none;color: red;">X</p>
+                    </th>
+                </div>
+            </tr>
+            <tr>
+                <div class="Triac-h3">
+                    <th><label>T3</label></th>
+                    <th><span id="TRIAC_horarioi3_h">--</span>:<span id="TRIAC_horarioi3_m">--</span></th>
+                    <th><span id="TRIAC_horariof3_h">--</span>:<span id="TRIAC_horariof3_m">--</span></th>
+                    <th>
+                        <p id="h3e" style="display: none;color: green;">&#x2714</p>
+                        <p id="h3d" style="display: none;color: red;">X</p>
+                    </th>
+                </div>
+            </tr>
+            <tr>
+                <div class="Triac-h4">
+                    <th><label>T4</label></th>
+                    <th><span id="TRIAC_horarioi4_h">--</span>:<span id="TRIAC_horarioi4_m">--</span></th>
+                    <th><span id="TRIAC_horariof4_h">--</span>:<span id="TRIAC_horariof4_m">--</span></th>
+                    <th>
+                        <p id="h4e" style="display: none; color: green;">&#x2714</p>
+                        <p id="h4d" style="display: none; color: red;">X</p>
+                    </th>
+                </div>
+            </tr>
+        </table>
+    </div>
 
 
+    <div class="botonf">
+        <button class="button" onclick="window.location.href ='/config'">
+            Configuracion
+        </button>
+    </div>
 
     <script>
         function formatNumber(number) { //funcion para agregar un cero si es que el numero es menor a 10 para mostrarlo
