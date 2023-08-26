@@ -943,7 +943,7 @@ uint8_t global_manager_set_wifi_password(char *wifi_password, bool read_from_fla
 void global_manager_update_auto_pwm_calendar(calendar_auto_mode_t calendar, bool read_from_flash)
 {
     global_event_t ev;
-    if (check_later_hour(calendar.turn_off_time, calendar.turn_on_time))
+    //if (check_later_hour(calendar.turn_off_time, calendar.turn_on_time))
     {
         ev.cmd = UPDATE_PWM_CALENDAR;
         ev.value_read_from_flash = read_from_flash;
@@ -956,7 +956,7 @@ void global_manager_update_auto_pwm_calendar(calendar_auto_mode_t calendar, bool
 void global_manager_update_auto_triac_calendar(triac_config_info_t triac_info, uint8_t triac_num, bool read_from_flash)
 {
     global_event_t ev;
-    if (check_later_hour(triac_info.turn_off_time, triac_info.turn_on_time))
+    //if (check_later_hour(triac_info.turn_off_time, triac_info.turn_on_time))
     {
         ev.cmd = UPDATE_TRIAC_CALENDAR;
         ev.value_read_from_flash = read_from_flash;
