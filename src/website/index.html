@@ -26,10 +26,11 @@
         }
 
         .Datos_Equipo {
-            background-color: rgb(151, 221, 253);
+            background: rgb(244, 219, 144);
+            background: linear-gradient(150deg, rgba(244, 219, 144, 1) 35%, rgba(247, 200, 59, 1) 62%);
             display: flex;
             flex-direction: column;
-            box-shadow: 2px 1.5px 0px 0px #000;
+            box-shadow: 2px 1.5px 0px 0px hsl(187, 4%, 38%);
             border-radius: 10px;
             margin: 15px;
             padding: 10px;
@@ -57,10 +58,11 @@
         }
 
         .Potencia-Vege {
-            background-color: rgb(166, 248, 146);
+            background: rgb(179, 151, 162);
+            background: linear-gradient(150deg, rgba(179, 151, 162, 1) 58%, rgba(113, 91, 100, 1) 92%);
             display: flex;
             flex-direction: column;
-            box-shadow: 2px 1.5px 0px 0px #000;
+            box-shadow: 2px 1.5px 0px 0px hsl(187, 4%, 38%);
             border-radius: 10px;
             margin: 15px;
             padding: 10px;
@@ -97,10 +99,11 @@
         }
 
         .Triac {
-            background-color: rgb(248, 246, 146);
+            background: rgb(148, 163, 156);
+            background: linear-gradient(150deg, rgba(148, 163, 156, 1) 35%, rgba(92, 108, 100, 1) 70%);
             display: flex;
             flex-direction: column;
-            box-shadow: 2px 1.5px 0px 0px #000;
+            box-shadow: 2px 1.5px 0px 0px hsl(187, 4%, 38%);
             border-radius: 10px;
             margin: 15px;
             padding: 10px;
@@ -130,7 +133,7 @@
 
 <body>
     <div class="image_box">
-        <img src="logo" class="imagen">
+        <img src="/logo" class="imagen">
     </div>
 
     <div class="Datos_Equipo">
@@ -187,8 +190,8 @@
             <tr>
                 <div class="Triac-h1">
                     <th><label>T1</label></th>
-                    <th><span id="TRIAC_horarioi1_h"></span>:<span id="TRIAC_horarioi1_m"></span></th>
-                    <th><span id="TRIAC_horariof1_h"></span>:<span id="TRIAC_horariof1_m"></span></th>
+                    <th><span id="TRIAC_horarioi1_h">--</span>:<span id="TRIAC_horarioi1_m">--</span></th>
+                    <th><span id="TRIAC_horariof1_h">--</span>:<span id="TRIAC_horariof1_m">--</span></th>
                     <th>
                         <p id="h1e" style="display: none;color: green;">&#x2714</p>
                         <p id="h1d" style="display: none;color: red;">X</p>
