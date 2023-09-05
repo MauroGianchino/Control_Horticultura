@@ -35,8 +35,8 @@
 #define CURRENT_TIME_KEY "actual_time"
 
 // DEFAULT VALUES
-#define WIFI_AP_SSID_DEFAULT "ssid_default" // el tamaño maximo del ssid no debe exceder los 32 caracteres
-#define WIFI_AP_PASSWORD_DEFAULT "13421342"
+#define WIFI_AP_SSID_DEFAULT "Lumenar01" // el tamaño maximo del ssid no debe exceder los 32 caracteres
+#define WIFI_AP_PASSWORD_DEFAULT "12345678"
 #define PWM_MODE_DEFAULT 2 // MANUAL_OFF
 #define PWM_SIMUL_DAY_STATUS_DEFAULT 0 // SIMUL_DAY_OFF
 #define PWM_PERCENT_POWER_DEFAULT 50 // 50 percent
