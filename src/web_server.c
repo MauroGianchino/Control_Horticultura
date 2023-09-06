@@ -797,18 +797,18 @@ esp_err_t pwm_data_handler(httpd_req_t *req)
         if (modo_pwm == MANUAL_ON)
         {
             modo = "Manual";
-            cJSON_AddStringToObject(json_object, "ih1h", "-");
-            cJSON_AddStringToObject(json_object, "ih1m", "-");
-            cJSON_AddStringToObject(json_object, "fh1h", "-");
-            cJSON_AddStringToObject(json_object, "fh1m", "-");
+            cJSON_AddNumberToObject(json_object, "ih1h", pwm_info.turn_on_time.tm_hour);
+            cJSON_AddNumberToObject(json_object, "ih1m", pwm_info.turn_on_time.tm_min);
+            cJSON_AddNumberToObject(json_object, "fh1h", pwm_info.turn_off_time.tm_hour);
+            cJSON_AddNumberToObject(json_object, "fh1m", pwm_info.turn_off_time.tm_min);
         }
         else if (modo_pwm == MANUAL_OFF)
         {
             modo = "OFF";
-            cJSON_AddStringToObject(json_object, "ih1h", "-");
-            cJSON_AddStringToObject(json_object, "ih1m", "-");
-            cJSON_AddStringToObject(json_object, "fh1h", "-");
-            cJSON_AddStringToObject(json_object, "fh1m", "-");
+            cJSON_AddNumberToObject(json_object, "ih1h", pwm_info.turn_on_time.tm_hour);
+            cJSON_AddNumberToObject(json_object, "ih1m", pwm_info.turn_on_time.tm_min);
+            cJSON_AddNumberToObject(json_object, "fh1h", pwm_info.turn_off_time.tm_hour);
+            cJSON_AddNumberToObject(json_object, "fh1m", pwm_info.turn_off_time.tm_min);
         }
         else if (modo_pwm == AUTOMATIC)
         {
