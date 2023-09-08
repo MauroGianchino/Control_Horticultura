@@ -42,10 +42,9 @@ typedef struct{
 //------------------------------------------------------------------------------
 static QueueHandle_t button_manager_queue;
 
-static TickType_t push_init_time_vege_button;
-
 volatile int64_t start_time = 0;
 volatile int64_t start_time_triac = 0;
+volatile int64_t start_time_vege = 0;
 //--------------------DECLARACION DE FUNCIONES INTERNAS-------------------------
 //------------------------------------------------------------------------------
 static void button_event_manager_task(void * pvParameters);
@@ -69,9 +68,9 @@ static void config_buttons_isr(void)
 
     config.pin_bit_mask = (1ULL << VEGE_BUTTON);
     config.mode = GPIO_MODE_INPUT;
-    config.pull_up_en = GPIO_PULLUP_DISABLE;
+    config.pull_up_en = GPIO_PULLDOWN_ENABLE;
     config.pull_down_en = GPIO_PULLDOWN_DISABLE;
-    config.intr_type = GPIO_INTR_POSEDGE;
+    config.intr_type = GPIO_INTR_ANYEDGE;
     gpio_config(&config);
     
     config.pin_bit_mask = (1ULL << PWM_BUTTON);
@@ -83,7 +82,7 @@ static void config_buttons_isr(void)
 
     config.pin_bit_mask = (1ULL << TRIAC_BUTTON);
     config.mode = GPIO_MODE_INPUT;
-    config.pull_up_en = GPIO_PULLDOWN_ENABLE;
+    config.pull_up_en = GPIO_PULLDOWN_DISABLE;
     config.pull_down_en = GPIO_PULLDOWN_DISABLE;
     config.intr_type = GPIO_INTR_ANYEDGE;
     gpio_config(&config);
@@ -93,8 +92,6 @@ static void config_buttons_isr(void)
     gpio_isr_handler_add(PWM_BUTTON, pwm_button_interrupt, NULL);
     gpio_isr_handler_add(TRIAC_BUTTON, triac_button_interrupt, NULL);
     gpio_isr_handler_add(VEGE_BUTTON, vege_button_interrupt, NULL);
-
-    push_init_time_vege_button = xTaskGetTickCount();
 }
 //------------------------------------------------------------------------------
 static void IRAM_ATTR pwm_button_interrupt(void *arg) 
@@ -106,7 +103,7 @@ static void IRAM_ATTR pwm_button_interrupt(void *arg)
     {
         start_time = time_now;
     }
-    else
+    else if(gpio_get_level(PWM_BUTTON) == 1)
     {
         if (start_time != 0)
         {
@@ -134,7 +131,7 @@ static void IRAM_ATTR triac_button_interrupt(void *arg)
     {
         start_time_triac = time_now;
     }
-    else
+    else if(gpio_get_level(TRIAC_BUTTON) == 1)
     {
         if (start_time_triac != 0)
         {
@@ -155,15 +152,27 @@ static void IRAM_ATTR triac_button_interrupt(void *arg)
 //------------------------------------------------------------------------------
 static void IRAM_ATTR vege_button_interrupt(void *arg) 
 {
-    TickType_t current_time = xTaskGetTickCountFromISR();
     button_events_t ev;
+    int64_t time_now = esp_timer_get_time();
 
-    if((current_time - push_init_time_vege_button >= pdMS_TO_TICKS(TIEMPO_ANTIRREBOTE_MS)))
+    if(gpio_get_level(VEGE_BUTTON) == 0)
     {
-        ev.cmd = VEGE_BUTTON_PUSHED;
-        xQueueSendFromISR(button_manager_queue, &ev, pdFALSE);
+        start_time_vege = time_now;
     }
-    push_init_time_vege_button = current_time;
+    else if(gpio_get_level(VEGE_BUTTON) == 1)
+    {
+        if (start_time_vege != 0)
+        {
+            int64_t diff = time_now - start_time_vege;
+
+            if (diff > 30000)  // 30ms seconds expressed in microseconds
+            {
+                 ev.cmd = VEGE_BUTTON_PUSHED;
+            }
+            start_time_vege = 0;
+            xQueueSendFromISR(button_manager_queue, &ev, pdFALSE);
+        }
+    }
 }
 //------------------------------------------------------------------------------
 void button_event_manager_task(void * pvParameters)
