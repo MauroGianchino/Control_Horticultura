@@ -111,13 +111,14 @@ static void IRAM_ATTR pwm_button_interrupt(void *arg)
             if (diff > 3000000)  // 3 seconds expressed in microseconds
             { 
                 ev.cmd = PWM_BUTTON_PUSHED_3_SEC;
+                xQueueSendFromISR(button_manager_queue, &ev, pdFALSE);
             }
             else if (diff > 30000)  // 30ms seconds expressed in microseconds
             {
-                 ev.cmd = PWM_BUTTON_PUSHED;
+                ev.cmd = PWM_BUTTON_PUSHED;
+                xQueueSendFromISR(button_manager_queue, &ev, pdFALSE);
             }
             start_time = 0;
-            xQueueSendFromISR(button_manager_queue, &ev, pdFALSE);
         }
     }
 }
@@ -139,13 +140,15 @@ static void IRAM_ATTR triac_button_interrupt(void *arg)
             if (diff > 3000000)  // 3 seconds expressed in microseconds
             { 
                 ev.cmd = TRIAC_BUTTON_PUSHED_3_SEC;
+                xQueueSendFromISR(button_manager_queue, &ev, pdFALSE);
             }
             else if (diff > 30000)  // 30ms seconds expressed in microseconds
             {
-                 ev.cmd = TRIAC_BUTTON_PUSHED;
+                ev.cmd = TRIAC_BUTTON_PUSHED;
+                xQueueSendFromISR(button_manager_queue, &ev, pdFALSE);
             }
             start_time_triac = 0;
-            xQueueSendFromISR(button_manager_queue, &ev, pdFALSE);
+            
         }
     }
 }
@@ -167,10 +170,10 @@ static void IRAM_ATTR vege_button_interrupt(void *arg)
 
             if (diff > 30000)  // 30ms seconds expressed in microseconds
             {
-                 ev.cmd = VEGE_BUTTON_PUSHED;
+                ev.cmd = VEGE_BUTTON_PUSHED;
+                xQueueSendFromISR(button_manager_queue, &ev, pdFALSE);
             }
             start_time_vege = 0;
-            xQueueSendFromISR(button_manager_queue, &ev, pdFALSE);
         }
     }
 }
