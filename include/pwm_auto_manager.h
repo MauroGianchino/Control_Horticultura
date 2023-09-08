@@ -26,7 +26,7 @@ typedef struct{
 
 //------------------- DECLARACION DE FUNCIONES EXTERNAS ------------------------
 //------------------------------------------------------------------------------
-void pwm_auto_manager_handler(pwm_auto_info_t *info, bool pwm_auto_enable, bool rele_vege_enable);
+void pwm_auto_manager_handler(pwm_auto_info_t *info, bool pwm_auto_enable);
 void pwm_auto_start(void);
 //------------------- FIN DEL ARCHIVO ------------------------------------------
 #endif /* PWM_AUTO_MANAGER_H__ */

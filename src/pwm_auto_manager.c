@@ -44,7 +44,7 @@ void pwm_auto_start(void)
 }
 //------------------- DEFINICION DE FUNCIONES EXTERNAS -------------------------
 //------------------------------------------------------------------------------
-void pwm_auto_manager_handler(pwm_auto_info_t *info, bool pwm_auto_enable, bool rele_vege_enable)
+void pwm_auto_manager_handler(pwm_auto_info_t *info, bool pwm_auto_enable)
 {
     if(pwm_auto_enable == true)
     {
@@ -65,15 +65,6 @@ void pwm_auto_manager_handler(pwm_auto_info_t *info, bool pwm_auto_enable, bool 
             {
                 pwm_manager_turn_on_pwm(info->percent_power);
             }
-        
-            if(rele_vege_enable == true)
-            {
-                vege_manager_turn_on();
-            }
-            else
-            {
-                vege_manager_turn_off();
-            }
         }
         else if((info->current_time.tm_hour == info->turn_off_time.tm_hour) \
             && (info->current_time.tm_min == info->turn_off_time.tm_min)\
@@ -91,10 +82,6 @@ void pwm_auto_manager_handler(pwm_auto_info_t *info, bool pwm_auto_enable, bool 
             else
             {
                 pwm_manager_turn_off_pwm();
-            }
-            if(rele_vege_enable == true)
-            {
-                vege_manager_turn_off();
             }
         }
     }
