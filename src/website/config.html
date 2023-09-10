@@ -69,6 +69,29 @@
             margin: 5px;
         }
 
+        .boton_hora {
+            background-color: transparent;
+            color: white;
+            font-weight: bold;
+            cursor: pointer;
+            padding: 5px 10px;
+            margin: 5px;
+            font-size: 14px;
+            border-radius: 5px;
+            border: 1px solid white;
+            box-shadow: 2px 1.5px 0px 0px hsl(0, 0%, 9%);
+        }
+
+        .boton_hora::after {
+            content: "\21BB";
+            font-size: 16px;
+            margin-left: 5px;
+            /* Espacio entre el texto y el icono */
+            position: absolute;
+            right: 10px;
+            /* Ajusta la posición del icono a la derecha del botón */
+        }
+
         select {
             padding: 2px;
             font-size: 15px;
@@ -79,7 +102,7 @@
 
         input[type="time"] {
             padding: 2px;
-            font-size: 12px;
+            font-size: 11px;
             border: 1px solid gray;
             border-radius: 5px;
             width: 85px;
@@ -178,7 +201,7 @@
         .PWM-form__box1 {
             background-color: rgb(113, 91, 100);
             border-radius: 15px;
-            padding: 10px;
+            padding: 5px;
             display: flex;
             justify-content: space-between;
             align-items: center;
@@ -206,7 +229,7 @@
         }
 
         #rangoValor {
-            font-size: 70px;
+            font-size: 55px;
             color: white;
 
         }
@@ -297,7 +320,7 @@
 
 <body>
     <div class="image_box">
-        <img src="/logo" class="imagen">
+        <img src="logo.png" class="imagen">
     </div>
 
     <div class="RH-form">
@@ -317,7 +340,7 @@
 
         <form action="/red" method="post">
             <label for="Nombre">Nuevo Nombre:</label>
-            <input type="text" id="nombre" name="nombre" placeholder="Nuevo nombre de Red">
+            <input type="text" id="nombre" name="nombre" placeholder="Nuevo Nombre de Red">
             <br>
             <label for="Contraseña">Nueva Contraseña:</label>
             <input type="text" id="Contrasenia" name="Contrasenia" placeholder="Nueva Contraseña">
@@ -335,56 +358,56 @@
         <form action="/hora" method="post">
             <label>Hora:</label>
             <input type="time" id="hora" name="hora" value="00:00">
-            <br>
             <div class="submit_box">
-                <input type="submit" value="Actualizar">
+                <input type="submit" value="Actualizar" class="boton_hora">
             </div>
 
         </form>
     </div>
 
+    <div class="PWM-form">
+        <form action="/pwm" method="post">
 
-    <form action="/pwm" method="post">
-        <div class="PWM-form">
             <div class="PWM-form__box1">
                 <div class="PWM-form__h2--range">
                     <h2>Potencia</h2>
-                    <!--<label for="rango" class="range-label">Intensidad (0%-100%):</label>-->
                     <input type="range" id="rango" name="rango" min="0" max="100" value="0"
                         onchange="updateRangoValue()" disabled>
                 </div>
                 <div class="PWM-form__Valor">
                     <span id="rangoValor">0</span>
-                    <span style="font-size: 30px;
+                    <span style="font-size: 15px;
                 color: white;">%</span>
                 </div>
 
             </div>
             <div class="PWM-form__box2">
-                <label>Modo:</label>
-                <select id="modos_pwm" name="modos_pwm" onchange="habilitarHorario();DeshabilitarRango();">
-                    <option value="Manual">Manual</option>
-                    <option value="Automatico">Automatico</option>
-                    <option value="OFF">Apagado</option>
-                </select><br>
-                <label>Amanecer / Atardecer:</label>
-                <select id="opciones" name="Opciones">
-                    <option value="Si">SI</option>
-                    <option value="No">NO</option>
-                </select>
+                <div>
+                    <label>Modo:</label>
+                    <select id="modos_pwm" name="modos_pwm" onchange="habilitarHorario();DeshabilitarRango();">
+                        <option value="Manual">Manual</option>
+                        <option value="Automatico">Automatico</option>
+                        <option value="OFF">Apagado</option>
+                    </select>
+                </div>
+                <div>
+                    <label>Amanecer / Atardecer:</label>
+                    <select id="opciones" name="Opciones">
+                        <option value="Si">SI</option>
+                        <option value="No">NO</option>
+                    </select>
+                </div>
                 <table>
                     <tr>
                         <th>Encendido</th>
                         <th>Apagado</th>
                     </tr>
-
                     <tr>
                         <div class="PWM-h1">
                             <th><input type="time" id="ih_pwm" name="ih_pwm" value="00:00" disabled></th>
                             <th><input type="time" id="fh_pwm" name="fh_pwm" value="00:00" disabled></th>
                         </div>
                     </tr>
-
                 </table>
 
 
@@ -392,7 +415,7 @@
             <div class="submit_box">
                 <input type="submit" value="Actualizar">
             </div>
-        </div>
+    </div>
     </form>
     <div class="Triac-form">
         <div class="Triac-form__title">
@@ -464,7 +487,7 @@
         </form>
     </div>
     <div class="vegeflor-form">
-        <h2>Vegetacion/Floracion</h2>
+        <h2>Vegetativo/Floración</h2>
         <div class="vegeflor-form__form">
             <form action="/vegeflor" method="post">
 

@@ -925,7 +925,7 @@ esp_err_t vegeflor_data_handler(httpd_req_t *req)
         cJSON *json_object = cJSON_CreateObject();
         if (rele_status == RELE_VEGE_ENABLE)
         {
-            modo = "Vegetacion";
+            modo = "Vegetativo";
         }
         else
         {

@@ -37,25 +37,20 @@
 
         }
 
-        .Datos_Equipo__Hora {
+        .Datos_Equipo__NombreRedyHora {
+            display: flex;
+            justify-content: space-between;
             margin: 2px;
             padding: 2px;
         }
 
-        .Datos_Equipo__NombreRed {
+        .Datos_Equipo__ContraseniaRedyVersion {
+            display: flex;
+            justify-content: space-between;
             margin: 2px;
             padding: 2px;
         }
 
-        .Datos_Equipo__ContraseniaRed {
-            margin: 2px;
-            padding: 2px;
-        }
-
-        .Datos_Equipo__Version {
-            margin: 2px;
-            padding: 2px;
-        }
 
         .Potencia-Vege {
             background: rgb(179, 151, 162);
@@ -68,18 +63,17 @@
             padding: 10px;
         }
 
-        .Potencia-Vege__Potencia {
+        .Potencia-Vege__PotenciayModo {
+            display: flex;
+            justify-content: space-between;
             margin: 2px;
             padding: 2px;
         }
 
-        .Potencia-Vege__Modopwm {
-            margin: 2px;
-            padding: 2px;
-        }
 
         .Potencia-Vege__Horarios {
             display: flex;
+            justify-content: space-between;
             margin: 2px;
             padding: 2px;
         }
@@ -133,30 +127,26 @@
 
 <body>
     <div class="image_box">
-        <img src="/logo" class="imagen">
+        <img src="logo.png" class="imagen">
     </div>
 
     <div class="Datos_Equipo">
-        <div class="Datos_Equipo__Hora">
-            <strong>Hora:</strong><span id="Hora_h">--</span>:<span id="Hora_m">--</span>
+        <div class="Datos_Equipo__NombreRedyHora">
+            <div><strong>Red/Equipo:</strong> <span id="ID">---</span></div>
+            <div><strong>Hora:</strong><span id="Hora_h">--</span>:<span id="Hora_m">--</span></div>
         </div>
-        <div class="Datos_Equipo__NombreRed">
-            <strong>Red/Equipo:</strong> <span id="ID">---</span>
+        <div class="Datos_Equipo__ContraseniaRedyVersion">
+            <div><strong>Contraseña:</strong> <span id="PASS">---</span></div>
+            <div><strong>Versión:</strong> <span id="Version">--</span></div>
         </div>
-        <div class="Datos_Equipo__ContraseniaRed">
-            <strong>Contraseña:</strong> <span id="PASS">---</span>
-        </div>
-        <div class="Datos_Equipo__Version">
-            <strong>Versión:</strong> <span id="Version">--</span>
-        </div>
+
     </div>
     <div class="Potencia-Vege">
-        <div class="Potencia-Vege__Potencia">
-            <strong>Potencia:</strong><span id="PWM_Intensidad"> --</span>%
+        <div class="Potencia-Vege__PotenciayModo">
+            <div><strong>Potencia:</strong><span id="PWM_Intensidad"> --</span>%</div>
+            <div><strong>Modo:</strong> <span id="PWM_modo"> ---</span></div>
         </div>
-        <div class="Potencia-Vege__Modopwm">
-            <strong>Modo:</strong> <span id="PWM_modo"> ---</span>
-        </div>
+
         <div class="Potencia-Vege__Horarios">
             <div class="Potencia-Vege__Horarios--Encendido">
                 <strong>Encendido:</strong><span id="PWM_horarioih"> --</span>:<span id="PWM_horarioim"> --</span>
