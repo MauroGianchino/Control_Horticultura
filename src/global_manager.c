@@ -517,6 +517,7 @@ static void global_manager_task(void *arg)
     response_event_t resp_ev;
 
     global_info.pwm_manual_percent_power = 10;
+    global_info.triac_auto.output_status = TRIAC_OUTPUT_OFF;
 
     // INIT FROM FLASH
     nv_init_ssid_ap_wifi();
@@ -652,6 +653,7 @@ static void global_manager_task(void *arg)
                 global_info.triac_mode = MANUAL_ON;
                 led_manager_triac_on();
                 triac_manager_turn_on_triac();
+                global_info.triac_auto.output_status = TRIAC_OUTPUT_ON;
                 break;
             case TRIAC_OFF:
                 if ((global_info.triac_mode != MANUAL_OFF) && (global_ev.value_read_from_flash == false))
@@ -659,8 +661,10 @@ static void global_manager_task(void *arg)
                     nv_save_triac_mode(MANUAL_OFF);
                 }
                 global_info.triac_mode = MANUAL_OFF;
+                global_info.triac_auto.output_status = TRIAC_OUTPUT_OFF;
                 led_manager_triac_off();
                 triac_manager_turn_off_triac();
+
                 break;
             case TRIAC_AUTO:
                 if ((global_info.triac_mode != AUTOMATIC) && (global_ev.value_read_from_flash == false))
@@ -669,7 +673,6 @@ static void global_manager_task(void *arg)
                 }
                 global_info.triac_mode = AUTOMATIC;
                 led_manager_triac_auto();
-                triac_auto_start();
                 break;
             case RELE_VEGE_ON:
                 if ((global_info.rele_vege_status != RELE_VEGE_ENABLE) && (global_ev.value_read_from_flash == false))

@@ -62,7 +62,7 @@ void wifi_manager_init(void)
    // wifi_manager_queue = xQueueCreate(QUEUE_ELEMENT_QUANTITY, sizeof(wifi_maanger_events_t));
 
     xTaskCreate(wifi_manager_task, "wifi_manager_task", 
-               configMINIMAL_STACK_SIZE*10, NULL, configMAX_PRIORITIES, NULL);             
+               configMINIMAL_STACK_SIZE*10, NULL, configMAX_PRIORITIES-1, NULL);             
 }
 //--------------------FIN DEL ARCHIVO-------------------------------------------
 //------------------------------------------------------------------------------

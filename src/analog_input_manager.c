@@ -111,7 +111,7 @@ static void analog_input_manager_task(void* arg)
 void analog_input_manager_init(void)
 {
     xTaskCreate(analog_input_manager_task, "analog_input_manager_task", 
-        configMINIMAL_STACK_SIZE*10, NULL, configMAX_PRIORITIES, NULL);
+        configMINIMAL_STACK_SIZE*10, NULL, configMAX_PRIORITIES-1, NULL);
 }
 //---------------------------- END OF FILE -------------------------------------
 //------------------------------------------------------------------------------
