@@ -25,8 +25,9 @@
             width: 85%;
         }
 
+
+
         input[type="range"] {
-            width: 100%;
             height: 4px;
             background-color: #ddd;
             border: none;
@@ -128,10 +129,8 @@
             background: rgb(244, 219, 144);
             background: linear-gradient(150deg, rgba(244, 219, 144, 1) 35%, rgba(247, 200, 59, 1) 62%);
             border-radius: 15px;
-            margin: 15px;
-            padding: 15px;
             box-shadow: 2px 1.5px 0px 0px hsl(187, 4%, 38%);
-            height: 180px;
+            max-height: 300px;
 
         }
 
@@ -149,6 +148,15 @@
             color: black;
         }
 
+        .RH-form__text {
+            display: block;
+            margin-bottom: 5px;
+        }
+
+        .RH-form__text input {
+            width: 100%;
+        }
+
         #ID {
             font-size: 15px;
         }
@@ -160,15 +168,17 @@
         #nombre {
             font-size: 12px;
             border-radius: 5px;
-            padding: 2px;
-            margin: 3px;
+            height: 22px;
+            margin-bottom: 5px;
+            margin-top: 5px;
         }
 
         #Contrasenia {
             font-size: 12px;
             border-radius: 5px;
-            padding: 2px;
-            margin: 3px;
+            height: 22px;
+            margin-bottom: 5px;
+            margin-top: 5px;
         }
 
         .Hora-form {
@@ -176,10 +186,8 @@
             background: rgb(153, 204, 179);
             background: linear-gradient(150deg, rgba(153, 204, 179, 1) 35%, rgba(84, 149, 118, 1) 56%);
             border-radius: 15px;
-            margin: 15px;
-            padding: 15px;
             box-shadow: 2px 1.5px 0px 0px hsl(187, 4%, 38%);
-            height: 110px;
+            max-height: 65px;
         }
 
         .Hora-form__title {
@@ -187,15 +195,17 @@
             font-size: 17px;
         }
 
+        .Hora-form input[type="time"] {
+            display: none;
+        }
+
         .PWM-form {
             font-size: 17px;
             background: rgb(179, 151, 162);
             background: linear-gradient(150deg, rgba(179, 151, 162, 1) 58%, rgba(113, 91, 100, 1) 92%);
             border-radius: 15px;
-            margin: 15px;
-            padding: 15px;
             box-shadow: 2px 1.5px 0px 0px hsl(187, 4%, 38%);
-            height: 300px;
+            max-height: 300px;
         }
 
         .PWM-form__box1 {
@@ -209,11 +219,15 @@
         }
 
         .PWM-form__h2--range {
-            font-size: 1.5em;
             color: white;
             background-color: rgb(113, 91, 100);
             border-radius: 15px;
             padding: 10px;
+            display: grid;
+        }
+
+        .PWM-form__h2--range label {
+            font-size: 1.5em;
         }
 
         .PWM-form__box2 {
@@ -229,14 +243,103 @@
         }
 
         #rangoValor {
-            font-size: 55px;
             color: white;
+        }
 
+        @media screen and (min-width: 350px) {
+            #rangoValor {
+                font-size: 30px;
+            }
+
+            .PWM-form {
+                margin: 15px;
+                padding: 15px;
+            }
+
+            .Triac-form {
+                margin: 15px;
+                padding: 15px;
+            }
+
+            .RH-form {
+                margin: 15px;
+                padding: 15px;
+            }
+
+            .Hora-form {
+                margin: 15px;
+                padding: 15px;
+            }
+
+            .vegeflor-form {
+                margin: 15px;
+                padding: 15px;
+            }
+        }
+
+        @media screen and (min-width: 400px) {
+
+            #rangoValor {
+                font-size: 35px;
+            }
+        }
+
+
+        @media screen and (min-width: 450px) {
+
+            #rangoValor {
+                font-size: 40px;
+            }
+
+        }
+
+        @media screen and (min-width: 500px) {
+
+            #rangoValor {
+                font-size: 45px;
+            }
+        }
+
+        @media screen and (max-width: 300px) {
+            #rangoValor {
+                font-size: 25px;
+            }
+        }
+
+        @media screen and (max-width: 349px) {
+
+            #rangoValor {
+                font-size: 25px;
+            }
+
+            .PWM-form {
+                margin: 10px;
+                padding: 5px;
+            }
+
+            .Triac-form {
+                margin: 10px;
+                padding: 5px;
+            }
+
+            .RH-form {
+                margin: 10px;
+                padding: 5px;
+            }
+
+            .Hora-form {
+                margin: 10px;
+                padding: 5px;
+            }
+
+            .vegeflor-form {
+                margin: 10px;
+                padding: 5px;
+            }
         }
 
         #rango {
             margin-top: 10px;
-            width: 100%;
         }
 
         .Triac-form {
@@ -244,10 +347,8 @@
             background: rgb(148, 163, 156);
             background: linear-gradient(150deg, rgba(148, 163, 156, 1) 35%, rgba(92, 108, 100, 1) 70%);
             border-radius: 15px;
-            margin: 15px;
-            padding: 15px;
             box-shadow: 2px 1.5px 0px 0px hsl(187, 4%, 38%);
-            height: 245px;
+            max-height: 300px;
         }
 
         .Triac-form__title {
@@ -289,10 +390,8 @@
             background: rgb(171, 175, 213);
             background: linear-gradient(150deg, rgba(171, 175, 213, 1) 29%, rgba(123, 128, 176, 1) 65%);
             border-radius: 15px;
-            margin: 15px;
-            padding: 15px;
             box-shadow: 2px 1.5px 0px 0px hsl(187, 4%, 38%);
-            height: 100px;
+            max-height: 150px;
         }
 
         .vegeflor-form__form {
@@ -320,7 +419,7 @@
 
 <body>
     <div class="image_box">
-        <img src="logo.png" class="imagen">
+        <img src="/logo" class="imagen">
     </div>
 
     <div class="RH-form">
@@ -339,12 +438,15 @@
 
 
         <form action="/red" method="post">
-            <label for="Nombre">Nuevo Nombre:</label>
-            <input type="text" id="nombre" name="nombre" placeholder="Nuevo Nombre de Red">
-            <br>
-            <label for="Contraseña">Nueva Contraseña:</label>
-            <input type="text" id="Contrasenia" name="Contrasenia" placeholder="Nueva Contraseña">
-            <br>
+            <div class="RH-form__text">
+                <label for="Nombre">Nuevo Nombre:</label>
+                <input type="text" id="nombre" name="nombre" placeholder="Nuevo Nombre de Red">
+            </div>
+            <div class="RH-form__text">
+                <label for="Contraseña">Nueva Contraseña:</label>
+                <input type="text" id="Contrasenia" name="Contrasenia" placeholder="Nueva Contraseña">
+            </div>
+
             <div class="submit_box">
                 <input type="submit" value="Actualizar">
             </div>
@@ -356,10 +458,9 @@
             <h2>Hora del equipo</h2>
         </div>
         <form action="/hora" method="post">
-            <label>Hora:</label>
             <input type="time" id="hora" name="hora" value="00:00">
             <div class="submit_box">
-                <input type="submit" value="Actualizar" class="boton_hora">
+                <input type="submit" value="Sincronizar" class="boton_hora">
             </div>
 
         </form>
@@ -370,14 +471,12 @@
 
             <div class="PWM-form__box1">
                 <div class="PWM-form__h2--range">
-                    <h2>Potencia</h2>
+                    <label>Potencia</label>
                     <input type="range" id="rango" name="rango" min="0" max="100" value="0"
                         onchange="updateRangoValue()" disabled>
                 </div>
                 <div class="PWM-form__Valor">
-                    <span id="rangoValor">0</span>
-                    <span style="font-size: 15px;
-                color: white;">%</span>
+                    <span id="rangoValor">0%</span>
                 </div>
 
             </div>
@@ -404,8 +503,8 @@
                     </tr>
                     <tr>
                         <div class="PWM-h1">
-                            <th><input type="time" id="ih_pwm" name="ih_pwm" value="00:00" disabled></th>
-                            <th><input type="time" id="fh_pwm" name="fh_pwm" value="00:00" disabled></th>
+                            <th><input type="time" id="ih_pwm" name="ih_pwm" value="00:00"></th>
+                            <th><input type="time" id="fh_pwm" name="fh_pwm" value="00:00"></th>
                         </div>
                     </tr>
                 </table>
@@ -510,6 +609,13 @@
     </div>
 
     <script>
+        window.addEventListener('load', () => {
+            setInterval(() => {
+                const inputHora = document.getElementById("hora");
+                const now = new Date();
+                inputHora.value = now.getHours() + ":" + now.getMinutes();
+            }, 1000)
+        })
         function formatNumber(number) { //funcion para agregar un cero si es que el numero es menor a 10 para mostrarlo
             if (number >= 0 && number < 10) {
                 return '0' + number;
@@ -644,7 +750,7 @@
             }
         }
 
-        function habilitarHorario() {
+        /*function habilitarHorario() {
             var selectElement = document.getElementById("modos_pwm");
             var selectedValue = selectElement.value;
             const horarioInput_i = document.getElementById("ih_pwm");
@@ -662,9 +768,9 @@
                 horarioInput_f.disabled = true;
 
             }
-        }
+        }*/
 
-        function statusCheckboxs() {
+        /*function statusCheckboxs() {
             var selectElement = document.getElementById("modos_triac");
             var selectedValue = selectElement.value;
             const c1 = document.getElementById("checkboxh1");
@@ -688,9 +794,9 @@
                 c4.disabled = true;
 
             }
-        }
+        }*/
 
-        function toggleHorario(InicioID, FinID, HorarioID) {
+        /*function toggleHorario(InicioID, FinID, HorarioID) {
             const horarioInput_i = document.getElementById(InicioID);
             const horarioInput_f = document.getElementById(FinID);
             const checkbox = document.getElementById(HorarioID);
@@ -704,13 +810,13 @@
                 horarioInput_i.disabled = true;
                 horarioInput_f.disabled = true;
             }
-        }
+        }*/
 
         function updateRangoValue() {
             const rangoInput = document.getElementById('rango');
             const rangoValueSpan = document.getElementById('rangoValor');
 
-            rangoValueSpan.textContent = rangoInput.value;
+            rangoValueSpan.textContent = rangoInput.value + '%';
         }
 
         function config_pwm() {
