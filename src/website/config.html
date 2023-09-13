@@ -473,17 +473,17 @@
                 <div class="PWM-form__h2--range">
                     <label>Potencia</label>
                     <input type="range" id="rango" name="rango" min="0" max="100" value="0"
-                        onchange="updateRangoValue()" disabled>
+                        onchange="updateRangoValue()">
                 </div>
                 <div class="PWM-form__Valor">
-                    <span id="rangoValor">0%</span>
+                    <span id="rangoValor"></span>
                 </div>
 
             </div>
             <div class="PWM-form__box2">
                 <div>
                     <label>Modo:</label>
-                    <select id="modos_pwm" name="modos_pwm" onchange="habilitarHorario();DeshabilitarRango();">
+                    <select id="modos_pwm" name="modos_pwm">
                         <option value="Manual">Manual</option>
                         <option value="Automatico">Automatico</option>
                         <option value="OFF">Apagado</option>
@@ -592,7 +592,7 @@
 
                 <label>Modo:</label>
                 <select id="modo_vegeflor" name="modo_vegeflor">
-                    <option value="Vegetacion">VEGETATIVO</option>
+                    <option value="Vegetativo">VEGETATIVO</option>
                     <option value="Floracion">FLORACION</option>
                 </select>
                 <div class="submit_box">
@@ -615,7 +615,10 @@
                 const now = new Date();
                 inputHora.value = now.getHours() + ":" + now.getMinutes();
             }, 1000)
+            updateRangoValue();
         })
+
+
         function formatNumber(number) { //funcion para agregar un cero si es que el numero es menor a 10 para mostrarlo
             if (number >= 0 && number < 10) {
                 return '0' + number;
@@ -739,7 +742,7 @@
             await loadRed();
         }
 
-        function DeshabilitarRango() {
+        /*function DeshabilitarRango() {
             var opcionSeleccionada = document.getElementById("modos_pwm").value;
             var rango = document.getElementById("rango");
 
@@ -748,7 +751,7 @@
             } else {
                 rango.disabled = true; // Habilitar el control de rango
             }
-        }
+        }*/
 
         /*function habilitarHorario() {
             var selectElement = document.getElementById("modos_pwm");
