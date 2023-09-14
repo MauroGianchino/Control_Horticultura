@@ -673,6 +673,9 @@ static void global_manager_task(void *arg)
                 }
                 global_info.triac_mode = AUTOMATIC;
                 led_manager_triac_auto();
+                global_info.triac_auto.output_status = TRIAC_OUTPUT_OFF;
+                led_manager_triac_off();
+                triac_manager_turn_off_triac();
                 break;
             case RELE_VEGE_ON:
                 if ((global_info.rele_vege_status != RELE_VEGE_ENABLE) && (global_ev.value_read_from_flash == false))

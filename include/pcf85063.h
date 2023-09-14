@@ -1,5 +1,5 @@
-#ifndef CURRENT_TIME_MANAGER_H__
-#define CURRENT_TIME_MANAGER_H__
+#ifndef PCF85063_H__
+#define PCF85063_H__
 //------------------- INCLUDES -------------------------------------------------
 //------------------------------------------------------------------------------
 
@@ -14,8 +14,9 @@
 
 //------------------- DECLARACION DE FUNCIONES EXTERNAS ------------------------
 //------------------------------------------------------------------------------
-void current_time_manager_init(void);
-void current_time_manager_set_current_time(struct tm current_time);
-uint8_t global_manager_get_current_time_info(struct tm *current_time);
+void pcf85063_init(void);
+void pcf85063_set_current_time(struct tm current_time);
+uint8_t pcf85063_get_current_time_info(struct tm *current_time);
+
 //------------------- FIN DEL ARCHIVO ------------------------------------------
-#endif /* CURRENT_TIME_MANAGER_H__ */
+#endif /* PCF85063_H__ */

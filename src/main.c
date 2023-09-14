@@ -14,10 +14,7 @@
 #include "../include/vege_manager.h"
 #include "../include/current_time_manager.h"
 #include "../include/wifi_manager.h"
-//#include "esp_wifi.h"
-//#include "esp_http_server.h"
-//#include "../include/wifi_ap.h"
-//#include "../include/web_server.h"
+#include "../include/pcf85063.h"
 
 void app_main()
 {
@@ -33,10 +30,9 @@ void app_main()
   triac_manager_init();
   vege_manager_init();
   current_time_manager_init();  
-  //wifi_init_softap(); // Inicio el AP
-  //ESP_ERROR_CHECK(esp_event_handler_register(IP_EVENT, IP_EVENT_AP_STAIPASSIGNED, &connect_handler, &server));
-
   wifi_manager_init();
+  pcf85063_init();
+
 
   while (true)
   {

@@ -413,7 +413,7 @@ void parse_hora(char *buff, struct tm *aux)
 
     aux->tm_hour = atoi(&buff[5]);
     aux->tm_min = atoi(&buff[10]);
-    current_time_manager_set_current_time(*aux, pdFALSE);
+    current_time_manager_set_current_time(*aux);
 
     ESP_LOGI(HORA, "Salgo del parseo HORA");
 };
