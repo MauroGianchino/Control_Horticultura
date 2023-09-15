@@ -614,8 +614,9 @@
                 const inputHora = document.getElementById("hora");
                 const now = new Date();
                 inputHora.value = now.getHours() + ":" + now.getMinutes();
-                updateRangoValue();
+
             }, 1000)
+            updateRangoValue();
 
         })
 
