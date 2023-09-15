@@ -614,8 +614,9 @@
                 const inputHora = document.getElementById("hora");
                 const now = new Date();
                 inputHora.value = now.getHours() + ":" + now.getMinutes();
+                updateRangoValue();
             }, 1000)
-            updateRangoValue();
+
         })
 
 
@@ -636,7 +637,7 @@
 
                 const data = await result.json();
                 console.log(data);
-                document.getElementById("rangoValor").textContent = data.intensidad;
+                document.getElementById("rangoValor").textContent = data.intensidad + '%';
                 document.getElementById("rango").value = data.intensidad;
                 document.getElementById("modos_pwm").value = data.Modo;
                 document.getElementById("ih_pwm").value = formatNumber(data.ih1h) + ":" + formatNumber(data.ih1m);
@@ -649,8 +650,6 @@
         }
 
         async function loadTriac() {
-            //document.getElementById("modos_triac").value = "Apagado";
-            //document.getElementById("checkboxh1").checked = true;
             try {
                 const result = await fetch("/data_triac")
                 if (!result.ok) {
