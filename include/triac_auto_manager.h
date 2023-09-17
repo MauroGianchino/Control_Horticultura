@@ -16,6 +16,7 @@ typedef enum{
     TRIAC_OUTPUT_OFF = 0,
     TRIAC_OUTPUT_ON = 1,
 }triac_output_status_t;
+
 typedef struct{
     struct tm turn_on_time;
     struct tm turn_off_time;    

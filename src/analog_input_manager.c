@@ -57,7 +57,7 @@ static void config_analog_input(void)
 //------------------------------------------------------------------------------
 static void analog_input_manager_task(void* arg)
 {
-    int adc_read_value[10];
+    int adc_read_value[5];
     uint8_t adc_vec_length = (sizeof(adc_read_value) / sizeof(adc_read_value[0]));
     int val = 0;
     uint8_t index = 0;
@@ -102,16 +102,16 @@ static void analog_input_manager_task(void* arg)
                 printf("ESP_ERR_TIMEOUT \n");
             #endif
         }
-        
-        vTaskDelay(pdMS_TO_TICKS(10));
+
+        vTaskDelay(pdMS_TO_TICKS(300));
     }
 }
 //------------------- DEFINICION DE FUNCIONES EXTERNAS -------------------------
 //------------------------------------------------------------------------------
 void analog_input_manager_init(void)
 {
-    xTaskCreate(analog_input_manager_task, "analog_input_manager_task", 
-        configMINIMAL_STACK_SIZE*10, NULL, configMAX_PRIORITIES-1, NULL);
+    //xTaskCreate(analog_input_manager_task, "analog_input_manager_task", 
+        //configMINIMAL_STACK_SIZE*10, NULL, configMAX_PRIORITIES-3, NULL);
 }
 //---------------------------- END OF FILE -------------------------------------
 //------------------------------------------------------------------------------

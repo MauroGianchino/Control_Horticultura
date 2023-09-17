@@ -17,7 +17,7 @@
 #include "../include/board_def.h"
 //--------------------MACROS Y DEFINES------------------------------------------
 //------------------------------------------------------------------------------
-#define DEBUG_MODULE 
+//#define DEBUG_MODULE 
 
 #define QUEUE_ELEMENT_QUANTITY 20
 
@@ -188,7 +188,7 @@ void pcf85063_init(void)
     response_queue = xQueueCreate(QUEUE_ELEMENT_QUANTITY, sizeof(pcf85063_event_t));
 
     xTaskCreate(pcf85063_task, "pcf85063_task", configMINIMAL_STACK_SIZE*5, 
-        NULL, configMAX_PRIORITIES-2, NULL);
+        NULL, configMAX_PRIORITIES-5, NULL);
 }
 //------------------------------------------------------------------------------
 void pcf85063_set_current_time(struct tm current_time)

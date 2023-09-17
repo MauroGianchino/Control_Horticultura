@@ -99,7 +99,7 @@ void current_time_manager_init(void)
     response_queue = xQueueCreate(QUEUE_ELEMENT_QUANTITY, sizeof(current_time_event_t));
 
     xTaskCreate(current_time_manager_task, "current_time_manager_task", configMINIMAL_STACK_SIZE*7, 
-        NULL, configMAX_PRIORITIES-2, NULL);
+        NULL, configMAX_PRIORITIES-5, NULL);
 }
 //------------------------------------------------------------------------------
 void current_time_manager_set_current_time(struct tm current_time)
@@ -133,6 +133,7 @@ static uint8_t wait_get_current_time_response(struct tm *current_time)
         #endif
         return 0;
     }
+    return 0;
 }
 
 uint8_t global_manager_get_current_time_info(struct tm *current_time)

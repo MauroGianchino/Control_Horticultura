@@ -22,7 +22,7 @@
 #include "../include/nv_flash_manager.h"
 //--------------------MACROS Y DEFINES------------------------------------------
 //------------------------------------------------------------------------------
-#define DEBUG_MODULE 1
+//#define DEBUG_MODULE 1
 
 #define QUEUE_ELEMENT_QUANTITY 50
 
@@ -612,7 +612,6 @@ static void global_manager_task(void *arg)
                     break;
                 case AUTOMATIC:
                     led_manager_pwm_auto();
-                    pwm_auto_start();
                     break;
                 default:
                     break;
@@ -624,6 +623,7 @@ static void global_manager_task(void *arg)
                     nv_save_pwm_mode(MANUAL_ON);
                 }
                 global_info.pwm_mode = MANUAL_ON;
+                global_info.pwm_auto.output_status = PWM_OUTPUT_ON;
                 led_manager_pwm_manual_on();
                 pwm_manager_turn_on_pwm(global_info.pwm_manual_percent_power);
                 break;
@@ -633,6 +633,7 @@ static void global_manager_task(void *arg)
                     nv_save_pwm_mode(MANUAL_OFF);
                 }
                 global_info.pwm_mode = MANUAL_OFF;
+                global_info.pwm_auto.output_status = PWM_OUTPUT_OFF;
                 led_manager_pwm_manual_off();
                 pwm_manager_turn_off_pwm();
                 break;
@@ -642,8 +643,9 @@ static void global_manager_task(void *arg)
                     nv_save_pwm_mode(AUTOMATIC);
                 }
                 global_info.pwm_mode = AUTOMATIC;
-                pwm_auto_start();
                 led_manager_pwm_auto();
+                pwm_manager_turn_off_pwm();
+                global_info.pwm_auto.output_status = PWM_OUTPUT_OFF;
                 break;
             case TRIAC_MANUAL_ON:
                 if ((global_info.triac_mode != MANUAL_ON) && (global_ev.value_read_from_flash == false))
@@ -664,7 +666,6 @@ static void global_manager_task(void *arg)
                 global_info.triac_auto.output_status = TRIAC_OUTPUT_OFF;
                 led_manager_triac_off();
                 triac_manager_turn_off_triac();
-
                 break;
             case TRIAC_AUTO:
                 if ((global_info.triac_mode != AUTOMATIC) && (global_ev.value_read_from_flash == false))
@@ -674,7 +675,6 @@ static void global_manager_task(void *arg)
                 global_info.triac_mode = AUTOMATIC;
                 led_manager_triac_auto();
                 global_info.triac_auto.output_status = TRIAC_OUTPUT_OFF;
-                led_manager_triac_off();
                 triac_manager_turn_off_triac();
                 break;
             case RELE_VEGE_ON:
@@ -1006,7 +1006,7 @@ static uint8_t wait_pwm_info_response(output_mode_t *pwm_mode, pwm_auto_info_t *
 uint8_t global_manager_get_pwm_info(output_mode_t *pwm_mode, pwm_auto_info_t *pwm_auto)
 {
     get_pwm_info();
-    if (wait_pwm_info_response(pwm_mode, pwm_auto))
+    if(wait_pwm_info_response(pwm_mode, pwm_auto))
     {
         return (1);
     }
