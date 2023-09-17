@@ -458,7 +458,7 @@
             <h2>Hora del equipo</h2>
         </div>
         <form action="/hora" method="post">
-            <input type="time" id="hora" name="hora" value="00:00">
+            <input type="time" id="hora" name="hora">
             <div class="submit_box">
                 <input type="submit" value="Sincronizar" class="boton_hora">
             </div>
@@ -697,16 +697,18 @@
         }
 
         async function loadHora() {
-            // document.getElementById("hora").value = 17/*data.Hora_h*/ + ":" + 25/*data.Hora_m*/;
             try {
-                const result = await fetch("/data_hora");
+                /*const result = await fetch("/data_hora");
                 if (!result.ok) {
                     throw new Error("Error en adquirir los datos de la hora [fetch]");
                 }
                 const data = await result.json();
                 console.log(data);
 
-                document.getElementById("hora").value = formatNumber(data.Hora_h) + ":" + formatNumber(data.Hora_m);
+                document.getElementById("hora").value = formatNumber(data.Hora_h) + ":" + formatNumber(data.Hora_m);*/
+                const inputHora = document.getElementById("hora");
+                const now = new Date();
+                inputHora.value = now.getHours() + ":" + now.getMinutes();
             }
             catch (e) {
                 console.error("Error en adquirir los datos de la hora", e);
@@ -715,8 +717,6 @@
         }
 
         async function loadRed() {
-            //document.getElementById("ID").textContent = "testid";
-            //document.getElementById("PASS").textContent = "testpass";
             try {
                 const result = await fetch("/data_red");
                 if (!result.ok) {
@@ -822,7 +822,7 @@
             rangoValueSpan.textContent = rangoInput.value + '%';
         }
 
-        function config_pwm() {
+        /*function config_pwm() {
             console.log("Entre al ConfigPWM");
             habilitarHorario();
             DeshabilitarRango();
@@ -839,16 +839,10 @@
             toggleHorario('ih3', 'fh3', 'checkboxh3');
             toggleHorario('ih4', 'fh4', 'checkboxh4');
             console.log("Salgo del ConfigTRIAC");
-        }
+        }*/
 
         document.addEventListener("DOMContentLoaded", async function () {
-            console.log("Entro al addEventListener");
             await loadValues();
-            console.log("Ejecuto ConfigPWM");
-            config_pwm();
-            console.log("Ejecuto ConfigTRIAC");
-            config_triac();
-
         });
 
     </script>
