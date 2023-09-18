@@ -20,6 +20,8 @@
 #include "../include/triac_manager.h"
 #include "../include/vege_manager.h"
 #include "../include/nv_flash_manager.h"
+#include "../include/analog_input_manager.h"
+
 //--------------------MACROS Y DEFINES------------------------------------------
 //------------------------------------------------------------------------------
 //#define DEBUG_MODULE 1
@@ -600,6 +602,7 @@ static void global_manager_task(void *arg)
                 break;
             case SET_PWM_MODE:
                 global_info.pwm_mode = global_ev.output_mode;
+                analog_input_send_pwm_mode(global_info.pwm_mode);
                 switch (global_info.pwm_mode)
                 {
                 case MANUAL_ON:
@@ -626,6 +629,7 @@ static void global_manager_task(void *arg)
                 global_info.pwm_auto.output_status = PWM_OUTPUT_ON;
                 led_manager_pwm_manual_on();
                 pwm_manager_turn_on_pwm(global_info.pwm_manual_percent_power);
+                analog_input_send_pwm_mode(MANUAL_ON);
                 break;
             case PWM_OFF:
                 if (global_info.pwm_mode != MANUAL_OFF)
@@ -636,6 +640,7 @@ static void global_manager_task(void *arg)
                 global_info.pwm_auto.output_status = PWM_OUTPUT_OFF;
                 led_manager_pwm_manual_off();
                 pwm_manager_turn_off_pwm();
+                analog_input_send_pwm_mode(MANUAL_OFF);
                 break;
             case PWM_AUTO:
                 if (global_info.pwm_mode != AUTOMATIC)
@@ -646,6 +651,7 @@ static void global_manager_task(void *arg)
                 led_manager_pwm_auto();
                 pwm_manager_turn_off_pwm();
                 global_info.pwm_auto.output_status = PWM_OUTPUT_OFF;
+                analog_input_send_pwm_mode(AUTOMATIC);
                 break;
             case TRIAC_MANUAL_ON:
                 if ((global_info.triac_mode != MANUAL_ON) && (global_ev.value_read_from_flash == false))
