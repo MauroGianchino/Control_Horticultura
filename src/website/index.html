@@ -90,6 +90,8 @@
         .Potencia-Vege__ModoVEGE {
             margin: 2px;
             padding: 2px;
+            display: flex;
+            justify-content: space-between;
         }
 
         .Triac {
@@ -106,6 +108,8 @@
         .Triac__modo {
             margin: 2px;
             padding: 2px;
+            display: flex;
+            justify-content: space-between;
         }
 
         .botonf {
@@ -122,13 +126,29 @@
             margin: 5px;
             font-size: 15px;
         }
+
+        .circle {
+            width: 15px;
+            height: 15px;
+            /* Color de inicio del círculo */
+            border-radius: 50%;
+        }
+
+        .circletext {
+            display: flex;
+            flex-direction: row-reverse;
+        }
     </style>
 </head>
 
 <body>
+
     <div class="image_box">
         <img src="/logo" class="imagen">
     </div>
+
+
+
 
     <div class="Datos_Equipo">
         <div class="Datos_Equipo__NombreRedyHora">
@@ -159,14 +179,25 @@
             <strong>Amanecer / Atardecer:</strong><span id="PWM_DIA"> ---</span>
         </div>
         <div class="Potencia-Vege__ModoVEGE">
-            <strong>Etapa:</strong><span id="VEGEFLOR_modo"> ---</span>
+            <div><strong>Etapa:</strong><span id="VEGEFLOR_modo">---</span></div>
+            <div class="circletext">
+                <strong><span id="state-text-pwm"></span></strong>
+                <div class="circle" id="colorCirclePwm"></div>
+            </div>
+
         </div>
     </div>
-    <div class="Triac">
+
+    <div class=" Triac">
 
         <div class="Triac__modo">
-            <strong>Control 220V - </strong>
-            <strong>Modo:</strong><span id="TRIAC_modo"> ---</span>
+            <div><strong>Control 220V - </strong>
+                <strong>Modo:</strong><span id="TRIAC_modo">---</span>
+            </div>
+            <div class="circletext">
+                <strong><span id="state-text-triac"></span></strong>
+                <div class="circle" id="colorCircleTriac"></div>
+            </div>
         </div>
         <table>
 
@@ -263,6 +294,16 @@
                     document.getElementById("PWM_horariofh").textContent = formatNumber(data.fh1h);
                     document.getElementById("PWM_horariofm").textContent = formatNumber(data.fh1m);
                     document.getElementById("PWM_DIA").textContent = data.DIA;
+                    document.getElementById("state-text-pwm").textContent = data.State;
+                    const pwmState = document.getElementById("state-text-pwm").textContent;
+                    const circleDiv = document.getElementById("colorCirclePwm");
+                    if (pwmState == "OFF") {
+                        circleDiv.style.backgroundColor = "red";
+                    }
+                    else {
+                        circleDiv.style.backgroundColor = "green";
+                    }
+
                 })
                 fetch("/data_triac").then(res => {
                     if (!res.ok)
@@ -311,6 +352,15 @@
                     document.getElementById("TRIAC_horarioi4_m").textContent = formatNumber(data.ih4m);
                     document.getElementById("TRIAC_horariof4_h").textContent = formatNumber(data.fh4h);
                     document.getElementById("TRIAC_horariof4_m").textContent = formatNumber(data.fh4m);
+                    document.getElementById("state-text-triac").textContent = data.State;
+                    const triacState = document.getElementById("state-text-triac").textContent;
+                    const circleDiv = document.getElementById("colorCircleTriac");
+                    if (triacState == "OFF") {
+                        circleDiv.style.backgroundColor = "red";
+                    }
+                    else {
+                        circleDiv.style.backgroundColor = "green";
+                    }
                 })
                 fetch("/data_red").then(res => {
                     if (!res.ok)
@@ -330,6 +380,24 @@
                     console.log(data)
                     document.getElementById("VEGEFLOR_modo").textContent = data.Modo;
                 })
+                /*document.getElementById("state-text-triac").textContent = "ON"
+                const triacState = document.getElementById("state-text-triac").textContent;
+                const circleDiv = document.getElementById("colorCircleTriac");
+                if (triacState == "OFF") {
+                    circleDiv.style.backgroundColor = "red";
+                }
+                else {
+                    circleDiv.style.backgroundColor = "green";
+                }
+                document.getElementById("state-text-pwm").textContent = "ON"
+                const pwmState = document.getElementById("state-text-pwm").textContent;
+                const circleDiv2 = document.getElementById("colorCirclePwm");
+                if (pwmState == "OFF") {
+                    circleDiv2.style.backgroundColor = "red";
+                }
+                else {
+                    circleDiv2.style.backgroundColor = "green";
+                }*/
             }, 2000)
 
             fetch("/version").then(res => {

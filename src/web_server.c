@@ -138,7 +138,7 @@ void analyze_token_pwm(char *token)
         }
         else if (token[10] == 'O')
         {
-            //global_manager_set_pwm_mode_off();
+            // global_manager_set_pwm_mode_off();
         }
         else
         {
@@ -841,6 +841,16 @@ esp_err_t pwm_data_handler(httpd_req_t *req)
             modo = "No";
         }
         cJSON_AddStringToObject(json_object, "DIA", modo);
+        if (pwm_info.output_status == PWM_OUTPUT_ON)
+        {
+            modo = "ON";
+            cJSON_AddStringToObject(json_object, "State", modo);
+        }
+        else
+        {
+            modo = "OFF";
+            cJSON_AddStringToObject(json_object, "State", modo);
+        }
 
         char *json_str = cJSON_Print(json_object);
         ESP_LOGI(PWM, "JSON ES: %s", json_str);
@@ -901,6 +911,17 @@ esp_err_t triac_data_handler(httpd_req_t *req)
         cJSON_AddNumberToObject(json_object, "ih4m", triac_auto_info.triac_auto[3].turn_on_time.tm_min);
         cJSON_AddNumberToObject(json_object, "fh4h", triac_auto_info.triac_auto[3].turn_off_time.tm_hour);
         cJSON_AddNumberToObject(json_object, "fh4m", triac_auto_info.triac_auto[3].turn_off_time.tm_min);
+
+        if (triac_auto_info.output_status == TRIAC_OUTPUT_ON)
+        {
+            modo = "ON";
+            cJSON_AddStringToObject(json_object, "State", modo);
+        }
+        else
+        {
+            modo = "OFF";
+            cJSON_AddStringToObject(json_object, "State", modo);
+        }
 
         char *json_str = cJSON_Print(json_object);
         ESP_LOGI(TRIAC, "JSON ES: %s", json_str);
