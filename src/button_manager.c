@@ -28,10 +28,8 @@
 //------------------------------------------------------------------------------
 typedef enum{
     CMD_UNDEFINED,
-    PWM_BUTTON_PUSHED,
-    PWM_BUTTON_PUSHED_3_SEC,
+    DEVICE_MODE_BUTTON_PUSHED,
     TRIAC_BUTTON_PUSHED,
-    TRIAC_BUTTON_PUSHED_3_SEC,
     VEGE_BUTTON_PUSHED,
 }cmds_t;
 
@@ -51,7 +49,7 @@ static void button_event_manager_task(void * pvParameters);
 
 static void config_buttons_isr(void);
 
-static void pwm_button_interrupt(void *arg);
+static void device_mode_button_interrupt(void *arg);
 static void triac_button_interrupt(void *arg);
 static void vege_button_interrupt(void *arg);
 //--------------------DEFINICION DE DATOS INTERNOS------------------------------
@@ -73,7 +71,7 @@ static void config_buttons_isr(void)
     config.intr_type = GPIO_INTR_ANYEDGE;
     gpio_config(&config);
     
-    config.pin_bit_mask = (1ULL << PWM_BUTTON);
+    config.pin_bit_mask = (1ULL << DEVICE_MODE_BUTTON);
     config.mode = GPIO_MODE_INPUT;
     config.pull_up_en = GPIO_PULLDOWN_DISABLE;
     config.pull_down_en = GPIO_PULLDOWN_DISABLE;
@@ -89,17 +87,17 @@ static void config_buttons_isr(void)
 
     // Configurar la interrupción del botón
     gpio_install_isr_service(0);
-    gpio_isr_handler_add(PWM_BUTTON, pwm_button_interrupt, NULL);
+    gpio_isr_handler_add(DEVICE_MODE_BUTTON, device_mode_button_interrupt, NULL);
     gpio_isr_handler_add(TRIAC_BUTTON, triac_button_interrupt, NULL);
     gpio_isr_handler_add(VEGE_BUTTON, vege_button_interrupt, NULL);
 }
 //------------------------------------------------------------------------------
-static void IRAM_ATTR pwm_button_interrupt(void *arg) 
+static void IRAM_ATTR device_mode_button_interrupt(void *arg) 
 {
     button_events_t ev;
     int64_t time_now = esp_timer_get_time();
 
-    if(gpio_get_level(PWM_BUTTON) == 0)
+    if(gpio_get_level(DEVICE_MODE_BUTTON) == 0)
     {
         start_time = time_now;
     }
@@ -108,15 +106,10 @@ static void IRAM_ATTR pwm_button_interrupt(void *arg)
         if (start_time != 0)
         {
             int64_t diff = time_now - start_time;
-            if (diff > 3000000)  // 3 seconds expressed in microseconds
-            { 
-                ev.cmd = PWM_BUTTON_PUSHED_3_SEC;
-                start_time = 0;
-                xQueueSendFromISR(button_manager_queue, &ev, pdFALSE);
-            }
-            else if (diff > 30000)  // 30ms seconds expressed in microseconds
+
+            if (diff > 30000)  // 30ms seconds expressed in microseconds
             {
-                ev.cmd = PWM_BUTTON_PUSHED;
+                ev.cmd = DEVICE_MODE_BUTTON_PUSHED;
                 start_time = 0;
                 xQueueSendFromISR(button_manager_queue, &ev, pdFALSE);
             }
@@ -139,12 +132,7 @@ static void IRAM_ATTR triac_button_interrupt(void *arg)
         if (start_time_triac != 0)
         {
             int64_t diff = time_now - start_time_triac;
-            if (diff > 3000000)  // 3 seconds expressed in microseconds
-            { 
-                ev.cmd = TRIAC_BUTTON_PUSHED_3_SEC;
-                xQueueSendFromISR(button_manager_queue, &ev, pdFALSE);
-            }
-            else if (diff > 30000)  // 30ms seconds expressed in microseconds
+            if (diff > 30000)  // 30ms seconds expressed in microseconds
             {
                 ev.cmd = TRIAC_BUTTON_PUSHED;
                 xQueueSendFromISR(button_manager_queue, &ev, pdFALSE);
@@ -180,11 +168,16 @@ static void IRAM_ATTR vege_button_interrupt(void *arg)
     }
 }
 //------------------------------------------------------------------------------
+typedef enum{
+    DEVICE_IN_MANUAL = 0,
+    DEVICE_IN_AUTOMATIC = 1,
+}device_mode_status_t;
+
 void button_event_manager_task(void * pvParameters)
 {
     button_events_t button_ev;
     
-    output_mode_t pwm_status = MANUAL_OFF;
+    device_mode_status_t device_mode = DEVICE_IN_MANUAL;
     output_mode_t triac_status = MANUAL_OFF;
     rele_output_status_t rele_vege_status = RELE_VEGE_DISABLE;
 #ifdef DIGITAL_POTE
@@ -201,37 +194,35 @@ void button_event_manager_task(void * pvParameters)
             {
                 case CMD_UNDEFINED:
                     break;
-                case PWM_BUTTON_PUSHED:
-                    if(pwm_status == MANUAL_OFF)
-                    {
-                        global_manager_set_pwm_mode_off();
-                        pwm_status = AUTOMATIC;
-                    }
-                    else if(pwm_status == AUTOMATIC)
-                    {
-                        global_manager_set_pwm_mode_auto();
-                        pwm_status = MANUAL_OFF;
-                    }
-                    break;
-                case PWM_BUTTON_PUSHED_3_SEC:
-                    global_manager_set_pwm_mode_manual_on();
-                    pwm_status = MANUAL_OFF;
-                    break;
-                case TRIAC_BUTTON_PUSHED:
-                    if(triac_status == MANUAL_OFF)
+                case DEVICE_MODE_BUTTON_PUSHED:
+                    if(device_mode == DEVICE_IN_MANUAL)
                     {
                         global_manager_set_triac_mode_off(false);
-                        triac_status = AUTOMATIC;
+                        triac_status = MANUAL_ON;       
+                        global_manager_set_pwm_mode_manual_on();
+                        device_mode = DEVICE_IN_AUTOMATIC;
                     }
-                    else if(triac_status == AUTOMATIC)
+                    else if(device_mode == DEVICE_IN_AUTOMATIC)
                     {
+                        global_manager_set_pwm_mode_auto();
                         global_manager_set_triac_mode_auto(false);
-                        triac_status = MANUAL_OFF;
+                        device_mode = DEVICE_IN_MANUAL;
                     }
                     break;
-                case TRIAC_BUTTON_PUSHED_3_SEC:
-                    global_manager_set_triac_mode_manual_on(false);
-                    triac_status = MANUAL_OFF;
+                case TRIAC_BUTTON_PUSHED:
+                    if(device_mode == DEVICE_IN_AUTOMATIC)
+                    {
+                        if(triac_status == MANUAL_OFF)
+                        {
+                            global_manager_set_triac_mode_off(false);
+                            triac_status = MANUAL_ON;
+                        }
+                        else if(triac_status == MANUAL_ON)
+                        {
+                            global_manager_set_triac_mode_manual_on(false);
+                            triac_status = MANUAL_OFF;
+                        }
+                    }
                     break;
                 case VEGE_BUTTON_PUSHED:
                     if(rele_vege_status == RELE_VEGE_DISABLE)
