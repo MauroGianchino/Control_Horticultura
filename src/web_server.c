@@ -129,14 +129,16 @@ void analyze_token_pwm(char *token)
         if (token[10] == 'A')
         {
             global_manager_set_pwm_mode_auto();
+            global_manager_set_triac_mode_auto(false);
         }
         else if (token[10] == 'M')
         {
             global_manager_set_pwm_mode_manual_on();
+            global_manager_set_triac_mode_off(false);
         }
         else if (token[10] == 'O')
         {
-            global_manager_set_pwm_mode_off();
+            //global_manager_set_pwm_mode_off();
         }
         else
         {
@@ -184,15 +186,18 @@ void analyze_token_triac(char *token)
     case 'm': // Parseo modo
         if (token[12] == 'E')
         {
-            global_manager_set_triac_mode_manual_on(pdFALSE);
+            global_manager_set_triac_mode_manual_on(false);
+            global_manager_set_pwm_mode_manual_on();
         }
         else if (token[12] == 'A' && token[13] == 'p')
         {
-            global_manager_set_triac_mode_off(pdFALSE);
+            global_manager_set_triac_mode_off(false);
+            global_manager_set_pwm_mode_manual_on();
         }
         else if (token[12] == 'A')
         {
-            global_manager_set_triac_mode_auto(pdFALSE);
+            global_manager_set_triac_mode_auto(false);
+            global_manager_set_pwm_mode_auto();
         }
         else
         {

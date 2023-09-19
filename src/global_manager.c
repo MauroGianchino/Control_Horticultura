@@ -632,7 +632,7 @@ static void global_manager_task(void *arg)
                 analog_input_send_pwm_mode(MANUAL_ON);
                 break;
             case PWM_OFF:
-                if (global_info.pwm_mode != MANUAL_OFF)
+                /*if (global_info.pwm_mode != MANUAL_OFF)
                 {
                     nv_save_pwm_mode(MANUAL_OFF);
                 }
@@ -640,7 +640,7 @@ static void global_manager_task(void *arg)
                 global_info.pwm_auto.output_status = PWM_OUTPUT_OFF;
                 led_manager_pwm_manual_off();
                 pwm_manager_turn_off_pwm();
-                analog_input_send_pwm_mode(MANUAL_OFF);
+                analog_input_send_pwm_mode(MANUAL_OFF);*/
                 break;
             case PWM_AUTO:
                 if (global_info.pwm_mode != AUTOMATIC)
