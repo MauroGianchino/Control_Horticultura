@@ -27,5 +27,7 @@ void led_manager_wifi_net_problem(void);
 
 void led_manager_set_device_mode_auto(void);
 void led_manager_set_device_mode_manual(void);
+
+void led_manager_send_duty_cycle(uint8_t duty_cycle);
 //------------------- FIN DEL ARCHIVO ------------------------------------------
 #endif /* LED_MANAGER_H__ */

@@ -38,10 +38,12 @@ typedef enum{
     WIFI_NET_PROBLEM = 9,
     DEVICE_MODE_AUTO = 10,
     DEVICE_MODE_MANUAL = 11,
+    PWM_DUTY_CYCLE = 12,
 }led_event_cmds_t;
 
 typedef struct{
     led_event_cmds_t cmd;
+    uint8_t duty_cycle;
 }led_event_t;
 //------------------- DECLARACION DE DATOS LOCALES -----------------------------
 //------------------------------------------------------------------------------
@@ -57,7 +59,8 @@ static void config_led_wifi_status(void);
 static void config_led_triac_status(void);
 
 static void set_power_on_indicator(void);
-static void set_triac_manual_off_indicator(void);
+static void set_triac_output_on_indicator(void);
+static void set_triac_output_off_indicator(void);
 static void set_rele_vege_on_indicator(void);
 static void set_rele_vege_off_indicator(void);
 
@@ -68,7 +71,6 @@ static void set_wifi_net_problem_indicator(void);
 static void led_manager_task(void* arg);
 
 static void timer_led_toggle_device_mode_callback(void* arg);
-static void timer_led_toggle_triac_callback(void* arg);
 //------------------- DEFINICION DE DATOS LOCALES ------------------------------
 //------------------------------------------------------------------------------
 
@@ -79,9 +81,9 @@ static void timer_led_toggle_triac_callback(void* arg);
 //------------------------------------------------------------------------------
 static void timer_led_toggle_device_mode_callback(void* arg)
 {
-    static int led_state_pwm = LED_OFF;
-    gpio_set_level(DEVICE_MODE_LED, led_state_pwm);
-    led_state_pwm = !led_state_pwm;
+    static int led_state_device_mode = LED_OFF;
+    gpio_set_level(DEVICE_MODE_LED, led_state_device_mode);
+    led_state_device_mode = !led_state_device_mode;
 }
 //------------------------------------------------------------------------------
 static void config_led_power_up(void)
@@ -236,6 +238,7 @@ static void led_manager_task(void* arg)
 {
     //const char *LED_MANAGER_TASK_TAG = "LED_MANAGER_TASK_TAG";
     led_event_t led_ev;
+    uint8_t pwm_duty_cycle;
 
     led_manager_power_up();
 
@@ -276,6 +279,9 @@ static void led_manager_task(void* arg)
                     break;
                 case DEVICE_MODE_MANUAL:
                     esp_timer_start_periodic(timer_device_mode, MANUAL_DEVICE_MODE_TIME);
+                    break;
+                case PWM_DUTY_CYCLE:
+                    pwm_duty_cycle = led_ev.duty_cycle;
                     break;
                 default:
                     break;
@@ -385,6 +391,16 @@ void led_manager_set_device_mode_manual(void)
     led_event_t ev;
 
     ev.cmd = DEVICE_MODE_MANUAL;
+
+    xQueueSend(led_manager_queue, &ev, 10);
+}
+//------------------------------------------------------------------------------
+void led_manager_send_duty_cycle(uint8_t duty_cycle)
+{
+    led_event_t ev;
+
+    ev.cmd = PWM_DUTY_CYCLE;
+    ev.duty_cycle = duty_cycle;
 
     xQueueSend(led_manager_queue, &ev, 10);
 }
