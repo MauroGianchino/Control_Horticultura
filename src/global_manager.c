@@ -660,7 +660,6 @@ static void global_manager_task(void *arg)
                     nv_save_triac_mode(MANUAL_ON);
                 }
                 global_info.triac_mode = MANUAL_ON;
-                led_manager_triac_on();
                 triac_manager_turn_on_triac();
                 global_info.triac_auto.output_status = TRIAC_OUTPUT_ON;
                 break;
@@ -671,7 +670,6 @@ static void global_manager_task(void *arg)
                 }
                 global_info.triac_mode = MANUAL_OFF;
                 global_info.triac_auto.output_status = TRIAC_OUTPUT_OFF;
-                led_manager_triac_off();
                 triac_manager_turn_off_triac();
                 break;
             case TRIAC_AUTO:
@@ -680,7 +678,6 @@ static void global_manager_task(void *arg)
                     nv_save_triac_mode(AUTOMATIC);
                 }
                 global_info.triac_mode = AUTOMATIC;
-                led_manager_triac_auto();
                 global_info.triac_auto.output_status = TRIAC_OUTPUT_OFF;
                 triac_manager_turn_off_triac();
                 break;

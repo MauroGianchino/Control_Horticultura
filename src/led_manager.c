@@ -31,7 +31,6 @@ typedef enum{
     DEVICE_POWER_ON = 1,
     TRIAC_ON = 2,
     TRIAC_OFF = 3,
-    TRIAC_AUTO = 4,
     RELE_VEGE_ON = 5,
     RELE_VEGE_OFF = 6,
     WIFI_AP_MODE = 7,
@@ -49,7 +48,6 @@ typedef struct{
 QueueHandle_t led_manager_queue;
 
 static esp_timer_handle_t timer_device_mode;
-static esp_timer_handle_t timer_triac;
 //------------------- DECLARACION DE FUNCIONES LOCALES -------------------------
 //------------------------------------------------------------------------------
 static void config_led_power_up(void);
@@ -59,7 +57,6 @@ static void config_led_wifi_status(void);
 static void config_led_triac_status(void);
 
 static void set_power_on_indicator(void);
-static void set_triac_auto_indicator(void);
 static void set_triac_manual_off_indicator(void);
 static void set_rele_vege_on_indicator(void);
 static void set_rele_vege_off_indicator(void);
@@ -85,13 +82,6 @@ static void timer_led_toggle_device_mode_callback(void* arg)
     static int led_state_pwm = LED_OFF;
     gpio_set_level(DEVICE_MODE_LED, led_state_pwm);
     led_state_pwm = !led_state_pwm;
-}
-//------------------------------------------------------------------------------
-static void timer_led_toggle_triac_callback(void* arg)
-{
-    static int led_state_triac = LED_OFF;
-    gpio_set_level(TRIAC_OUTPUT_STATUS_LED, led_state_triac);
-    led_state_triac = !led_state_triac;
 }
 //------------------------------------------------------------------------------
 static void config_led_power_up(void)
@@ -152,14 +142,6 @@ static void config_led_triac_status(void)
     gpio_config(&io_conf);
 
     gpio_set_level(TRIAC_OUTPUT_STATUS_LED, LED_OFF);
-
-    esp_timer_create_args_t timer_triac_args = {
-        .callback = timer_led_toggle_triac_callback,
-        .arg = NULL,
-        .name = "led_toggle_triac"
-    };
-
-    esp_timer_create(&timer_triac_args, &timer_triac);
 }
 //------------------------------------------------------------------------------
 static void config_led_wifi_status(void)
@@ -200,21 +182,19 @@ static void set_device_mode_auto_indicator(void)
     gpio_set_level(DEVICE_MODE_LED, LED_ON);
 }
 //------------------------------------------------------------------------------
-static void set_triac_auto_indicator(void)
+static void set_triac_output_on_indicator(void)
 {
     #ifdef DEBUG_MODULE
-        printf("TRIAC AUTO \n");
+        printf("TRIAC ON \n");
     #endif
-    esp_timer_stop(timer_triac);
     gpio_set_level(TRIAC_OUTPUT_STATUS_LED, LED_ON);
 }
 //------------------------------------------------------------------------------
-static void set_triac_manual_off_indicator(void)
+static void set_triac_output_off_indicator(void)
 {
     #ifdef DEBUG_MODULE
         printf("TRIAC OFF \n");
     #endif
-    esp_timer_stop(timer_triac);
     gpio_set_level(TRIAC_OUTPUT_STATUS_LED, LED_OFF);
 }
 //------------------------------------------------------------------------------
@@ -271,16 +251,10 @@ static void led_manager_task(void* arg)
                     set_power_on_indicator();
                     break;
                 case TRIAC_ON:
-                    esp_timer_start_periodic(timer_triac, MANUAL_TRIAC_TIME);
-                    #ifdef DEBUG_MODULE
-                        printf("TRIAC MANUAL ON \n");
-                    #endif
+                    set_triac_output_on_indicator();
                     break;
                 case TRIAC_OFF:
-                    set_triac_manual_off_indicator();
-                    break;
-                case TRIAC_AUTO:
-                    set_triac_auto_indicator();
+                    set_triac_output_off_indicator();
                     break;
                 case RELE_VEGE_ON:
                     set_rele_vege_on_indicator();
@@ -339,15 +313,6 @@ void led_manager_triac_on(void)
     led_event_t ev;
 
     ev.cmd = TRIAC_ON;
-
-    xQueueSend(led_manager_queue, &ev, 10);
-}
-//------------------------------------------------------------------------------
-void led_manager_triac_auto(void)
-{
-    led_event_t ev;
-
-    ev.cmd = TRIAC_AUTO;
 
     xQueueSend(led_manager_queue, &ev, 10);
 }

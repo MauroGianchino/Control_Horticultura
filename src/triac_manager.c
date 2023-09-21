@@ -12,6 +12,7 @@
 
 #include "../include/board_def.h"
 #include "../include/triac_manager.h"
+#include "../include/led_manager.h"
 //--------------------MACROS Y DEFINES------------------------------------------
 //------------------------------------------------------------------------------
 
@@ -44,11 +45,13 @@ void triac_manager_init(void)
 //------------------------------------------------------------------------------
 void triac_manager_turn_on_triac(void)
 {
+    led_manager_triac_on();
     gpio_set_level(TRIAC_OUTPUT, 1);
 }
 //------------------------------------------------------------------------------
 void triac_manager_turn_off_triac(void)
 {
+    led_manager_triac_off();
     gpio_set_level(TRIAC_OUTPUT, 0);
 }
 //---------------------------- END OF FILE -------------------------------------
