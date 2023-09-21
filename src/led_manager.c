@@ -18,7 +18,7 @@
 
 #define QUEUE_ELEMENT_QUANTITY 10
 
-#define MANUAL_PWM_TIME 200000
+#define MANUAL_DEVICE_MODE_TIME 200000
 #define MANUAL_TRIAC_TIME 200000
 #define RAMPA_PWM_TIME 800000
 
@@ -29,18 +29,16 @@
 typedef enum{
     CMD_UNDEFINED = 0,
     DEVICE_POWER_ON = 1,
-    PWM_MANUAL_OFF = 2,
-    PWM_MANUAL_ON = 3,
-    PWM_AUTO = 4,
-    PWM_RAMPA = 5,
-    TRIAC_ON = 6,
-    TRIAC_OFF = 7,
-    TRIAC_AUTO = 8,
-    RELE_VEGE_ON = 9,
-    RELE_VEGE_OFF = 10,
-    WIFI_AP_MODE = 11,
-    WIFI_STA_MODE = 12,
-    WIFI_NET_PROBLEM = 13,
+    TRIAC_ON = 2,
+    TRIAC_OFF = 3,
+    TRIAC_AUTO = 4,
+    RELE_VEGE_ON = 5,
+    RELE_VEGE_OFF = 6,
+    WIFI_AP_MODE = 7,
+    WIFI_STA_MODE = 8,
+    WIFI_NET_PROBLEM = 9,
+    DEVICE_MODE_AUTO = 10,
+    DEVICE_MODE_MANUAL = 11,
 }led_event_cmds_t;
 
 typedef struct{
@@ -50,20 +48,17 @@ typedef struct{
 //------------------------------------------------------------------------------
 QueueHandle_t led_manager_queue;
 
-static esp_timer_handle_t timer_pwm;
+static esp_timer_handle_t timer_device_mode;
 static esp_timer_handle_t timer_triac;
-static esp_timer_handle_t timer_pwm_rampa;
 //------------------- DECLARACION DE FUNCIONES LOCALES -------------------------
 //------------------------------------------------------------------------------
 static void config_led_power_up(void);
-static void config_led_pwm_status(void);
+static void config_led_device_mode_status(void);
 static void config_led_rele_vege_status_up(void);
 static void config_led_wifi_status(void);
 static void config_led_triac_status(void);
 
 static void set_power_on_indicator(void);
-static void set_pwm_auto_indicator(void);
-static void set_pwm_manual_off_indicator(void);
 static void set_triac_auto_indicator(void);
 static void set_triac_manual_off_indicator(void);
 static void set_rele_vege_on_indicator(void);
@@ -75,10 +70,8 @@ static void set_wifi_net_problem_indicator(void);
 
 static void led_manager_task(void* arg);
 
-static void timer_led_toggle_pwm_callback(void* arg);
-static void timer_led_toggle_pwm_rampa_callback(void* arg);
+static void timer_led_toggle_device_mode_callback(void* arg);
 static void timer_led_toggle_triac_callback(void* arg);
-
 //------------------- DEFINICION DE DATOS LOCALES ------------------------------
 //------------------------------------------------------------------------------
 
@@ -87,18 +80,11 @@ static void timer_led_toggle_triac_callback(void* arg);
 
 //------------------- DEFINICION DE FUNCIONES LOCALES --------------------------
 //------------------------------------------------------------------------------
-static void timer_led_toggle_pwm_callback(void* arg)
+static void timer_led_toggle_device_mode_callback(void* arg)
 {
     static int led_state_pwm = LED_OFF;
-    gpio_set_level(PWM_OUTPUT_STATUS_LED, led_state_pwm);
+    gpio_set_level(DEVICE_MODE_LED, led_state_pwm);
     led_state_pwm = !led_state_pwm;
-}
-//------------------------------------------------------------------------------
-static void timer_led_toggle_pwm_rampa_callback(void* arg)
-{
-    static int led_state_pwm_rampa = LED_OFF;
-    gpio_set_level(PWM_OUTPUT_STATUS_LED, led_state_pwm_rampa);
-    led_state_pwm_rampa = !led_state_pwm_rampa;
 }
 //------------------------------------------------------------------------------
 static void timer_led_toggle_triac_callback(void* arg)
@@ -121,32 +107,25 @@ static void config_led_power_up(void)
     gpio_set_level(DEVICE_ON_LED, LED_OFF);
 }
 //------------------------------------------------------------------------------
-static void config_led_pwm_status(void)
+static void config_led_device_mode_status(void)
 {
     gpio_config_t io_conf;
     io_conf.intr_type = GPIO_INTR_DISABLE; // desactivar interrupción
     io_conf.mode = GPIO_MODE_OUTPUT; // establecer en modo salida
-    io_conf.pin_bit_mask = (1ULL << PWM_OUTPUT_STATUS_LED); // configurar pin
+    io_conf.pin_bit_mask = (1ULL << DEVICE_MODE_LED); // configurar pin
     io_conf.pull_down_en = 0; // desactivar pull-down
     io_conf.pull_up_en = 0; // desactivar pull-up
     gpio_config(&io_conf);
 
-    gpio_set_level(PWM_OUTPUT_STATUS_LED, LED_OFF);
+    gpio_set_level(DEVICE_MODE_LED, LED_OFF);
 
-    esp_timer_create_args_t timer_pwm_args = {
-        .callback = timer_led_toggle_pwm_callback,
+    esp_timer_create_args_t timer_device_mode_args = {
+        .callback = timer_led_toggle_device_mode_callback,
         .arg = NULL,
-        .name = "led_toggle_pwm"
+        .name = "led_toggle_device_mode"
     };
 
-    esp_timer_create_args_t timer_pwm_rampa_args = {
-        .callback = timer_led_toggle_pwm_rampa_callback,
-        .arg = NULL,
-        .name = "led_toggle_pwm_rampa"
-    };
-
-    esp_timer_create(&timer_pwm_args, &timer_pwm);
-    esp_timer_create(&timer_pwm_rampa_args, &timer_pwm_rampa);
+    esp_timer_create(&timer_device_mode_args, &timer_device_mode);
 }
 //------------------------------------------------------------------------------
 static void config_led_rele_vege_status_up(void)
@@ -212,24 +191,13 @@ static void set_power_on_indicator(void)
     gpio_set_level(DEVICE_ON_LED, LED_ON);
 }
 //------------------------------------------------------------------------------
-static void set_pwm_auto_indicator(void)
+static void set_device_mode_auto_indicator(void)
 {
     #ifdef DEBUG_MODULE
-        printf("PWM AUTO \n");
+        printf("DEVICE MODE AUTO \n");
     #endif
-    esp_timer_stop(timer_pwm_rampa);
-    esp_timer_stop(timer_pwm);
-    gpio_set_level(PWM_OUTPUT_STATUS_LED, LED_ON);
-}
-//------------------------------------------------------------------------------
-static void set_pwm_manual_off_indicator(void)
-{
-    #ifdef DEBUG_MODULE
-        printf("PWM OFF \n");
-    #endif
-    esp_timer_stop(timer_pwm_rampa);
-    esp_timer_stop(timer_pwm);
-    gpio_set_level(PWM_OUTPUT_STATUS_LED, LED_OFF);
+    esp_timer_stop(timer_device_mode);
+    gpio_set_level(DEVICE_MODE_LED, LED_ON);
 }
 //------------------------------------------------------------------------------
 static void set_triac_auto_indicator(void)
@@ -290,13 +258,7 @@ static void led_manager_task(void* arg)
     led_event_t led_ev;
 
     led_manager_power_up();
-    //led_manager_pwm_manual_on();
-    //led_manager_pwm_rampa();
-    //led_manager_triac_on();
-    //led_manager_wifi_ap_mode();
-    //led_manager_wifi_sta_mode();
-    //led_manager_rele_vege_on();
-    //set_wifi_net_problem_indicator();
+
     while(1)
     {
         if(xQueueReceive(led_manager_queue, &led_ev, portMAX_DELAY ) == pdTRUE)
@@ -307,23 +269,6 @@ static void led_manager_task(void* arg)
                     break;
                 case DEVICE_POWER_ON:
                     set_power_on_indicator();
-                    break;
-                case PWM_MANUAL_OFF:
-                    set_pwm_manual_off_indicator();
-                    break;
-                case PWM_MANUAL_ON:
-                    esp_timer_stop(timer_pwm_rampa);
-                    esp_timer_start_periodic(timer_pwm, MANUAL_PWM_TIME);
-                    #ifdef DEBUG_MODULE
-                        printf("PWM MANUAL ON \n");
-                    #endif
-                    break;
-                case PWM_AUTO:
-                    set_pwm_auto_indicator();
-                    break;
-                case PWM_RAMPA:
-                    esp_timer_stop(timer_pwm_rampa);
-                    esp_timer_start_periodic(timer_pwm_rampa, RAMPA_PWM_TIME);
                     break;
                 case TRIAC_ON:
                     esp_timer_start_periodic(timer_triac, MANUAL_TRIAC_TIME);
@@ -352,6 +297,12 @@ static void led_manager_task(void* arg)
                 case WIFI_NET_PROBLEM:
                     set_wifi_net_problem_indicator();
                     break;
+                case DEVICE_MODE_AUTO:
+                    set_device_mode_auto_indicator();
+                    break;
+                case DEVICE_MODE_MANUAL:
+                    esp_timer_start_periodic(timer_device_mode, MANUAL_DEVICE_MODE_TIME);
+                    break;
                 default:
                     break;
             }
@@ -363,7 +314,7 @@ static void led_manager_task(void* arg)
 void led_manager_init(void)
 {
     config_led_power_up();
-    config_led_pwm_status();
+    config_led_device_mode_status();
     config_led_rele_vege_status_up();
     config_led_wifi_status();
     config_led_triac_status();
@@ -379,42 +330,6 @@ void led_manager_power_up(void)
     led_event_t ev;
 
     ev.cmd = DEVICE_POWER_ON;
-
-    xQueueSend(led_manager_queue, &ev, 10);
-}
-//------------------------------------------------------------------------------
-void led_manager_pwm_manual_off(void)
-{
-    led_event_t ev;
-
-    ev.cmd = PWM_MANUAL_OFF;
-
-    xQueueSend(led_manager_queue, &ev, 10);
-}
-//------------------------------------------------------------------------------
-void led_manager_pwm_manual_on(void)
-{
-    led_event_t ev;
-
-    ev.cmd = PWM_MANUAL_ON;
-
-    xQueueSend(led_manager_queue, &ev, 10);
-}
-//------------------------------------------------------------------------------
-void led_manager_pwm_auto(void)
-{
-    led_event_t ev;
-
-    ev.cmd = PWM_AUTO;
-
-    xQueueSend(led_manager_queue, &ev, 10);
-}
-//------------------------------------------------------------------------------
-void led_manager_pwm_rampa(void)
-{
-    led_event_t ev;
-
-    ev.cmd = PWM_RAMPA;
 
     xQueueSend(led_manager_queue, &ev, 10);
 }
@@ -487,6 +402,24 @@ void led_manager_wifi_net_problem(void)
     led_event_t ev;
 
     ev.cmd = WIFI_NET_PROBLEM;
+
+    xQueueSend(led_manager_queue, &ev, 10);
+}
+//------------------------------------------------------------------------------
+void led_manager_set_device_mode_auto(void)
+{
+    led_event_t ev;
+
+    ev.cmd = DEVICE_MODE_AUTO;
+
+    xQueueSend(led_manager_queue, &ev, 10);
+}
+//------------------------------------------------------------------------------
+void led_manager_set_device_mode_manual(void)
+{
+    led_event_t ev;
+
+    ev.cmd = DEVICE_MODE_MANUAL;
 
     xQueueSend(led_manager_queue, &ev, 10);
 }

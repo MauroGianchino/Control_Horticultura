@@ -606,15 +606,15 @@ static void global_manager_task(void *arg)
                 switch (global_info.pwm_mode)
                 {
                 case MANUAL_ON:
-                    led_manager_pwm_manual_on();
+                    led_manager_set_device_mode_manual();
                     pwm_manager_turn_on_pwm(global_info.pwm_manual_percent_power);
                     break;
                 case MANUAL_OFF:
-                    led_manager_pwm_manual_off();
+                    led_manager_set_device_mode_manual();
                     pwm_manager_turn_off_pwm();
                     break;
                 case AUTOMATIC:
-                    led_manager_pwm_auto();
+                    led_manager_set_device_mode_auto();
                     break;
                 default:
                     break;
@@ -627,7 +627,8 @@ static void global_manager_task(void *arg)
                 }
                 global_info.pwm_mode = MANUAL_ON;
                 global_info.pwm_auto.output_status = PWM_OUTPUT_ON;
-                led_manager_pwm_manual_on();
+                led_manager_set_device_mode_manual();
+                
                 pwm_manager_turn_on_pwm(global_info.pwm_manual_percent_power);
                 analog_input_send_pwm_mode(MANUAL_ON);
                 break;
@@ -648,7 +649,7 @@ static void global_manager_task(void *arg)
                     nv_save_pwm_mode(AUTOMATIC);
                 }
                 global_info.pwm_mode = AUTOMATIC;
-                led_manager_pwm_auto();
+                led_manager_set_device_mode_auto();
                 pwm_manager_turn_off_pwm();
                 global_info.pwm_auto.output_status = PWM_OUTPUT_OFF;
                 analog_input_send_pwm_mode(AUTOMATIC);
