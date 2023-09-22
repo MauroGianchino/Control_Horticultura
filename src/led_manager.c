@@ -48,7 +48,6 @@ typedef struct{
 //------------------------------------------------------------------------------
 QueueHandle_t led_manager_queue;
 
-static esp_timer_handle_t timer_device_mode;
 static esp_timer_handle_t timer_pwm_status;
 static uint8_t pwm_toggle_mode = 0;
 //------------------- DECLARACION DE FUNCIONES LOCALES -------------------------
@@ -66,9 +65,10 @@ static void set_rele_vege_on_indicator(void);
 static void set_rele_vege_off_indicator(void);
 static void set_pwm_indicator(uint8_t duty_cycle, uint8_t is_simul_day_working, simul_day_status_t simul_day_status);
 
+static void set_device_mode_manual_indicator(void);
+
 static void led_manager_task(void* arg);
 
-static void timer_led_toggle_device_mode_callback(void* arg);
 static void timer_led_toggle_pwm_status_callback(void* arg);
 //------------------- DEFINICION DE DATOS LOCALES ------------------------------
 //------------------------------------------------------------------------------
@@ -143,14 +143,6 @@ static void config_led_device_mode_status(void)
     gpio_config(&io_conf);
 
     gpio_set_level(DEVICE_MODE_LED, LED_OFF);
-
-    esp_timer_create_args_t timer_device_mode_args = {
-        .callback = timer_led_toggle_device_mode_callback,
-        .arg = NULL,
-        .name = "led_toggle_device_mode"
-    };
-
-    esp_timer_create(&timer_device_mode_args, &timer_device_mode);
 }
 //------------------------------------------------------------------------------
 static void config_led_rele_vege_status_up(void)
@@ -221,8 +213,15 @@ static void set_device_mode_auto_indicator(void)
     #ifdef DEBUG_MODULE
         printf("DEVICE MODE AUTO \n");
     #endif
-    esp_timer_stop(timer_device_mode);
     gpio_set_level(DEVICE_MODE_LED, LED_ON);
+}
+//------------------------------------------------------------------------------
+static void set_device_mode_manual_indicator(void)
+{
+    #ifdef DEBUG_MODULE
+        printf("DEVICE MODE MANUAL \n");
+    #endif
+    gpio_set_level(DEVICE_MODE_LED, LED_OFF);
 }
 //------------------------------------------------------------------------------
 static void set_triac_output_on_indicator(void)
@@ -340,7 +339,7 @@ static void led_manager_task(void* arg)
                     set_device_mode_auto_indicator();
                     break;
                 case DEVICE_MODE_MANUAL:
-                    esp_timer_start_periodic(timer_device_mode, MANUAL_DEVICE_MODE_TIME);
+                    set_device_mode_manual_indicator();
                     break;
                 case UPDATE_PWM_LED_STATUS:
                     pwm_duty_cycle = led_ev.duty_cycle;
