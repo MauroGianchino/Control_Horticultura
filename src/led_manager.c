@@ -16,7 +16,7 @@
 //------------------------------------------------------------------------------
 #define DEBUG_MODULE 1
 
-#define QUEUE_ELEMENT_QUANTITY 10
+#define QUEUE_ELEMENT_QUANTITY 25
 
 #define MANUAL_DEVICE_MODE_TIME 200000
 #define MANUAL_TRIAC_TIME 200000
@@ -33,29 +33,30 @@ typedef enum{
     TRIAC_OFF = 3,
     RELE_VEGE_ON = 5,
     RELE_VEGE_OFF = 6,
-    WIFI_AP_MODE = 7,
-    WIFI_STA_MODE = 8,
-    WIFI_NET_PROBLEM = 9,
-    DEVICE_MODE_AUTO = 10,
-    DEVICE_MODE_MANUAL = 11,
-    PWM_DUTY_CYCLE = 12,
+    DEVICE_MODE_AUTO = 7,
+    DEVICE_MODE_MANUAL = 8,
+    UPDATE_PWM_LED_STATUS = 9,
 }led_event_cmds_t;
 
 typedef struct{
     led_event_cmds_t cmd;
     uint8_t duty_cycle;
+    simul_day_status_t simul_day_status;
+    uint8_t is_simul_day_working;
 }led_event_t;
 //------------------- DECLARACION DE DATOS LOCALES -----------------------------
 //------------------------------------------------------------------------------
 QueueHandle_t led_manager_queue;
 
 static esp_timer_handle_t timer_device_mode;
+static esp_timer_handle_t timer_pwm_status;
+static uint8_t pwm_toggle_mode = 0;
 //------------------- DECLARACION DE FUNCIONES LOCALES -------------------------
 //------------------------------------------------------------------------------
 static void config_led_power_up(void);
 static void config_led_device_mode_status(void);
 static void config_led_rele_vege_status_up(void);
-static void config_led_wifi_status(void);
+static void config_led_pwm_status(void);
 static void config_led_triac_status(void);
 
 static void set_power_on_indicator(void);
@@ -63,14 +64,12 @@ static void set_triac_output_on_indicator(void);
 static void set_triac_output_off_indicator(void);
 static void set_rele_vege_on_indicator(void);
 static void set_rele_vege_off_indicator(void);
-
-static void set_wifi_ap_mode_indicator(void);
-static void set_wifi_sta_mode_indicator(void);
-static void set_wifi_net_problem_indicator(void);
+static void set_pwm_indicator(uint8_t duty_cycle, uint8_t is_simul_day_working, simul_day_status_t simul_day_status);
 
 static void led_manager_task(void* arg);
 
 static void timer_led_toggle_device_mode_callback(void* arg);
+static void timer_led_toggle_pwm_status_callback(void* arg);
 //------------------- DEFINICION DE DATOS LOCALES ------------------------------
 //------------------------------------------------------------------------------
 
@@ -84,6 +83,40 @@ static void timer_led_toggle_device_mode_callback(void* arg)
     static int led_state_device_mode = LED_OFF;
     gpio_set_level(DEVICE_MODE_LED, led_state_device_mode);
     led_state_device_mode = !led_state_device_mode;
+}
+
+static int pwm_led_red_status = LED_OFF;
+static int pwm_led_green_status = LED_OFF;
+
+//------------------------------------------------------------------------------
+static void timer_led_toggle_pwm_status_callback(void* arg)
+{
+    if(pwm_toggle_mode == 1)
+    {
+        gpio_set_level(PWM_LED_RED, pwm_led_red_status);
+        gpio_set_level(PWM_LED_GREEN, pwm_led_green_status);
+        pwm_led_green_status = !pwm_led_green_status;
+    }
+    else if(pwm_toggle_mode == 2)
+    {
+        gpio_set_level(PWM_LED_RED, pwm_led_red_status);
+        gpio_set_level(PWM_LED_GREEN, pwm_led_green_status);
+        pwm_led_red_status = !pwm_led_red_status;
+        pwm_led_green_status = !pwm_led_green_status;
+    }
+    else if(pwm_toggle_mode == 3)
+    {
+        gpio_set_level(PWM_LED_RED, pwm_led_red_status);
+        gpio_set_level(PWM_LED_GREEN, pwm_led_green_status);
+        pwm_led_red_status = !pwm_led_red_status;
+    }
+    else if(pwm_toggle_mode == 4)
+    {
+        gpio_set_level(PWM_LED_RED, pwm_led_red_status);
+        gpio_set_level(PWM_LED_GREEN, pwm_led_green_status);
+        pwm_led_red_status = !pwm_led_red_status;
+        pwm_led_green_status = !pwm_led_green_status;
+    }
 }
 //------------------------------------------------------------------------------
 static void config_led_power_up(void)
@@ -146,25 +179,33 @@ static void config_led_triac_status(void)
     gpio_set_level(TRIAC_OUTPUT_STATUS_LED, LED_OFF);
 }
 //------------------------------------------------------------------------------
-static void config_led_wifi_status(void)
+static void config_led_pwm_status(void)
 {
     gpio_config_t io_conf;
     io_conf.intr_type = GPIO_INTR_DISABLE; // desactivar interrupción
     io_conf.mode = GPIO_MODE_OUTPUT; // establecer en modo salida
-    io_conf.pin_bit_mask = (1ULL << WIFI_STATUS_1_LED); // configurar pin
+    io_conf.pin_bit_mask = (1ULL << PWM_LED_RED); // configurar pin
     io_conf.pull_down_en = 0; // desactivar pull-down
     io_conf.pull_up_en = 0; // desactivar pull-up
     gpio_config(&io_conf);
 
     io_conf.intr_type = GPIO_INTR_DISABLE; // desactivar interrupción
     io_conf.mode = GPIO_MODE_OUTPUT; // establecer en modo salida
-    io_conf.pin_bit_mask = (1ULL << WIFI_STATUS_2_LED); // configurar pin
+    io_conf.pin_bit_mask = (1ULL << PWM_LED_GREEN); // configurar pin
     io_conf.pull_down_en = 0; // desactivar pull-down
     io_conf.pull_up_en = 0; // desactivar pull-up
     gpio_config(&io_conf);
 
-    gpio_set_level(WIFI_STATUS_1_LED, LED_OFF);
-    gpio_set_level(WIFI_STATUS_2_LED, LED_OFF);
+    gpio_set_level(PWM_LED_RED, LED_OFF);
+    gpio_set_level(PWM_LED_GREEN, LED_OFF);
+
+    esp_timer_create_args_t timer_pwm_status_args = {
+        .callback = timer_led_toggle_pwm_status_callback,
+        .arg = NULL,
+        .name = "led_toggle_timer_pwm_status"
+    };
+
+    esp_timer_create(&timer_pwm_status_args, &timer_pwm_status);
 }
 //------------------------------------------------------------------------------
 static void set_power_on_indicator(void)
@@ -216,22 +257,50 @@ static void set_rele_vege_off_indicator(void)
     gpio_set_level(RELE_VEGE_STATUS_LED, LED_OFF);
 }
 //------------------------------------------------------------------------------
-static void set_wifi_ap_mode_indicator(void)
+
+static void set_pwm_indicator(uint8_t duty_cycle, uint8_t is_simul_day_working, simul_day_status_t simul_day_status)
 {
-    gpio_set_level(WIFI_STATUS_1_LED, LED_ON);
-    gpio_set_level(WIFI_STATUS_2_LED, LED_OFF);
-}
-//------------------------------------------------------------------------------
-static void set_wifi_sta_mode_indicator(void)
-{
-    gpio_set_level(WIFI_STATUS_1_LED, LED_OFF);
-    gpio_set_level(WIFI_STATUS_2_LED, LED_ON);
-}
-//------------------------------------------------------------------------------
-static void set_wifi_net_problem_indicator(void)
-{
-    gpio_set_level(WIFI_STATUS_1_LED, LED_ON);
-    gpio_set_level(WIFI_STATUS_2_LED, LED_ON);
+    float pwm_time;
+
+    pwm_time = 1.78 * (duty_cycle) + 22;
+
+    printf(" tiempo de toggle de pwm %f ms \n", pwm_time);
+    printf(" duty cycle de pwm %d \n", duty_cycle);
+
+    if(duty_cycle < 10)
+    {
+        esp_timer_stop(timer_pwm_status);
+        gpio_set_level(PWM_LED_RED, LED_OFF);
+        gpio_set_level(PWM_LED_GREEN, LED_OFF);
+    }
+    else
+    {
+        if((simul_day_status == SIMUL_DAY_OFF) && (is_simul_day_working != 1))
+        {
+            if((duty_cycle > 10) && (duty_cycle < 34))
+            {
+                pwm_toggle_mode = 1;
+            }
+            else if((duty_cycle >= 34) && (duty_cycle < 67))
+            {
+                pwm_toggle_mode = 2;
+            }
+            else if((duty_cycle >= 67) && (duty_cycle < 100))
+            {
+                pwm_toggle_mode = 3;
+            }
+            esp_timer_start_periodic(timer_pwm_status, ((uint8_t)pwm_time)*1000);
+            pwm_led_red_status = LED_OFF;
+            pwm_led_green_status = LED_OFF;
+        }
+        else
+        {
+            pwm_toggle_mode = 4;
+            esp_timer_start_periodic(timer_pwm_status, 200000);
+            pwm_led_red_status = LED_OFF;
+            pwm_led_green_status = LED_ON;
+        }
+    }
 }
 //------------------------------------------------------------------------------
 static void led_manager_task(void* arg)
@@ -239,6 +308,8 @@ static void led_manager_task(void* arg)
     //const char *LED_MANAGER_TASK_TAG = "LED_MANAGER_TASK_TAG";
     led_event_t led_ev;
     uint8_t pwm_duty_cycle;
+    simul_day_status_t simul_day_status;
+    uint8_t is_simul_day_working;
 
     led_manager_power_up();
 
@@ -265,23 +336,17 @@ static void led_manager_task(void* arg)
                 case RELE_VEGE_OFF:
                     set_rele_vege_off_indicator();
                     break;
-                case WIFI_AP_MODE:
-                    set_wifi_ap_mode_indicator();
-                    break;
-                case WIFI_STA_MODE:
-                    set_wifi_sta_mode_indicator();
-                    break;
-                case WIFI_NET_PROBLEM:
-                    set_wifi_net_problem_indicator();
-                    break;
                 case DEVICE_MODE_AUTO:
                     set_device_mode_auto_indicator();
                     break;
                 case DEVICE_MODE_MANUAL:
                     esp_timer_start_periodic(timer_device_mode, MANUAL_DEVICE_MODE_TIME);
                     break;
-                case PWM_DUTY_CYCLE:
+                case UPDATE_PWM_LED_STATUS:
                     pwm_duty_cycle = led_ev.duty_cycle;
+                    simul_day_status = led_ev.simul_day_status;
+                    is_simul_day_working = led_ev.is_simul_day_working;
+                    set_pwm_indicator(pwm_duty_cycle, is_simul_day_working, simul_day_status);
                     break;
                 default:
                     break;
@@ -296,12 +361,12 @@ void led_manager_init(void)
     config_led_power_up();
     config_led_device_mode_status();
     config_led_rele_vege_status_up();
-    config_led_wifi_status();
+    config_led_pwm_status();
     config_led_triac_status();
 
     led_manager_queue = xQueueCreate(QUEUE_ELEMENT_QUANTITY, sizeof(led_event_t));
     
-    xTaskCreate(led_manager_task, "led_manager_task", configMINIMAL_STACK_SIZE*2, 
+    xTaskCreate(led_manager_task, "led_manager_task", configMINIMAL_STACK_SIZE*10, 
         NULL, configMAX_PRIORITIES-2, NULL);
 }
 //------------------------------------------------------------------------------
@@ -350,33 +415,6 @@ void led_manager_rele_vege_off(void)
     xQueueSend(led_manager_queue, &ev, 10);
 }
 //------------------------------------------------------------------------------
-void led_manager_wifi_ap_mode(void)
-{
-    led_event_t ev;
-
-    ev.cmd = WIFI_AP_MODE;
-
-    xQueueSend(led_manager_queue, &ev, 10);
-}
-//------------------------------------------------------------------------------
-void led_manager_wifi_sta_mode(void)
-{
-    led_event_t ev;
-
-    ev.cmd = WIFI_STA_MODE;
-
-    xQueueSend(led_manager_queue, &ev, 10);
-}
-//------------------------------------------------------------------------------
-void led_manager_wifi_net_problem(void)
-{
-    led_event_t ev;
-
-    ev.cmd = WIFI_NET_PROBLEM;
-
-    xQueueSend(led_manager_queue, &ev, 10);
-}
-//------------------------------------------------------------------------------
 void led_manager_set_device_mode_auto(void)
 {
     led_event_t ev;
@@ -395,12 +433,14 @@ void led_manager_set_device_mode_manual(void)
     xQueueSend(led_manager_queue, &ev, 10);
 }
 //------------------------------------------------------------------------------
-void led_manager_send_duty_cycle(uint8_t duty_cycle)
+void led_manager_send_pwm_info(uint8_t duty_cycle, uint8_t is_simul_day_working, simul_day_status_t simul_day_status)
 {
     led_event_t ev;
 
-    ev.cmd = PWM_DUTY_CYCLE;
+    ev.cmd = UPDATE_PWM_LED_STATUS;
     ev.duty_cycle = duty_cycle;
+    ev.is_simul_day_working = is_simul_day_working;
+    ev.simul_day_status = simul_day_status;
 
     xQueueSend(led_manager_queue, &ev, 10);
 }

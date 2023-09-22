@@ -650,8 +650,9 @@ static void global_manager_task(void *arg)
                 }
                 global_info.pwm_mode = AUTOMATIC;
                 led_manager_set_device_mode_auto();
-                pwm_manager_turn_off_pwm();
-                global_info.pwm_auto.output_status = PWM_OUTPUT_OFF;
+                //led_manager_send_pwm_info(0, 0, false);
+                //pwm_manager_turn_off_pwm();
+                //global_info.pwm_auto.output_status = PWM_OUTPUT_OFF;
                 analog_input_send_pwm_mode(AUTOMATIC);
                 break;
             case TRIAC_MANUAL_ON:
@@ -704,6 +705,7 @@ static void global_manager_task(void *arg)
                 if ((global_info.pwm_mode == MANUAL_ON) && (global_ev.value != global_info.pwm_manual_percent_power))
                 {
                     pwm_manager_update_pwm(global_ev.value);
+                    led_manager_send_pwm_info(global_ev.value, 0, global_ev.simul_day_function_status);
 #ifdef DEBUG_MODULE
                     printf("UPDATE PWM: %d \n", global_info.pwm_manual_percent_power);
 #endif

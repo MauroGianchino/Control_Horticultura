@@ -83,7 +83,7 @@ static void analog_input_manager_task(void* arg)
     vTaskDelay(2000 / portTICK_PERIOD_MS);
     while(1)
     {
-        if(xQueueReceive(adc_data_queue, &adc_data_ev, 100 / portTICK_PERIOD_MS) == pdTRUE)
+        if(xQueueReceive(adc_data_queue, &adc_data_ev, 30 / portTICK_PERIOD_MS) == pdTRUE)
         {
             switch(adc_data_ev.cmd)
             {
