@@ -41,7 +41,10 @@ static uint8_t is_date1_grater_than_date2(struct tm date1, struct tm date2)
 {
     if((date1.tm_hour > date2.tm_hour) \
         || ((date1.tm_hour == date2.tm_hour) \
-        && (date1.tm_min > date2.tm_min)))
+        && (date1.tm_min > date2.tm_min)) \
+        || ((date1.tm_hour == date2.tm_hour) \
+        && (date1.tm_min == date2.tm_min) \ 
+        && (date1.tm_sec > date2.tm_sec)))
     {
         return 1;
     }

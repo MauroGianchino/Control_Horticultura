@@ -937,7 +937,9 @@ void global_manager_update_auto_pwm_calendar(calendar_auto_mode_t calendar, bool
     {
         ev.cmd = UPDATE_PWM_CALENDAR;
         ev.value_read_from_flash = read_from_flash;
+        calendar.turn_on_time.tm_sec = 0;
         ev.pwm_turn_on_time = calendar.turn_on_time;
+        calendar.turn_off_time.tm_sec = 0;
         ev.pwm_turn_off_time = calendar.turn_off_time;
         xQueueSend(global_manager_queue, &ev, 10);
     }
@@ -952,8 +954,10 @@ void global_manager_update_auto_triac_calendar(triac_config_info_t triac_info, u
         ev.value_read_from_flash = read_from_flash;
         ev.triac_info.enable = triac_info.enable;
         ESP_LOGE("ASD", " EL ENABLE DEL 1 ES %d asd", triac_info.enable);
+        triac_info.turn_off_time.tm_sec = 0;
         ev.triac_info.turn_off_time = triac_info.turn_off_time;
         ESP_LOGE("ASD", " hora de off %d", triac_info.turn_off_time.tm_hour);
+        triac_info.turn_on_time.tm_sec = 0;
         ev.triac_info.turn_on_time = triac_info.turn_on_time;
         ev.triac_num = triac_num;
         xQueueSend(global_manager_queue, &ev, 10);
