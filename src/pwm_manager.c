@@ -10,6 +10,7 @@
 #include "../include/board_def.h"
 #include "../include/global_manager.h"
 #include "driver/ledc.h"
+#include "../include/led_manager.h"
 //--------------------MACROS Y DEFINES------------------------------------------
 //------------------------------------------------------------------------------
 #define DEBUG_MODULE 1
@@ -146,6 +147,7 @@ static void update_fading(manual_fading_info_t *manual_fading_info)
             if(manual_fading_info->step_number >= manual_fading_info->max_number_of_steps)
             {
                 manual_fading_info->out_duty_cycle = manual_fading_info->duty_cycle;
+                led_manager_send_pwm_info(manual_fading_info->out_duty_cycle, 0, false);
                 target_duty = (((uint32_t)manual_fading_info->out_duty_cycle)*(8191)) / 100;
 
                 ledc_set_fade_with_time(PWM_MODE, PWM_CHANNEL, target_duty, 10);
@@ -171,6 +173,7 @@ static void update_fading(manual_fading_info_t *manual_fading_info)
                 || (manual_fading_info->out_duty_cycle < 10)) 
             {
                 manual_fading_info->out_duty_cycle = 0;
+                led_manager_send_pwm_info(manual_fading_info->out_duty_cycle, 0, false);
                 target_duty = (((uint32_t)manual_fading_info->out_duty_cycle)*(8191)) / 100;
 
                 ledc_set_fade_with_time(PWM_MODE, PWM_CHANNEL, target_duty, 10);

@@ -63,7 +63,7 @@ static void set_triac_output_on_indicator(void);
 static void set_triac_output_off_indicator(void);
 static void set_rele_vege_on_indicator(void);
 static void set_rele_vege_off_indicator(void);
-static void set_pwm_indicator(uint8_t duty_cycle, uint8_t is_simul_day_working, simul_day_status_t simul_day_status);
+static void set_pwm_indicator(uint8_t duty_cycle, uint8_t is_simul_day_working);
 
 static void set_device_mode_manual_indicator(void);
 
@@ -257,7 +257,7 @@ static void set_rele_vege_off_indicator(void)
 }
 //------------------------------------------------------------------------------
 
-static void set_pwm_indicator(uint8_t duty_cycle, uint8_t is_simul_day_working, simul_day_status_t simul_day_status)
+static void set_pwm_indicator(uint8_t duty_cycle, uint8_t is_simul_day_working)
 {
     float pwm_time;
 
@@ -274,7 +274,7 @@ static void set_pwm_indicator(uint8_t duty_cycle, uint8_t is_simul_day_working, 
     }
     else
     {
-        if((simul_day_status == SIMUL_DAY_OFF) && (is_simul_day_working != 1))
+        if(is_simul_day_working != 1)
         {
             if((duty_cycle > 10) && (duty_cycle < 34))
             {
@@ -345,7 +345,7 @@ static void led_manager_task(void* arg)
                     pwm_duty_cycle = led_ev.duty_cycle;
                     simul_day_status = led_ev.simul_day_status;
                     is_simul_day_working = led_ev.is_simul_day_working;
-                    set_pwm_indicator(pwm_duty_cycle, is_simul_day_working, simul_day_status);
+                    set_pwm_indicator(pwm_duty_cycle, is_simul_day_working);
                     break;
                 default:
                     break;
