@@ -520,6 +520,7 @@ static void global_manager_task(void *arg)
 
     global_info.pwm_manual_percent_power = 10;
     global_info.triac_auto.output_status = TRIAC_OUTPUT_OFF;
+    global_info.pwm_auto.output_status = PWM_OUTPUT_OFF;
 
     // INIT FROM FLASH
     nv_init_ssid_ap_wifi();
@@ -861,7 +862,13 @@ void global_manager_set_pwm_power_value_manual(uint8_t power_percentage_value)
 {
     global_event_t ev;
     if (power_percentage_value >= 100)
+    {
         power_percentage_value = 100;
+    }
+    else if((power_percentage_value >= 0) && (power_percentage_value < 10))
+    {
+        power_percentage_value = 0;
+    } 
     ev.cmd = SET_MANUAL_PWM_POWER;
     ev.value = power_percentage_value;
     xQueueSend(global_manager_queue, &ev, 10);
@@ -870,8 +877,14 @@ void global_manager_set_pwm_power_value_manual(uint8_t power_percentage_value)
 void global_manager_set_pwm_power_value_auto(uint8_t power_percentage_value, bool read_from_flash)
 {
     global_event_t ev;
-    if (power_percentage_value >= 100)
+    if(power_percentage_value >= 100)
+    {
         power_percentage_value = 100;
+    }
+    else if((power_percentage_value >= 0) && (power_percentage_value < 10))
+    {
+        power_percentage_value = 0;
+    }
     ev.cmd = SET_AUTO_PWM_POWER;
     ev.value_read_from_flash = read_from_flash;
     ev.value = power_percentage_value;

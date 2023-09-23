@@ -96,10 +96,10 @@ static void init_fading_on(uint8_t duty_cycle, manual_fading_info_t *manual_fadi
     manual_fading_info->fading_type = DUTY_CYCLE_FADING_ON;
     manual_fading_info->fading_status = FADING_IN_PROGRESS;
     manual_fading_info->duty_cycle = duty_cycle;
-    manual_fading_info->out_duty_cycle = 1;
+    manual_fading_info->out_duty_cycle = 10;
     manual_fading_info->step_number = 0;
     manual_fading_info->max_number_of_steps = MAX_DUTY_CYCLE_STEPS;
-    manual_fading_info->step_duty_cycle = manual_fading_info->duty_cycle / manual_fading_info->max_number_of_steps;
+    manual_fading_info->step_duty_cycle = (manual_fading_info->duty_cycle - 10) / manual_fading_info->max_number_of_steps;
 }
 //------------------------------------------------------------------------------
 static void init_fading_off(manual_fading_info_t *manual_fading_info)
@@ -167,7 +167,8 @@ static void update_fading(manual_fading_info_t *manual_fading_info)
             manual_fading_info->step_number++;
             manual_fading_info->out_duty_cycle -= manual_fading_info->step_duty_cycle;
 
-            if(manual_fading_info->step_number >= manual_fading_info->max_number_of_steps)
+            if((manual_fading_info->step_number >= manual_fading_info->max_number_of_steps) \
+                || (manual_fading_info->out_duty_cycle < 10)) 
             {
                 manual_fading_info->out_duty_cycle = 0;
                 target_duty = (((uint32_t)manual_fading_info->out_duty_cycle)*(8191)) / 100;
