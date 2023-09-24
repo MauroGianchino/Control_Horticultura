@@ -46,7 +46,7 @@
 
         .Datos_Equipo__ContraseniaRedyVersion {
             display: flex;
-            justify-content: space-between;
+            justify-content: space-around;
             margin: 2px;
             padding: 2px;
         }
@@ -147,16 +147,12 @@
         <img src="/logo" class="imagen">
     </div>
 
-
-
-
     <div class="Datos_Equipo">
         <div class="Datos_Equipo__NombreRedyHora">
             <div><strong>Red/Equipo:</strong> <span id="ID">---</span></div>
             <div><strong>Hora:</strong><span id="Hora_h">--</span>:<span id="Hora_m">--</span></div>
         </div>
         <div class="Datos_Equipo__ContraseniaRedyVersion">
-            <div><strong>Contraseña:</strong> <span id="PASS">---</span></div>
             <div><strong>Versión:</strong> <span id="Version">--</span></div>
         </div>
 
@@ -170,6 +166,10 @@
         <div class="Potencia-Vege__Horarios">
             <div class="Potencia-Vege__Horarios--Encendido">
                 <strong>Encendido:</strong><span id="PWM_horarioih"> --</span>:<span id="PWM_horarioim"> --</span>
+
+            </div>
+            <div class="circletext">
+                <div class="circle" id="colorCirclePwm"></div>
             </div>
             <div class="Potencia-Vege__Horarios--Apagado">
                 <strong>Apagado:</strong><span id="PWM_horariofh"> --</span>:<span id="PWM_horariofm"> --</span>
@@ -179,11 +179,7 @@
             <strong>Amanecer / Atardecer:</strong><span id="PWM_DIA"> ---</span>
         </div>
         <div class="Potencia-Vege__ModoVEGE">
-            <div><strong>Etapa:</strong><span id="VEGEFLOR_modo">---</span></div>
-            <div class="circletext">
-                <strong><span id="state-text-pwm"></span></strong>
-                <div class="circle" id="colorCirclePwm"></div>
-            </div>
+            <div><strong>Etapa:</strong><strong><span id="VEGEFLOR_modo">---</span></strong></div>
 
         </div>
     </div>
@@ -195,7 +191,6 @@
                 <strong>Modo:</strong><span id="TRIAC_modo">---</span>
             </div>
             <div class="circletext">
-                <strong><span id="state-text-triac"></span></strong>
                 <div class="circle" id="colorCircleTriac"></div>
             </div>
         </div>
@@ -294,14 +289,15 @@
                     document.getElementById("PWM_horariofh").textContent = formatNumber(data.fh1h);
                     document.getElementById("PWM_horariofm").textContent = formatNumber(data.fh1m);
                     document.getElementById("PWM_DIA").textContent = data.DIA;
-                    document.getElementById("state-text-pwm").textContent = data.State;
-                    const pwmState = document.getElementById("state-text-pwm").textContent;
                     const circleDiv = document.getElementById("colorCirclePwm");
-                    if (pwmState == "OFF") {
+                    if (data.State == "OFF") {
                         circleDiv.style.backgroundColor = "red";
                     }
-                    else {
+                    else if (data.State == "ON") {
                         circleDiv.style.backgroundColor = "green";
+                    }
+                    else {
+                        circleDiv.style.backgroundColor = "orange";
                     }
 
                 })
@@ -313,27 +309,35 @@
                     console.log(data)
                     document.getElementById("TRIAC_modo").textContent = data.Modo;
                     if (data.cb1 == true) {
+                        document.getElementById('h1d').style.display = 'none'
                         document.getElementById('h1e').style.display = 'block'
                     }
                     else {
+                        document.getElementById('h1e').style.display = 'none'
                         document.getElementById('h1d').style.display = 'block'
                     }
                     if (data.cb2 == true) {
+                        document.getElementById('h2d').style.display = 'none'
                         document.getElementById('h2e').style.display = 'block'
                     }
                     else {
+                        document.getElementById('h2e').style.display = 'none'
                         document.getElementById('h2d').style.display = 'block'
                     }
                     if (data.cb3 == true) {
+                        document.getElementById('h3d').style.display = 'none'
                         document.getElementById('h3e').style.display = 'block'
                     }
                     else {
+                        document.getElementById('h3e').style.display = 'none'
                         document.getElementById('h3d').style.display = 'block'
                     }
                     if (data.cb4 == true) {
+                        document.getElementById('h4d').style.display = 'none'
                         document.getElementById('h4e').style.display = 'block'
                     }
                     else {
+                        document.getElementById('h4e').style.display = 'none'
                         document.getElementById('h4d').style.display = 'block'
                     }
                     document.getElementById("TRIAC_horarioi1_h").textContent = formatNumber(data.ih1h);
@@ -352,14 +356,15 @@
                     document.getElementById("TRIAC_horarioi4_m").textContent = formatNumber(data.ih4m);
                     document.getElementById("TRIAC_horariof4_h").textContent = formatNumber(data.fh4h);
                     document.getElementById("TRIAC_horariof4_m").textContent = formatNumber(data.fh4m);
-                    document.getElementById("state-text-triac").textContent = data.State;
-                    const triacState = document.getElementById("state-text-triac").textContent;
                     const circleDiv = document.getElementById("colorCircleTriac");
-                    if (triacState == "OFF") {
+                    if (data.State == "OFF") {
                         circleDiv.style.backgroundColor = "red";
                     }
-                    else {
+                    else if (data.State == "ON") {
                         circleDiv.style.backgroundColor = "green";
+                    }
+                    else {
+                        circleDiv.style.backgroundColor = "orange";
                     }
                 })
                 fetch("/data_red").then(res => {
@@ -369,7 +374,7 @@
                 }).then(data => {
                     console.log(data);
                     document.getElementById("ID").textContent = data.ID;
-                    document.getElementById("PASS").textContent = data.PASS;
+                    //document.getElementById("PASS").textContent = data.PASS;
 
                 })
                 fetch("/data_vegeflor").then(res => {
@@ -379,9 +384,16 @@
                 }).then(data => {
                     console.log(data)
                     document.getElementById("VEGEFLOR_modo").textContent = data.Modo;
+                    const modoveg = document.getElementById("VEGEFLOR_modo");
+                    if (modoveg.textContent == "Vegetativo") {
+                        modoveg.style.color = "green";
+                    }
+                    else {
+                        modoveg.style.color = "red";
+                    }
                 })
-                /*document.getElementById("state-text-triac").textContent = "ON"
-                const triacState = document.getElementById("state-text-triac").textContent;
+
+                /*const triacState = "ON";
                 const circleDiv = document.getElementById("colorCircleTriac");
                 if (triacState == "OFF") {
                     circleDiv.style.backgroundColor = "red";
@@ -389,15 +401,16 @@
                 else {
                     circleDiv.style.backgroundColor = "green";
                 }
-                document.getElementById("state-text-pwm").textContent = "ON"
-                const pwmState = document.getElementById("state-text-pwm").textContent;
+
+                const pwmState = "OFF";
                 const circleDiv2 = document.getElementById("colorCirclePwm");
                 if (pwmState == "OFF") {
-                    circleDiv2.style.backgroundColor = "red";
+                    circleDiv2.style.backgroundColor = "orange";
                 }
                 else {
                     circleDiv2.style.backgroundColor = "green";
                 }*/
+
             }, 2000)
 
             fetch("/version").then(res => {

@@ -582,8 +582,7 @@ esp_err_t pwm_post_handler(httpd_req_t *req)
         ESP_LOGI(TAG, "%s", buff);
         parse_pwm(buff);
         ESP_LOGI(TAG, "Salgo del PWM HANDLER");
-
-        //  aca irian las funciones de Gaston
+        httpd_resp_send(req, NULL, 0);
         return ESP_OK;
     }
 }
@@ -628,7 +627,7 @@ esp_err_t red_post_handler(httpd_req_t *req)
         print_red(&red);
         ESP_LOGI(TAG, "Salgo del RED HANDLER");
     }
-
+    httpd_resp_send(req, NULL, 0);
     return ESP_OK;
 }
 
@@ -668,9 +667,7 @@ esp_err_t triac_post_handler(httpd_req_t *req)
         }
         ESP_LOGI(TAG, "%s", buff);
         parse_triac(buff);
-        ESP_LOGI(TAG, "Salgo del TRIAC HANDLER");
-
-        //  aca irian las funciones de Gaston
+        httpd_resp_send(req, NULL, 0);
         return ESP_OK;
     }
 }
@@ -713,7 +710,7 @@ esp_err_t vegeflor_post_handler(httpd_req_t *req)
         parse_vegeflor(buff);
         ESP_LOGI(TAG, "Salgo del VEGEFLOR HANDLER");
 
-        //  aca irian las funciones de Gaston
+        httpd_resp_send(req, NULL, 0);
         return ESP_OK;
     }
 }
@@ -754,9 +751,7 @@ esp_err_t hora_post_handler(httpd_req_t *req)
         }
         ESP_LOGI(TAG, "%s", buff);
         parse_hora(buff, &aux_hora);
-        ESP_LOGI(TAG, "Salgo del HORA HANDLER");
-
-        //  aca irian las funciones de Gaston
+        httpd_resp_send(req, NULL, 0);
         return ESP_OK;
     }
 }

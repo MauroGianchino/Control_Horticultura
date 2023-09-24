@@ -151,6 +151,7 @@
         .RH-form__text {
             display: block;
             margin-bottom: 5px;
+            margin-top: 5px;
         }
 
         .RH-form__text input {
@@ -179,24 +180,6 @@
             height: 22px;
             margin-bottom: 5px;
             margin-top: 5px;
-        }
-
-        .Hora-form {
-            font-size: 15px;
-            background: rgb(153, 204, 179);
-            background: linear-gradient(150deg, rgba(153, 204, 179, 1) 35%, rgba(84, 149, 118, 1) 56%);
-            border-radius: 15px;
-            box-shadow: 2px 1.5px 0px 0px hsl(187, 4%, 38%);
-            max-height: 65px;
-        }
-
-        .Hora-form__title {
-            margin-bottom: 5px;
-            font-size: 17px;
-        }
-
-        .Hora-form input[type="time"] {
-            display: none;
         }
 
         .PWM-form {
@@ -426,25 +409,15 @@
         <div class="RH-form__title">
             <h2>Datos de red</h2>
         </div>
-        <div class="RH-form__data">
-            <div class="RH-form__data--ID">
-                <span id="nombreID"><strong>Nombre:</strong> </span><span id="ID"></span>
-            </div>
-            <div class="RH-form__data--PASS">
-                <span id="nombrePASS"><strong>Contraseña:</strong> </span><span id="PASS"></span>
-            </div>
 
-        </div>
-
-
-        <form action="/red" method="post">
+        <form action="/red" method="post" id="red_form">
             <div class="RH-form__text">
                 <label for="Nombre">Nuevo Nombre:</label>
-                <input type="text" id="nombre" name="nombre" placeholder="Nuevo Nombre de Red">
+                <input type="text" id="nombre" name="nombre">
             </div>
             <div class="RH-form__text">
                 <label for="Contraseña">Nueva Contraseña:</label>
-                <input type="text" id="Contrasenia" name="Contrasenia" placeholder="Nueva Contraseña">
+                <input type="text" id="Contrasenia" name="Contrasenia">
             </div>
 
             <div class="submit_box">
@@ -453,26 +426,14 @@
 
         </form>
     </div>
-    <div class="Hora-form">
-        <div class="Hora-form__title">
-            <h2>Hora del equipo</h2>
-        </div>
-        <form action="/hora" method="post">
-            <input type="time" id="hora" name="hora">
-            <div class="submit_box">
-                <input type="submit" value="Sincronizar" class="boton_hora">
-            </div>
-
-        </form>
-    </div>
 
     <div class="PWM-form">
-        <form action="/pwm" method="post">
+        <form action="/pwm" method="post" id="pwm_form">
 
             <div class="PWM-form__box1">
                 <div class="PWM-form__h2--range">
                     <label>Potencia</label>
-                    <input type="range" id="rango" name="rango" min="0" max="100" value="0"
+                    <input type="range" id="rango" name="rango" min="10" max="100" value="0"
                         onchange="updateRangoValue()">
                 </div>
                 <div class="PWM-form__Valor">
@@ -521,7 +482,7 @@
             <h2>Control 220V</h2>
         </div>
 
-        <form action="/triac" method="post">
+        <form action="/triac" method="post" id="triac_form">
             <div class="Triac-form__select">
                 <label>Modo:</label>
                 <select id="modos_triac" name="modos_triac" onchange="statusCheckboxs();toggleHorario('ih1', 'fh1', 'checkboxh1');
@@ -588,7 +549,7 @@
     <div class="vegeflor-form">
         <h2>Vegetativo/Floración</h2>
         <div class="vegeflor-form__form">
-            <form action="/vegeflor" method="post">
+            <form action="/vegeflor" method="post" id="vege_form">
 
                 <label>Modo:</label>
                 <select id="modo_vegeflor" name="modo_vegeflor">
@@ -708,7 +669,21 @@
                 document.getElementById("hora").value = formatNumber(data.Hora_h) + ":" + formatNumber(data.Hora_m);*/
                 const inputHora = document.getElementById("hora");
                 const now = new Date();
-                inputHora.value = now.getHours() + ":" + now.getMinutes();
+                const hora = now.getHours();
+                const minutos = now.getMinutes();
+                //inputHora.value = now.getHours() + ":" + now.getMinutes();
+                const horaFormateada = `${hora}%3A${minutos}`;
+                const response = await fetch("/hora", {
+                    method: "POST",
+                    headers: {
+                        "Content-Type": "application/x-www-form-urlencoded"
+                    },
+                    body: `hora=${horaFormateada}`
+                });
+
+                if (!response.ok) {
+                    throw new Error("Error al enviar la hora al servidor [fetch]");
+                }
             }
             catch (e) {
                 console.error("Error en adquirir los datos de la hora", e);
@@ -720,12 +695,12 @@
             try {
                 const result = await fetch("/data_red");
                 if (!result.ok) {
-                    throw new Error("Error en adquirir los datos de la hora [fetch]");
+                    throw new Error("Error en adquirir los datos de la red");
                 }
                 const data = await result.json();
                 console.log(data);
-                document.getElementById("ID").textContent = data.ID;
-                document.getElementById("PASS").textContent = data.PASS;
+                document.getElementById("nombre").value = data.ID;
+                document.getElementById("Contrasenia").value = data.PASS;
             }
             catch (e) {
                 console.error("Error en adquirir los datos de la red", e);
@@ -735,85 +710,12 @@
         }
 
         async function loadValues() {
+            await loadHora();
             await loadPWM();
             await loadTriac();
             await loadVegeflor();
-            await loadHora();
             await loadRed();
         }
-
-        /*function DeshabilitarRango() {
-            var opcionSeleccionada = document.getElementById("modos_pwm").value;
-            var rango = document.getElementById("rango");
-
-            if (opcionSeleccionada === "Automatico") {
-                rango.disabled = false; // Deshabilitar el control de rango
-            } else {
-                rango.disabled = true; // Habilitar el control de rango
-            }
-        }*/
-
-        /*function habilitarHorario() {
-            var selectElement = document.getElementById("modos_pwm");
-            var selectedValue = selectElement.value;
-            const horarioInput_i = document.getElementById("ih_pwm");
-            const horarioInput_f = document.getElementById("fh_pwm");
-
-            // Ejecutar una función específica para cada opción
-            if (selectedValue == "Automatico") {
-                console.log("entre al if del automatico para habilitar horario del pwm");
-                horarioInput_i.disabled = false;
-                horarioInput_f.disabled = false;
-            }
-            else {
-                console.log("entre al else del automatico para habilitar horario del pwm");
-                horarioInput_i.disabled = true;
-                horarioInput_f.disabled = true;
-
-            }
-        }*/
-
-        /*function statusCheckboxs() {
-            var selectElement = document.getElementById("modos_triac");
-            var selectedValue = selectElement.value;
-            const c1 = document.getElementById("checkboxh1");
-            const c2 = document.getElementById("checkboxh2");
-            const c3 = document.getElementById("checkboxh3");
-            const c4 = document.getElementById("checkboxh4");
-
-            // Ejecutar una función específica para cada opción
-            if (selectedValue == "Automatico") {
-                console.log("entre al if del automatico para habilitar los checkbox del triac");
-                c1.disabled = false;
-                c2.disabled = false;
-                c3.disabled = false;
-                c4.disabled = false;
-            }
-            else {
-                console.log("entre al else del automatico para habilitar los checkbox del triac");
-                c1.disabled = true;
-                c2.disabled = true;
-                c3.disabled = true;
-                c4.disabled = true;
-
-            }
-        }*/
-
-        /*function toggleHorario(InicioID, FinID, HorarioID) {
-            const horarioInput_i = document.getElementById(InicioID);
-            const horarioInput_f = document.getElementById(FinID);
-            const checkbox = document.getElementById(HorarioID);
-
-            if (checkbox.checked && document.getElementById("modos_triac").value == "Automatico") {
-                console.log("entre al if del automatico y checkbox checkeado para habilitar los horarios del triac")
-                horarioInput_i.disabled = false;
-                horarioInput_f.disabled = false;
-            } else {
-                console.log("entre al else del automatico y checkbox checkeado para habilitar los horarios del triac")
-                horarioInput_i.disabled = true;
-                horarioInput_f.disabled = true;
-            }
-        }*/
 
         function updateRangoValue() {
             const rangoInput = document.getElementById('rango');
@@ -822,28 +724,89 @@
             rangoValueSpan.textContent = rangoInput.value + '%';
         }
 
-        /*function config_pwm() {
-            console.log("Entre al ConfigPWM");
-            habilitarHorario();
-            DeshabilitarRango();
-            console.log("Salgo del ConfigPWM");
-        }
-
-        function config_triac() {
-            console.log("Entre al ConfigTRIAC");
-            statusCheckboxs();
-            console.log("Paso el statusCheckbox");
-            console.log("Entro a los toggle horarios");
-            toggleHorario('ih1', 'fh1', 'checkboxh1');
-            toggleHorario('ih2', 'fh2', 'checkboxh2');
-            toggleHorario('ih3', 'fh3', 'checkboxh3');
-            toggleHorario('ih4', 'fh4', 'checkboxh4');
-            console.log("Salgo del ConfigTRIAC");
-        }*/
-
         document.addEventListener("DOMContentLoaded", async function () {
             await loadValues();
-        });
+            const red_form = document.getElementById("red_form");
+            const pwm_form = document.getElementById("pwm_form");
+            const triac_form = document.getElementById("triac_form");
+            const vege_form = document.getElementById("vege_form");
+            red_form.addEventListener("submit", async function (event) {
+                event.preventDefault();
+                const red_string = document.getElementById("nombre").value;
+                const pass_string = document.getElementById("Contrasenia").value;
+                if (pass_string.length >= 8 && red_string != "") {
+                    console.log("Parametros aceptados")
+                    const mensaje = "Se actualizaron los datos de red correctamente";
+                    alert(mensaje);
+
+                    const myForm = event.target;
+                    const formData = new FormData(myForm);
+
+                    const response = await fetch("/red", {
+                        method: "POST",
+                        headers: {
+                            "Content-Type": "application/x-www-form-urlencoded"
+                        },
+                        body: new URLSearchParams(formData).toString(),
+                    });
+
+                }
+                else {
+                    console.log("Error en el ingreso de datos de red")
+                    const mensaje = "Error en el ingreso de datos de red";
+                    alert(mensaje);
+                }
+            });
+            pwm_form.addEventListener("submit", async function (event) {
+                event.preventDefault();
+                console.log("Parametros aceptados")
+                const mensaje = "Se actualizaron los datos del pwm correctamente";
+                alert(mensaje);
+                const myForm = event.target;
+                const formData = new FormData(myForm);
+
+                const response = await fetch("/pwm", {
+                    method: "POST",
+                    headers: {
+                        "Content-Type": "application/x-www-form-urlencoded"
+                    },
+                    body: new URLSearchParams(formData).toString(),
+                });
+            });
+            triac_form.addEventListener("submit", async function (event) {
+                event.preventDefault();
+                console.log("Parametros aceptados")
+                const mensaje = "Se actualizaron los datos del pwm correctamente";
+                alert(mensaje);
+                const myForm = event.target;
+                const formData = new FormData(myForm);
+
+                const response = await fetch("/triac", {
+                    method: "POST",
+                    headers: {
+                        "Content-Type": "application/x-www-form-urlencoded"
+                    },
+                    body: new URLSearchParams(formData).toString(),
+                });
+            });
+            vege_form.addEventListener("submit", async function (event) {
+                event.preventDefault();
+                console.log("Parametros aceptados")
+                const mensaje = "Se actualizaron los datos del pwm correctamente";
+                alert(mensaje);
+                const myForm = event.target;
+                const formData = new FormData(myForm);
+
+                const response = await fetch("/vegeflor", {
+                    method: "POST",
+                    headers: {
+                        "Content-Type": "application/x-www-form-urlencoded"
+                    },
+                    body: new URLSearchParams(formData).toString(),
+                });
+            });
+
+        })
 
     </script>
 </body>
