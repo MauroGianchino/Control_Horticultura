@@ -22,11 +22,13 @@
 
 //------------------- DECLARACION DE DATOS LOCALES -----------------------------
 //------------------------------------------------------------------------------
-
+static bool triac_mark_on[4];
 //------------------- DECLARACION DE FUNCIONES LOCALES -------------------------
 //------------------------------------------------------------------------------
 static void triac_auto_manager_handler_per_triac(triac_auto_info_t *info, uint8_t triac_index);
 static uint8_t is_date1_grater_than_date2(struct tm date1, struct tm date2);
+static void is_first_turn_on_time_greater_than_current_time(triac_auto_info_t *info);
+static int is_within_range(struct tm target, struct tm start, struct tm end);
 //------------------- DEFINICION DE DATOS LOCALES ------------------------------
 //------------------------------------------------------------------------------
 
@@ -48,7 +50,32 @@ static uint8_t is_date1_grater_than_date2(struct tm date1, struct tm date2)
     }
     return 0;
 }
-
+//------------------------------------------------------------------------------
+static int is_within_range(struct tm target, struct tm start, struct tm end)
+{
+    if (start.tm_hour < end.tm_hour || 
+       (start.tm_hour == end.tm_hour && start.tm_min <= end.tm_min)) {
+        // Caso normal (ejemplo: de 9:00 a 17:00)
+        if ((target.tm_hour > start.tm_hour || 
+            (target.tm_hour == start.tm_hour && target.tm_min >= start.tm_min)) &&
+            (target.tm_hour < end.tm_hour || 
+            (target.tm_hour == end.tm_hour && target.tm_min <= end.tm_min))) {
+            return 1;
+        } else {
+            return 0;
+        }
+    } else {
+        // Rango cruza la medianoche (ejemplo: de 22:00 a 2:00)
+        if ((target.tm_hour > start.tm_hour || 
+            (target.tm_hour == start.tm_hour && target.tm_min >= start.tm_min)) ||
+            (target.tm_hour < end.tm_hour || 
+            (target.tm_hour == end.tm_hour && target.tm_min <= end.tm_min))) {
+            return 1;
+        } else {
+            return 0;
+        }
+    }
+}
 //------------------------------------------------------------------------------
 static void triac_auto_manager_handler_per_triac(triac_auto_info_t *info, uint8_t triac_index)
 {
@@ -58,33 +85,42 @@ static void triac_auto_manager_handler_per_triac(triac_auto_info_t *info, uint8_
         {
             if((is_date1_grater_than_date2(info->current_time, info->triac_auto[triac_index].turn_on_time) == 1) \
                 && (is_date1_grater_than_date2(info->triac_auto[triac_index].turn_off_time, info->current_time) == 1) \
-                && (is_date1_grater_than_date2(info->triac_auto[triac_index].turn_off_time, info->triac_auto[triac_index].turn_on_time) == 1))
+                && (is_date1_grater_than_date2(info->triac_auto[triac_index].turn_off_time, info->triac_auto[triac_index].turn_on_time) == 1) && (triac_mark_on[triac_index] == false))
             {
                 triac_manager_turn_on_triac();
                 info->output_status = TRIAC_OUTPUT_ON;
+                triac_mark_on[triac_index] = true;
+                printf("MARCA 1, TRIAC INDEX: %d \n", triac_index);
             }
             else if((is_date1_grater_than_date2(info->triac_auto[triac_index].turn_off_time, info->current_time) == 1) \
                 && (is_date1_grater_than_date2(info->triac_auto[triac_index].turn_on_time, info->current_time) == 1) \
-                && (is_date1_grater_than_date2(info->triac_auto[triac_index].turn_on_time, info->triac_auto[triac_index].turn_off_time) == 1))
+                && (is_date1_grater_than_date2(info->triac_auto[triac_index].turn_on_time, info->triac_auto[triac_index].turn_off_time) == 1) && (triac_mark_on[triac_index] == false))
             {
                 triac_manager_turn_on_triac();
                 info->output_status = TRIAC_OUTPUT_ON;
+                triac_mark_on[triac_index] = true;
+                printf("MARCA 2, TRIAC INDEX: %d \n", triac_index);
             }
         }
         else if(info->output_status == TRIAC_OUTPUT_ON)
         {
             if((is_date1_grater_than_date2(info->current_time, info->triac_auto[triac_index].turn_off_time) == 1) \
-                && (is_date1_grater_than_date2(info->triac_auto[triac_index].turn_off_time, info->triac_auto[triac_index].turn_on_time) == 1))
+                && (is_date1_grater_than_date2(info->triac_auto[triac_index].turn_off_time, info->triac_auto[triac_index].turn_on_time) == 1) && (triac_mark_on[triac_index] == true))
             {
                 triac_manager_turn_off_triac();
                 info->output_status = TRIAC_OUTPUT_OFF;
+                printf("MARCA 3, TRIAC INDEX: %d \n", triac_index);
+                triac_mark_on[triac_index] = false;
+
             }
             else if((is_date1_grater_than_date2(info->current_time, info->triac_auto[triac_index].turn_off_time) == 1) \
                 && (is_date1_grater_than_date2(info->triac_auto[triac_index].turn_on_time, info->current_time) == 1) \
-                && (is_date1_grater_than_date2(info->triac_auto[triac_index].turn_on_time, info->triac_auto[triac_index].turn_off_time) == 1))
+                && (is_date1_grater_than_date2(info->triac_auto[triac_index].turn_on_time, info->triac_auto[triac_index].turn_off_time) == 1) && (triac_mark_on[triac_index] == true))
             {
                 triac_manager_turn_off_triac();
                 info->output_status = TRIAC_OUTPUT_OFF;
+                triac_mark_on[triac_index] = false;
+                printf("MARCA 4, TRIAC INDEX: %d \n", triac_index);
             }
         }
     }
@@ -93,7 +129,77 @@ static void triac_auto_manager_handler_per_triac(triac_auto_info_t *info, uint8_
         return;
     }
 }
+//------------------------------------------------------------------------------
+static void is_first_turn_on_time_greater_than_current_time(triac_auto_info_t *info)
+{
+    uint8_t triac_index = 0;
+    uint8_t index_youngest = 0;
+    struct tm ton_youngest;
+
+    for(triac_index = 0; triac_index < MAX_TRIAC_CALENDARS; triac_index++)
+    {
+        if(info->triac_auto[triac_index].enable == true)
+        {
+            ton_youngest = info->triac_auto[triac_index].turn_on_time;
+            index_youngest = triac_index;
+            break;
+        }
+    }
+
+    for(triac_index = 0; triac_index < MAX_TRIAC_CALENDARS; triac_index++)
+    {
+        if(info->triac_auto[triac_index].enable == true)
+        {
+            if(is_date1_grater_than_date2(ton_youngest, info->triac_auto[triac_index].turn_on_time))
+            {
+                ton_youngest = info->triac_auto[triac_index].turn_on_time;
+                index_youngest = triac_index;
+            }
+        }
+    }
+    if(info->output_status == TRIAC_OUTPUT_ON)
+    {
+        if((is_date1_grater_than_date2(ton_youngest, info->current_time) == 1) \
+        && (is_date1_grater_than_date2(info->triac_auto[index_youngest].turn_off_time, info->triac_auto[index_youngest].turn_on_time) == 1))
+        {
+           //printf("ton_youngest: %s \n", asctime(&ton_youngest));
+            //printf("Hora actual: %s \n", asctime(&info->current_time));
+            info->output_status = TRIAC_OUTPUT_OFF;
+            triac_manager_turn_off_triac();
+        }
+    }
+}
 //------------------- DEFINICION DE FUNCIONES EXTERNAS -------------------------
+//------------------------------------------------------------------------------
+void triac_auto_manager_init(void)
+{
+    uint8_t triac_index = 0;
+    for(triac_index = 0; triac_index < MAX_TRIAC_CALENDARS; triac_index++)
+    {
+        triac_mark_on[triac_index] = false;
+    }
+}
+void triac_auto_manager_update(triac_auto_info_t *info)
+{
+    uint8_t triac_index = 0;
+
+    for(triac_index = 0; triac_index < MAX_TRIAC_CALENDARS; triac_index++)
+    {
+        triac_mark_on[triac_index] = false;
+    }
+
+    for(triac_index = 0; triac_index < MAX_TRIAC_CALENDARS; triac_index++)
+    {
+        if(is_within_range(info->current_time, info->triac_auto[triac_index].turn_on_time, info->triac_auto[triac_index].turn_off_time))
+        {
+            if(info->output_status == TRIAC_OUTPUT_ON)
+            {
+                triac_mark_on[triac_index] = true;
+            } 
+        }
+        
+    }
+}
 //------------------------------------------------------------------------------
 void triac_auto_manager_handler(triac_auto_info_t *info, bool triac_auto_enable)
 {
@@ -101,6 +207,8 @@ void triac_auto_manager_handler(triac_auto_info_t *info, bool triac_auto_enable)
 
     if(triac_auto_enable == true)
     {
+        is_first_turn_on_time_greater_than_current_time(info);
+
         for(triac_index = 0; triac_index < MAX_TRIAC_CALENDARS; triac_index++)
         {
             triac_auto_manager_handler_per_triac(info, triac_index);

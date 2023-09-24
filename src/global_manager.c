@@ -518,6 +518,8 @@ static void global_manager_task(void *arg)
     bool triac_auto_status = false;
     response_event_t resp_ev;
 
+    triac_auto_manager_init();
+
     global_info.pwm_manual_percent_power = 10;
     global_info.triac_auto.output_status = TRIAC_OUTPUT_OFF;
     global_info.pwm_auto.output_status = PWM_OUTPUT_OFF;
@@ -680,8 +682,10 @@ static void global_manager_task(void *arg)
                     nv_save_triac_mode(AUTOMATIC);
                 }
                 global_info.triac_mode = AUTOMATIC;
-                global_info.triac_auto.output_status = TRIAC_OUTPUT_OFF;
-                triac_manager_turn_off_triac();
+                triac_auto_manager_update(&global_info.triac_auto);
+
+                //global_info.triac_auto.output_status = TRIAC_OUTPUT_OFF;
+                //triac_manager_turn_off_triac();
                 break;
             case RELE_VEGE_ON:
                 if ((global_info.rele_vege_status != RELE_VEGE_ENABLE) && (global_ev.value_read_from_flash == false))
@@ -865,7 +869,7 @@ void global_manager_set_pwm_power_value_manual(uint8_t power_percentage_value)
     {
         power_percentage_value = 100;
     }
-    else if((power_percentage_value >= 0) && (power_percentage_value < 10))
+    else if(power_percentage_value < 10)
     {
         power_percentage_value = 0;
     } 
@@ -881,7 +885,7 @@ void global_manager_set_pwm_power_value_auto(uint8_t power_percentage_value, boo
     {
         power_percentage_value = 100;
     }
-    else if((power_percentage_value >= 0) && (power_percentage_value < 10))
+    else if(power_percentage_value < 10)
     {
         power_percentage_value = 0;
     }

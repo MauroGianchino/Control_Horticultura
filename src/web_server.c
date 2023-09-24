@@ -98,6 +98,8 @@ void analyze_token_pwm(char *token)
 {
     int dh, dm; // unidades y decenas de horas y minutos
     uint8_t inten;
+    output_mode_t triac_mode; 
+    triac_auto_info_t triac_auto;
     switch (token[0])
     {
     case 'r': // Parseo intensidad
@@ -134,10 +136,21 @@ void analyze_token_pwm(char *token)
         else if (token[10] == 'M')
         {
             global_manager_set_pwm_mode_manual_on();
-            global_manager_set_triac_mode_off(false);
+            if(global_manager_get_triac_info(&triac_mode, &triac_auto))
+            {
+                if(triac_auto.output_status == TRIAC_OUTPUT_ON)
+                {
+                    global_manager_set_triac_mode_manual_on(false);
+                }
+                else if(triac_auto.output_status == TRIAC_OUTPUT_OFF)
+                {
+                    global_manager_set_triac_mode_off(false);
+                }
+            }
         }
         else if (token[10] == 'O')
         {
+            global_manager_set_pwm_mode_manual_on();
             // global_manager_set_pwm_mode_off();
         }
         else

@@ -34,6 +34,7 @@ typedef struct{
 //------------------- DECLARACION DE FUNCIONES EXTERNAS ------------------------
 //------------------------------------------------------------------------------
 void triac_auto_manager_handler(triac_auto_info_t *info, bool triac_auto_enable);
-uint8_t check_turn_off_triac(triac_auto_info_t *info);
+void triac_auto_manager_init(void);
+void triac_auto_manager_update(triac_auto_info_t *info);
 //------------------- FIN DEL ARCHIVO ------------------------------------------
 #endif /* TRIAC_AUTO_MANAGER_H__ */

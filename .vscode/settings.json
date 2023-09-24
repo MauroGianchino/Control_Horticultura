@@ -26,7 +26,8 @@
         "utility": "c",
         "nv_flash_manager.h": "c",
         "nv_flash_driver.h": "c",
-        "wifi_ap.h": "c"
+        "wifi_ap.h": "c",
+        "triac_manager.h": "c"
     },
     "C_Cpp.errorSquiggles": "disabled"
 }
