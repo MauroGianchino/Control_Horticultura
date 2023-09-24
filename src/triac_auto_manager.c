@@ -29,6 +29,7 @@ static void triac_auto_manager_handler_per_triac(triac_auto_info_t *info, uint8_
 static uint8_t is_date1_grater_than_date2(struct tm date1, struct tm date2);
 static void is_first_turn_on_time_greater_than_current_time(triac_auto_info_t *info);
 static int is_within_range(struct tm target, struct tm start, struct tm end);
+static void must_be_triac_output_off(triac_auto_info_t *info);
 //------------------- DEFINICION DE DATOS LOCALES ------------------------------
 //------------------------------------------------------------------------------
 
@@ -169,6 +170,34 @@ static void is_first_turn_on_time_greater_than_current_time(triac_auto_info_t *i
         }
     }
 }
+//------------------------------------------------------------------------------
+static void must_be_triac_output_off(triac_auto_info_t *info)
+{
+    uint8_t triac_index = 0;
+    char out_of_range_mark[MAX_TRIAC_CALENDARS];
+
+    if(info->output_status == TRIAC_OUTPUT_ON)
+    {
+        for(triac_index = 0; triac_index < MAX_TRIAC_CALENDARS; triac_index++)
+        {
+            // chequeo si current time no se encuentra dentro de ningun rango
+            if(is_within_range(info->current_time, info->triac_auto[triac_index].turn_on_time, info->triac_auto[triac_index].turn_off_time) == 0)
+            {
+                out_of_range_mark[triac_index] = 1;
+            }
+        }
+        if((out_of_range_mark[0] == 1) && (out_of_range_mark[1] == 1) && (out_of_range_mark[2] == 1) && (out_of_range_mark[3] == 1))
+        {
+            info->output_status = TRIAC_OUTPUT_OFF;
+            triac_manager_turn_off_triac();
+
+            for(triac_index = 0; triac_index < MAX_TRIAC_CALENDARS; triac_index++)
+            {
+                triac_mark_on[triac_index] = false;
+            }
+        }
+    }
+}
 //------------------- DEFINICION DE FUNCIONES EXTERNAS -------------------------
 //------------------------------------------------------------------------------
 void triac_auto_manager_init(void)
@@ -207,7 +236,8 @@ void triac_auto_manager_handler(triac_auto_info_t *info, bool triac_auto_enable)
 
     if(triac_auto_enable == true)
     {
-        is_first_turn_on_time_greater_than_current_time(info);
+        must_be_triac_output_off(info);
+
 
         for(triac_index = 0; triac_index < MAX_TRIAC_CALENDARS; triac_index++)
         {
