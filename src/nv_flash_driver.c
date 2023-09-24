@@ -9,6 +9,7 @@
 #include "freertos/queue.h"
 #include "nvs_flash.h"
 #include "nvs.h"
+#include "esp_system.h"
 
 #include "../include/nv_flash_driver.h"
 #include "../include/board_def.h"
@@ -91,7 +92,8 @@ static void dataflash_manager_task(void* arg)
                     break;
                 case ERASE_FLASH:
                     nvs_flash_erase();
-                    nvs_flash_init();
+                    vTaskDelay(1000 / portTICK_PERIOD_MS);
+                    esp_restart();
                     break;
                 case INIT_FLASH:
                     ret = nvs_flash_init();

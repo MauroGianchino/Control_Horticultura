@@ -15,6 +15,7 @@
 #include "../include/button_manager.h"
 #include "../include/board_def.h"
 #include "../include/global_manager.h"
+#include "../include/nv_flash_driver.h"
 //--------------------MACROS Y DEFINES------------------------------------------
 //------------------------------------------------------------------------------
 #define QUEUE_ELEMENT_QUANTITY 20
@@ -31,6 +32,7 @@ typedef enum{
     DEVICE_MODE_BUTTON_PUSHED,
     TRIAC_BUTTON_PUSHED,
     VEGE_BUTTON_PUSHED,
+    FABRIC_RESET,
 }cmds_t;
 
 typedef struct{
@@ -110,6 +112,12 @@ static void IRAM_ATTR device_mode_button_interrupt(void *arg)
             if (diff > 30000)  // 30ms seconds expressed in microseconds
             {
                 ev.cmd = DEVICE_MODE_BUTTON_PUSHED;
+                start_time = 0;
+                xQueueSendFromISR(button_manager_queue, &ev, pdFALSE);
+            }
+            if (diff > 7000000)  // 7 seconds expressed in microseconds
+            {
+                ev.cmd = FABRIC_RESET;
                 start_time = 0;
                 xQueueSendFromISR(button_manager_queue, &ev, pdFALSE);
             }
@@ -235,6 +243,9 @@ void button_event_manager_task(void * pvParameters)
                         global_manager_set_rele_vege_status_on(false);
                         rele_vege_status = RELE_VEGE_DISABLE;
                     }
+                    break;
+                case FABRIC_RESET:
+                    nv_flash_driver_erase_flash();
                     break;
                 default:
                 break;

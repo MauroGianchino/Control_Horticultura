@@ -46,9 +46,10 @@ static void first_time_flash(void)
     init_parameter_in_flash_str(WIFI_AP_PASSWORD_KEY, WIFI_AP_PASSWORD_DEFAULT);
     init_date_parameter_in_flash(CURRENT_TIME_KEY, time_info_default);
     init_date_parameter_in_flash(CURRENT_TIME_KEY, time_info_default);// work around
-
-    init_date_parameter_in_flash(PWM_DATE_OFF_KEY, time_info_default);// work around
+    
     init_date_parameter_in_flash(PWM_DATE_ON_KEY, time_info_default);
+    time_info_default.tm_hour++;
+    init_date_parameter_in_flash(PWM_DATE_OFF_KEY, time_info_default);// work around
     init_date_parameter_in_flash(TRIAC1_DATE_ON_KEY, time_info_default);
     time_info_default.tm_hour++;
     init_date_parameter_in_flash(PWM_DATE_OFF_KEY, time_info_default);
