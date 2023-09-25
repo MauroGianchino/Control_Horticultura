@@ -16,6 +16,8 @@
 #include "../include/board_def.h"
 #include "../include/global_manager.h"
 #include "../include/nv_flash_driver.h"
+#include "../include/analog_input_manager.h"
+
 //--------------------MACROS Y DEFINES------------------------------------------
 //------------------------------------------------------------------------------
 #define QUEUE_ELEMENT_QUANTITY 20
@@ -209,9 +211,12 @@ void button_event_manager_task(void * pvParameters)
                         triac_status = MANUAL_ON;       
                         global_manager_set_pwm_mode_manual_on();
                         device_mode = DEVICE_IN_AUTOMATIC;
+                        analog_input_send_pwm_mode(MANUAL_ON);
+                        
                     }
                     else if(device_mode == DEVICE_IN_AUTOMATIC)
                     {
+                        analog_input_send_pwm_mode(AUTOMATIC);
                         global_manager_set_pwm_mode_auto();
                         global_manager_set_triac_mode_auto(false);
                         device_mode = DEVICE_IN_MANUAL;

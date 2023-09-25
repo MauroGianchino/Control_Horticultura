@@ -611,13 +611,16 @@ static void global_manager_task(void *arg)
                 case MANUAL_ON:
                     led_manager_set_device_mode_manual();
                     pwm_manager_turn_on_pwm(global_info.pwm_manual_percent_power);
+                    analog_input_send_pwm_mode(MANUAL_ON);
                     break;
                 case MANUAL_OFF:
                     led_manager_set_device_mode_manual();
                     pwm_manager_turn_off_pwm();
+                    analog_input_send_pwm_mode(MANUAL_ON);
                     break;
                 case AUTOMATIC:
                     led_manager_set_device_mode_auto();
+                    analog_input_send_pwm_mode(AUTOMATIC);
                     break;
                 default:
                     break;
