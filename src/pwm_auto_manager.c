@@ -107,6 +107,7 @@ static bool is_fading_off_started = false;
 void pwm_auto_manager_handler(pwm_auto_info_t *info, bool pwm_auto_enable)
 {
     struct tm toff_aux;
+    static uint8_t pwm_percentage_ant = 10;
     if(pwm_auto_enable == true)
     {
         if(info->output_status == PWM_OUTPUT_OFF)
@@ -174,6 +175,15 @@ void pwm_auto_manager_handler(pwm_auto_info_t *info, bool pwm_auto_enable)
                 {
                     toff_aux = info->turn_off_time;
                     subtract_15_minutes(&toff_aux); 
+
+                    if((pwm_percentage_ant != info->percent_power) && (!is_fading_in_progress()))
+                    {
+                        #ifdef DEBUG_MODULE
+                            printf("PWM_AUTO_POWER UPDATED \n");
+                        #endif
+                        pwm_manager_turn_on_pwm(info->percent_power);
+                        led_manager_send_pwm_info(info->percent_power, 0, false);
+                    }
 
                     if((is_date1_grater_than_date2(info->current_time, toff_aux) == 1) \
                     && (is_date1_grater_than_date2(info->turn_off_time, info->turn_on_time) == 1))
@@ -261,6 +271,16 @@ void pwm_auto_manager_handler(pwm_auto_info_t *info, bool pwm_auto_enable)
             }
             else
             {
+                if((pwm_percentage_ant != info->percent_power) && (!is_fading_in_progress()))
+                {
+                    #ifdef DEBUG_MODULE
+                        printf("PWM_AUTO_POWER UPDATED \n");
+                    #endif
+                    pwm_manager_turn_on_pwm(info->percent_power);
+                    led_manager_send_pwm_info(info->percent_power, 0, false);
+                }
+
+
                 if((is_date1_grater_than_date2(info->current_time, info->turn_off_time) == 1) \
                 && (is_date1_grater_than_date2(info->turn_off_time, info->turn_on_time) == 1))
                 {
@@ -292,6 +312,7 @@ void pwm_auto_manager_handler(pwm_auto_info_t *info, bool pwm_auto_enable)
                 }
             }
         }
+        pwm_percentage_ant = info->percent_power;
     }
 }
 

@@ -4,6 +4,7 @@
 
 #include "freertos/FreeRTOS.h"
 #include "freertos/task.h"
+#include "freertos/semphr.h"
 #include "sdkconfig.h"
 #include "freertos/queue.h"
 #include "../include/pwm_manager.h"
@@ -46,14 +47,14 @@ typedef struct{
 }pwm_event_t;
 
 typedef enum{
-    DUTY_CYCLE_FADING_ON = 0,
-    DUTY_CYCLE_FADING_OFF = 1,
-}fading_type_t;
-
-typedef enum{
     FADING_IN_PROGRESS = 1,
     FADING_STOP = 2,
 }fadng_status_t;
+
+typedef enum{
+    DUTY_CYCLE_FADING_ON = 0,
+    DUTY_CYCLE_FADING_OFF = 1,
+}fading_type_t;
 
 typedef struct{
     fading_type_t fading_type;
@@ -67,6 +68,8 @@ typedef struct{
 //------------------- DECLARACION DE DATOS LOCALES -----------------------------
 //------------------------------------------------------------------------------
 static QueueHandle_t pwm_manager_queue;
+
+static fadng_status_t fading_status;
 //------------------- DECLARACION DE FUNCIONES LOCALES -------------------------
 //------------------------------------------------------------------------------
 static void pwm_manager_task(void* arg);
@@ -80,6 +83,7 @@ static void init_fading_on(uint8_t duty_cycle, manual_fading_info_t *manual_fadi
 static void init_fading_off(manual_fading_info_t *manual_fading_info);
 static void update_fading(manual_fading_info_t *manual_fading_info);
 static void stop_fading(manual_fading_info_t *manual_fading_info);
+void set_fading_status(fadng_status_t fading_status_aux);
 //------------------- DEFINICION DE DATOS LOCALES ------------------------------
 //------------------------------------------------------------------------------
 
@@ -88,6 +92,21 @@ static void stop_fading(manual_fading_info_t *manual_fading_info);
 
 //------------------- DEFINICION DE FUNCIONES LOCALES --------------------------
 //------------------------------------------------------------------------------
+
+uint8_t is_fading_in_progress(void)
+{
+    if(fading_status == FADING_IN_PROGRESS)
+    {
+        return 1;
+    }
+    return 0;
+}
+
+void set_fading_status(fadng_status_t fading_status_aux)
+{
+    fading_status = fading_status_aux;
+}
+
 static void init_fading_on(uint8_t duty_cycle, manual_fading_info_t *manual_fading_info)
 {
     if(manual_fading_info->duty_cycle < 30)
@@ -263,6 +282,7 @@ static void pwm_manager_task(void* arg)
     pwm_event_t pwm_ev;
     manual_fading_info_t manual_fading_info;
     manual_fading_info.duty_cycle = 50;
+    manual_fading_info.fading_status = FADING_STOP;
     
     config_pwm_output();
 
@@ -276,10 +296,12 @@ static void pwm_manager_task(void* arg)
                     break;
                 case TURN_ON_PWM:
                     stop_fading(&manual_fading_info);
+                    set_fading_status(FADING_STOP);
                     turn_on_pwm(pwm_ev.duty_cycle);
                     break; 
                 case TURN_OFF_PWM:
                     stop_fading(&manual_fading_info);
+                    set_fading_status(FADING_STOP);
                     turn_off_pwm();
                     break;
                 case UPDATE_DUTY_CYCLE:
@@ -298,6 +320,7 @@ static void pwm_manager_task(void* arg)
         else
         {
             update_fading(&manual_fading_info);
+            set_fading_status(manual_fading_info.fading_status);
         }
     }
 }

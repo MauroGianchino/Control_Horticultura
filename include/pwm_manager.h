@@ -27,5 +27,6 @@ void pwm_manager_turn_on_pwm_simul_day_on(uint8_t pwm_power_percent);
 /// @brief Turn off pwm signal to duty cycle 0 in 15 min with fading.
 /// @param  
 void pwm_manager_turn_off_pwm_simul_day_on(void);
+uint8_t is_fading_in_progress(void);
 //------------------- FIN DEL ARCHIVO ------------------------------------------
 #endif /* LED_MANAGER_H__ */

@@ -721,11 +721,14 @@ static void global_manager_task(void *arg)
                 global_info.pwm_manual_percent_power = global_ev.value;
                 break;
             case SET_AUTO_PWM_POWER:
-                if ((global_info.pwm_auto.percent_power != global_ev.value) && (global_ev.value_read_from_flash == false))
+                if(!is_fading_in_progress())
                 {
-                    nv_save_auto_percent_power(global_ev.value);
+                    if ((global_info.pwm_auto.percent_power != global_ev.value) && (global_ev.value_read_from_flash == false))
+                    {
+                        nv_save_auto_percent_power(global_ev.value);
+                    }
+                    global_info.pwm_auto.percent_power = global_ev.value;
                 }
-                global_info.pwm_auto.percent_power = global_ev.value;
                 break;
             case UPDATE_SIMUL_DAY_FUNCTION_STATUS:
                 if ((global_info.pwm_auto.simul_day_status != global_ev.simul_day_function_status) && (global_ev.value_read_from_flash == false))
