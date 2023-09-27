@@ -21,6 +21,8 @@
 #include "../include/current_time_manager.h"
 #include "../include/global_manager.h"
 #include <time.h>
+#include "esp_timer.h"
+
 
 static const char *TAG = "WEBSERVER";
 static const char *PWM = "PWM";
@@ -29,6 +31,8 @@ static const char *VEGEFLOR = "VEGEFLOR";
 static const char *VERSIONN = "VERSION";
 static const char *HORA = "HORA";
 
+static esp_timer_handle_t timer_reset_esp32;
+static void timer_reset_esp32_callback(void* arg);
 //---------------RED-------------------
 
 red_t red; // variable para leer el ssid y pass de la red
@@ -420,9 +424,11 @@ void parse_red(char *buff, red_t *red)
     status = global_manager_set_wifi_password(red->PASS, pdFALSE);
     // strncpy(red->ID, buff + equalIndex + 1, index - equalIndex - 1);
     // strncpy(red->PASS, buff + secondEqualIndex + 1, len - secondEqualIndex - 1);
-
+    esp_timer_start_once(timer_reset_esp32, 2000000);
     ESP_LOGI(TAG, "Salgo del parseo de RED");
 };
+
+
 
 void parse_hora(char *buff, struct tm *aux)
 {
@@ -1032,6 +1038,11 @@ esp_err_t hora_data_handler(httpd_req_t *req)
 
 //---------FUNCIONES DEL WEBSERVER-------------//
 
+static void timer_reset_esp32_callback(void* arg)
+{
+    esp_restart();
+}
+
 httpd_handle_t start_webserver(void)
 {
     httpd_handle_t server = NULL;
@@ -1063,6 +1074,14 @@ httpd_handle_t start_webserver(void)
         httpd_register_uri_handler(server, &hora_post);
         httpd_register_uri_handler(server, &image);
         init_red(&red);
+
+        esp_timer_create_args_t timer_reset_esp32_args = {
+            .callback = timer_reset_esp32_callback,
+            .arg = NULL,
+            .name = "timer_reset_esp32"
+        };
+        esp_timer_create(&timer_reset_esp32_args, &timer_reset_esp32);
+
         return server;
     }
     else if (ret == ESP_ERR_HTTPD_ALLOC_MEM)
