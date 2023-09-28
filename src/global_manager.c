@@ -731,11 +731,14 @@ static void global_manager_task(void *arg)
                 }
                 break;
             case UPDATE_SIMUL_DAY_FUNCTION_STATUS:
-                if ((global_info.pwm_auto.simul_day_status != global_ev.simul_day_function_status) && (global_ev.value_read_from_flash == false))
+                if(!is_fading_in_progress())
                 {
-                    nv_save_simul_day_status(global_ev.simul_day_function_status);
+                    if ((global_info.pwm_auto.simul_day_status != global_ev.simul_day_function_status) && (global_ev.value_read_from_flash == false))
+                    {
+                        nv_save_simul_day_status(global_ev.simul_day_function_status);
+                    }
+                    global_info.pwm_auto.simul_day_status = global_ev.simul_day_function_status;
                 }
-                global_info.pwm_auto.simul_day_status = global_ev.simul_day_function_status;
                 break;
             case UPDATE_PWM_CALENDAR:
                 //if (((check_30_min_difference_between_hours(global_ev.pwm_turn_off_time, global_ev.pwm_turn_on_time)) && (global_info.pwm_auto.simul_day_status == SIMUL_DAY_ON)) || (global_info.pwm_auto.simul_day_status == SIMUL_DAY_OFF))
