@@ -104,6 +104,12 @@ static uint8_t is_pwm_in_fading_off_state(struct tm current_time, struct tm turn
 //------------------- DEFINICION DE FUNCIONES EXTERNAS -------------------------
 //------------------------------------------------------------------------------
 static bool is_fading_off_started = false;
+
+void turn_off_fading_status(void)
+{
+    is_fading_off_started = false;
+}
+
 void pwm_auto_manager_handler(pwm_auto_info_t *info, bool pwm_auto_enable)
 {
     struct tm toff_aux;
@@ -112,6 +118,11 @@ void pwm_auto_manager_handler(pwm_auto_info_t *info, bool pwm_auto_enable)
     {
         if(info->output_status == PWM_OUTPUT_OFF)
         {
+            if(info->update_output_percent_power == true)
+            {
+                info->update_output_percent_power = false;
+            }
+
             if((is_date1_grater_than_date2(info->current_time, info->turn_on_time) == 1) \
                 && (is_date1_grater_than_date2(info->turn_off_time, info->current_time) == 1) \
                 && (is_date1_grater_than_date2(info->turn_off_time, info->turn_on_time) == 1))
@@ -183,6 +194,16 @@ void pwm_auto_manager_handler(pwm_auto_info_t *info, bool pwm_auto_enable)
                         #endif
                         pwm_manager_turn_on_pwm(info->percent_power);
                         led_manager_send_pwm_info(info->percent_power, 0, false);
+                    }
+
+                    if((info->update_output_percent_power == true) && (!is_fading_in_progress()))
+                    {
+                        info->update_output_percent_power = false;
+                        #ifdef DEBUG_MODULE
+                            printf("PWM_AUTO_POWER UPDATED \n");
+                        #endif
+                        pwm_manager_turn_on_pwm_simul_day_on(info->percent_power);
+                        led_manager_send_pwm_info(info->percent_power, 1, true);
                     }
 
                     if((is_date1_grater_than_date2(info->current_time, toff_aux) == 1) \
@@ -273,6 +294,16 @@ void pwm_auto_manager_handler(pwm_auto_info_t *info, bool pwm_auto_enable)
             {
                 if((pwm_percentage_ant != info->percent_power) && (!is_fading_in_progress()))
                 {
+                    #ifdef DEBUG_MODULE
+                        printf("PWM_AUTO_POWER UPDATED \n");
+                    #endif
+                    pwm_manager_turn_on_pwm(info->percent_power);
+                    led_manager_send_pwm_info(info->percent_power, 0, false);
+                }
+
+                if((info->update_output_percent_power == true) && (!is_fading_in_progress()))
+                {
+                    info->update_output_percent_power = false;
                     #ifdef DEBUG_MODULE
                         printf("PWM_AUTO_POWER UPDATED \n");
                     #endif

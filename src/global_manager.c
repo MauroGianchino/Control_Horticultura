@@ -634,6 +634,7 @@ static void global_manager_task(void *arg)
                 global_info.pwm_mode = MANUAL_ON;
                 global_info.pwm_auto.output_status = PWM_OUTPUT_ON;
                 led_manager_set_device_mode_manual();
+                turn_off_fading_status();
                 
                 pwm_manager_turn_on_pwm(global_info.pwm_manual_percent_power);
                 analog_input_send_pwm_mode(MANUAL_ON);
@@ -660,6 +661,7 @@ static void global_manager_task(void *arg)
                 //pwm_manager_turn_off_pwm();
                 //global_info.pwm_auto.output_status = PWM_OUTPUT_OFF;
                 analog_input_send_pwm_mode(AUTOMATIC);
+                global_info.pwm_auto.update_output_percent_power = true;
                 break;
             case TRIAC_MANUAL_ON:
                 if ((global_info.triac_mode != MANUAL_ON) && (global_ev.value_read_from_flash == false))

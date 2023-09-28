@@ -22,6 +22,7 @@ typedef enum{
 typedef struct{
     struct tm current_time;
     pwm_output_status_t output_status;
+    bool update_output_percent_power;
     struct tm turn_on_time;
     struct tm turn_off_time;
     simul_day_status_t simul_day_status;
@@ -33,5 +34,6 @@ typedef struct{
 //------------------- DECLARACION DE FUNCIONES EXTERNAS ------------------------
 //------------------------------------------------------------------------------
 void pwm_auto_manager_handler(pwm_auto_info_t *info, bool pwm_auto_enable);
+void turn_off_fading_status(void);
 //------------------- FIN DEL ARCHIVO ------------------------------------------
 #endif /* PWM_AUTO_MANAGER_H__ */
