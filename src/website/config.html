@@ -508,8 +508,7 @@
                         <th><label>T1</label></th>
                         <th><input type="time" id="ih1" name="ih1" value="00:00"></th>
                         <th><input type="time" id="fh1" name="fh1" value="00:00"></th>
-                        <th><input type="checkbox" id="checkboxh1" name="checkboxh1"
-                                onchange="toggleHorario('ih1','fh1','checkboxh1')"></th>
+                        <th><input type="checkbox" id="checkboxh1" name="checkboxh1"></th>
                     </div>
                 </tr>
                 <tr>
@@ -517,8 +516,7 @@
                         <th><label>T2</label></th>
                         <th><input type="time" id="ih2" name="ih2" value="00:00"></th>
                         <th><input type="time" id="fh2" name="fh2" value="00:00"></th>
-                        <th><input type="checkbox" id="checkboxh2" name="checkboxh2"
-                                onchange="toggleHorario('ih2','fh2','checkboxh2')"></th>
+                        <th><input type="checkbox" id="checkboxh2" name="checkboxh2"></th>
                     </div>
                 </tr>
                 <tr>
@@ -526,8 +524,7 @@
                         <th><label>T3</label></th>
                         <th><input type="time" id="ih3" name="ih3" value="00:00"></th>
                         <th><input type="time" id="fh3" name="fh3" value="00:00"></th>
-                        <th> <input type="checkbox" id="checkboxh3" name="checkboxh3"
-                                onchange="toggleHorario('ih3','fh3','checkboxh3')"></th>
+                        <th> <input type="checkbox" id="checkboxh3" name="checkboxh3"></th>
                     </div>
                 </tr>
                 <tr>
@@ -535,8 +532,7 @@
                         <th><label>T4</label></th>
                         <th><input type="time" id="ih4" name="ih4" value="00:00"></th>
                         <th><input type="time" id="fh4" name="fh4" value="00:00"></th>
-                        <th> <input type="checkbox" id="checkboxh4" name="checkboxh4"
-                                onchange="toggleHorario('ih4','fh4','checkboxh4')"></th>
+                        <th> <input type="checkbox" id="checkboxh4" name="checkboxh4"></th>
                     </div>
                 </tr>
             </table>
@@ -588,6 +584,120 @@
             } else {
                 return number;
             }
+        }
+
+        function obtenerHoraYMinutos(inputId) {
+            // Obtén el elemento input por su ID
+            const inputHora = document.getElementById(inputId);
+
+            // Obtén el valor del input, que será en formato "HH:mm"
+            const valorInput = inputHora.value;
+
+            // Separa la hora y los minutos utilizando el método split()
+            const [hora, minutos] = valorInput.split(":");
+
+            // Convierte los valores en números enteros si es necesario
+            const horaEntero = parseInt(hora, 10);
+            const minutosEntero = parseInt(minutos, 10);
+
+            // Devuelve los valores de la hora y los minutos en un objeto
+            return {
+                hora: horaEntero,
+                minutos: minutosEntero
+            };
+        }
+
+        function colision(ih1, fh1, ih2, fh2) {
+            var sp = 0;
+            console.log(ih1.hora)
+            console.log(ih2.hora)
+            //caso que horario de encendido sea igual a apagado en h1
+            if (ih1.hora == fh1.hora && ih1.minutos == fh1.minutos) {
+                sp = 1;
+            }
+            //caso que horario de encendido sea igual a apagado en h2
+            if (ih2.hora == fh2.hora && ih2.minutos == fh2.minutos) {
+                sp = 1;
+            }
+            //caso superposicion en una parte de h2 en h1
+            if (ih1.hora <= ih2.hora && ih2.hora < fh1.hora) {
+                sp = 1;
+            }
+            //caso superposicion en una parte de h1 en h2
+            if (ih2.hora <= ih1.hora && ih1.hora < fh2.hora) {
+                sp = 1;
+            }
+            //caso en que h2 se superponga con misma hora y entre minutos en h1. mismo dia
+            if (ih1.hora == fh1.hora && ih2.hora == ih1.hora) {
+                if (ih2.m >= ih1.m && fh1.m > ih2.m) {
+                    sp = 1;
+                }
+            }
+            //caso en que h1 se superponga con misma hora y entre minutos en h2. mismo dia
+            if (ih2.hora == fh2.hora && ih1.hora == ih2.hora) {
+                if (ih1.m >= ih2.m && fh2.m > ih1.m) {
+                    sp = 1;
+                }
+            }
+            //caso de que se pase al dia siguiente
+            if (ih1.hora > fh1.hora) {
+                if (ih2.hora >= ih1.hora) {
+                    sp = 1;
+                }
+                if (fh1.hora > ih1.hora) {
+                    sp = 1;
+                }
+            }
+            if (ih2.hora > fh2.hora) {
+                if (ih1.hora >= ih2.hora) {
+                    sp = 1;
+                }
+                if (fh2.hora > ih2.hora) {
+                    sp = 1;
+                }
+            }
+
+            console.log("sp es", sp)
+            return sp;
+        }
+
+        function checkOverlap(en1, en2, en3, en4, ih1, fh1, ih2, fh2, ih3, fh3, ih4, fh4) {
+            var arr = [0, 0, 0, 0, 0, 0];
+            var suma = 0;
+            console.log("entro en overlap")
+            console.log(en1)
+            console.log(en2)
+            if (en1 == true && en2 == true) {
+                console.log("entro en primer if")
+                arr[0] = colision(ih1, fh1, ih2, fh2);
+                console.log("el valor de colision es", arr[0])
+            }
+            if (en1 == true && en3 == true) {
+                console.log("entro en segundo if")
+                arr[1] = colision(ih1, fh1, ih3, fh3);
+            }
+            if (en1 == true && en4 == true) {
+                console.log("entro en tercer if")
+                arr[2] = colision(ih1, fh1, ih4, fh4);
+            }
+            if (en2 == true && en3 == true) {
+                console.log("entro en cuarto if")
+                arr[3] = colision(ih2, fh2, ih3, fh3);
+            }
+            if (en2 == true && en4 == true) {
+                console.log("entro en quinto if")
+                arr[4] = colision(ih2, fh2, ih4, fh4);
+            }
+            if (en3 == true && en4 == true) {
+                console.log("entro en sexto if")
+                arr[5] = colision(ih3, fh3, ih4, fh4);
+            }
+
+            for (var i = 0; i < arr.length; i++) {
+                suma += arr[i];
+            }
+            console.log("el valor de suma es", suma);
+            return suma;
         }
 
         async function loadPWM() {
@@ -659,14 +769,6 @@
 
         async function loadHora() {
             try {
-                /*const result = await fetch("/data_hora");
-                if (!result.ok) {
-                    throw new Error("Error en adquirir los datos de la hora [fetch]");
-                }
-                const data = await result.json();
-                console.log(data);
-
-                document.getElementById("hora").value = formatNumber(data.Hora_h) + ":" + formatNumber(data.Hora_m);*/
                 const inputHora = document.getElementById("hora");
                 const now = new Date();
                 const hora = now.getHours();
@@ -775,19 +877,48 @@
             });
             triac_form.addEventListener("submit", async function (event) {
                 event.preventDefault();
-                console.log("Parametros aceptados")
-                const mensaje = "Se actualizaron los datos del triac correctamente";
-                alert(mensaje);
-                const myForm = event.target;
-                const formData = new FormData(myForm);
+                const en1 = document.getElementById("checkboxh1").checked
+                const en2 = document.getElementById("checkboxh2").checked
+                const en3 = document.getElementById("checkboxh3").checked
+                const en4 = document.getElementById("checkboxh4").checked
+                console.log(en1)
+                console.log(en2)
+                console.log(en3)
+                console.log(en4)
+                const ih1 = obtenerHoraYMinutos("ih1");
+                const fh1 = obtenerHoraYMinutos("fh1");
+                const ih2 = obtenerHoraYMinutos("ih2");
+                const fh2 = obtenerHoraYMinutos("fh2");
+                const ih3 = obtenerHoraYMinutos("ih3");
+                const fh3 = obtenerHoraYMinutos("fh3");
+                const ih4 = obtenerHoraYMinutos("ih4");
+                const fh4 = obtenerHoraYMinutos("fh4");
+                console.log(ih1)
+                console.log(fh1)
+                console.log(ih2)
+                console.log(fh2)
+                const overlap = checkOverlap(en1, en2, en3, en4, ih1, fh1, ih2, fh2, ih3, fh3, ih4, fh4);
+                if (overlap == 0) {
+                    console.log("Parametros aceptados")
+                    const mensaje = "Se actualizaron los datos del triac correctamente";
+                    alert(mensaje);
+                    const myForm = event.target;
+                    const formData = new FormData(myForm);
+                    console.log(formData)
+                    const response = await fetch("/triac", {
+                        method: "POST",
+                        headers: {
+                            "Content-Type": "application/x-www-form-urlencoded"
+                        },
+                        body: new URLSearchParams(formData).toString(),
+                    });
+                }
+                else {
+                    console.log("Parametros no aceptados")
+                    const mensaje = "No se actualizaron los datos del triac. Horarios iguales o superpuestos.";
+                    alert(mensaje);
+                }
 
-                const response = await fetch("/triac", {
-                    method: "POST",
-                    headers: {
-                        "Content-Type": "application/x-www-form-urlencoded"
-                    },
-                    body: new URLSearchParams(formData).toString(),
-                });
             });
             vege_form.addEventListener("submit", async function (event) {
                 event.preventDefault();
@@ -804,6 +935,7 @@
                     },
                     body: new URLSearchParams(formData).toString(),
                 });
+
             });
 
         })
