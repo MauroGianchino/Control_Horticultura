@@ -283,12 +283,13 @@ static void pwm_manager_task(void* arg)
     manual_fading_info_t manual_fading_info;
     manual_fading_info.duty_cycle = 50;
     manual_fading_info.fading_status = FADING_STOP;
+    uint32_t update_fading_periodicity = 1000;
     
     config_pwm_output();
 
     while(1)
     {
-        if(xQueueReceive(pwm_manager_queue, &pwm_ev, 30000 / portTICK_PERIOD_MS) == pdTRUE)
+        if(xQueueReceive(pwm_manager_queue, &pwm_ev, update_fading_periodicity / portTICK_PERIOD_MS) == pdTRUE)
         {
             switch(pwm_ev.cmd)
             {
@@ -319,8 +320,18 @@ static void pwm_manager_task(void* arg)
         }
         else
         {
+            printf()
             update_fading(&manual_fading_info);
             set_fading_status(manual_fading_info.fading_status);
+
+            if(manual_fading_info.fading_status == FADING_STOP)
+            {
+                update_fading_periodicity = 1000;
+            }
+            else if(manual_fading_info.fading_status == FADING_IN_PROGRESS)
+            {
+                update_fading_periodicity = 30000;
+            }   
         }
     }
 }
