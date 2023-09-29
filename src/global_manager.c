@@ -711,7 +711,7 @@ static void global_manager_task(void *arg)
                 vege_manager_turn_off();
                 break;
             case SET_MANUAL_PWM_POWER:
-
+                
                 if ((global_info.pwm_mode == MANUAL_ON) && (global_ev.value != global_info.pwm_manual_percent_power))
                 {
                     pwm_manager_update_pwm(global_ev.value);

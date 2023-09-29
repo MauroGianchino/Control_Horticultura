@@ -47,7 +47,9 @@ typedef struct{
 //------------------- DECLARACION DE DATOS LOCALES -----------------------------
 //------------------------------------------------------------------------------
 QueueHandle_t led_manager_queue;
+static esp_timer_handle_t timer_led_power_new_update;
 
+static bool led_power_new_update = false;
 static esp_timer_handle_t timer_pwm_status;
 static uint8_t pwm_toggle_mode = 0;
 //------------------- DECLARACION DE FUNCIONES LOCALES -------------------------
@@ -87,7 +89,11 @@ static void timer_led_toggle_device_mode_callback(void* arg)
 
 static int pwm_led_red_status = LED_OFF;
 static int pwm_led_green_status = LED_OFF;
-
+//------------------------------------------------------------------------------
+static void timer_led_power_new_update_callback(void* arg)
+{
+    led_power_new_update = false;
+}
 //------------------------------------------------------------------------------
 static void timer_led_toggle_pwm_status_callback(void* arg)
 {
@@ -114,8 +120,22 @@ static void timer_led_toggle_pwm_status_callback(void* arg)
     {
         gpio_set_level(PWM_LED_RED, pwm_led_red_status);
         gpio_set_level(PWM_LED_GREEN, pwm_led_green_status);
-        pwm_led_red_status = !pwm_led_red_status;
-        pwm_led_green_status = !pwm_led_green_status;
+
+        if((pwm_led_green_status == LED_OFF) && (pwm_led_red_status == LED_ON))
+        {
+            pwm_led_red_status = LED_OFF;
+            pwm_led_green_status = LED_ON;
+        }
+        else if((pwm_led_green_status == LED_ON) && (pwm_led_red_status == LED_OFF))
+        {
+            pwm_led_red_status = LED_ON;
+            pwm_led_green_status = LED_ON;
+        }
+        else if((pwm_led_green_status == LED_ON) && (pwm_led_red_status == LED_ON))
+        {
+            pwm_led_red_status = LED_ON;
+            pwm_led_green_status = LED_OFF;
+        }
     }
 }
 //------------------------------------------------------------------------------
@@ -256,7 +276,7 @@ static void set_rele_vege_off_indicator(void)
     gpio_set_level(RELE_VEGE_STATUS_LED, LED_OFF);
 }
 //------------------------------------------------------------------------------
-
+static bool restart_timer = true;  
 static void set_pwm_indicator(uint8_t duty_cycle, uint8_t is_simul_day_working)
 {
     float pwm_time;
@@ -269,6 +289,7 @@ static void set_pwm_indicator(uint8_t duty_cycle, uint8_t is_simul_day_working)
     if(duty_cycle < 10)
     {
         esp_timer_stop(timer_pwm_status);
+        restart_timer = true;
         gpio_set_level(PWM_LED_RED, LED_OFF);
         gpio_set_level(PWM_LED_GREEN, LED_OFF);
     }
@@ -288,17 +309,57 @@ static void set_pwm_indicator(uint8_t duty_cycle, uint8_t is_simul_day_working)
             {
                 pwm_toggle_mode = 3;
             }
-            esp_timer_start_periodic(timer_pwm_status, ((uint8_t)pwm_time)*1000);
+            //
+            if(restart_timer == true)
+            {
+                restart_timer = false;
+                esp_timer_stop(timer_pwm_status);
+                esp_timer_start_periodic(timer_pwm_status, 75000);
+            }
+            
             pwm_led_red_status = LED_OFF;
             pwm_led_green_status = LED_OFF;
         }
         else
         {
+            restart_timer = true;
+            esp_timer_stop(timer_pwm_status);
             pwm_toggle_mode = 4;
-            esp_timer_start_periodic(timer_pwm_status, 200000);
-            pwm_led_red_status = LED_OFF;
-            pwm_led_green_status = LED_ON;
+            esp_timer_start_periodic(timer_pwm_status, 500000);
+            pwm_led_red_status = LED_ON;
+            pwm_led_green_status = LED_OFF;
         }
+    }
+}
+//------------------------------------------------------------------------------
+static void led_power_task(void* args)
+{
+    
+    esp_timer_create_args_t timer_led_power_new_update_args = {
+        .callback = timer_led_power_new_update_callback,
+        .arg = NULL,
+        .name = "timer_led_power_new_update"
+    };
+
+    esp_timer_create(&timer_led_power_new_update_args, &timer_led_power_new_update);
+
+    while(1)
+    {
+        if(led_power_new_update == false)
+        {
+            gpio_set_level(DEVICE_ON_LED, LED_ON);
+            vTaskDelay(2000 / portTICK_PERIOD_MS);
+            gpio_set_level(DEVICE_ON_LED, LED_OFF);
+            vTaskDelay(100 / portTICK_PERIOD_MS);
+        }
+        else if(led_power_new_update == true)
+        {
+            gpio_set_level(DEVICE_ON_LED, LED_ON);
+            vTaskDelay(50 / portTICK_PERIOD_MS);
+            gpio_set_level(DEVICE_ON_LED, LED_OFF);
+            vTaskDelay(50 / portTICK_PERIOD_MS);
+        }
+        vTaskDelay(5 / portTICK_PERIOD_MS);
     }
 }
 //------------------------------------------------------------------------------
@@ -310,7 +371,7 @@ static void led_manager_task(void* arg)
     simul_day_status_t simul_day_status;
     uint8_t is_simul_day_working;
 
-    led_manager_power_up();
+    //led_manager_power_up();
 
     while(1)
     {
@@ -321,7 +382,7 @@ static void led_manager_task(void* arg)
                 case  CMD_UNDEFINED:
                     break;
                 case DEVICE_POWER_ON:
-                    set_power_on_indicator();
+                    //set_power_on_indicator();
                     break;
                 case TRIAC_ON:
                     set_triac_output_on_indicator();
@@ -366,6 +427,9 @@ void led_manager_init(void)
     led_manager_queue = xQueueCreate(QUEUE_ELEMENT_QUANTITY, sizeof(led_event_t));
     
     xTaskCreate(led_manager_task, "led_manager_task", configMINIMAL_STACK_SIZE*10, 
+        NULL, configMAX_PRIORITIES-2, NULL);
+
+    xTaskCreate(led_power_task, "led_power_task", configMINIMAL_STACK_SIZE*4, 
         NULL, configMAX_PRIORITIES-2, NULL);
 }
 //------------------------------------------------------------------------------
@@ -442,6 +506,13 @@ void led_manager_send_pwm_info(uint8_t duty_cycle, uint8_t is_simul_day_working,
     ev.simul_day_status = simul_day_status;
 
     xQueueSend(led_manager_queue, &ev, 10);
+}
+//------------------------------------------------------------------------------
+void led_manager_new_update(void)
+{
+    esp_timer_stop(timer_led_power_new_update);
+    esp_timer_start_once(timer_led_power_new_update, 500000);
+    led_power_new_update = true;
 }
 //---------------------------- END OF FILE -------------------------------------
 //------------------------------------------------------------------------------

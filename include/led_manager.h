@@ -27,5 +27,7 @@ void led_manager_set_device_mode_auto(void);
 void led_manager_set_device_mode_manual(void);
 
 void led_manager_send_pwm_info(uint8_t duty_cycle, uint8_t is_simul_day_working, simul_day_status_t simul_day_status);
+
+void led_manager_new_update(void);
 //------------------- FIN DEL ARCHIVO ------------------------------------------
 #endif /* LED_MANAGER_H__ */
