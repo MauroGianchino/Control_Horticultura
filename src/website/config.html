@@ -619,6 +619,28 @@
             if (ih2.hora == fh2.hora && ih2.minutos == fh2.minutos) {
                 sp = 1;
             }
+            if (ih1.hora == fh1.hora && ih1.minutos > fh1.minutos) {
+                if (ih2.hora > ih1.hora) {
+                    sp = 1;
+                }
+                if (ih2.hora == ih1.hora) {
+                    if (ih2.minutos >= ih1.minutos || fh2.minutos > ih1.minutos) {
+                        sp = 1;
+                    }
+                }
+
+            }
+            if (ih2.hora == fh2.hora && ih2.minutos > fh2.minutos) {
+                if (ih1.hora > ih2.hora) {
+                    sp = 1;
+                }
+                if (ih1.hora == ih2.hora) {
+                    if (ih1.minutos >= ih2.minutos || fh1.minutos > ih2.minutos) {
+                        sp = 1;
+                    }
+                }
+
+            }
             //caso superposicion en una parte de h2 en h1
             if (ih1.hora <= ih2.hora && ih2.hora < fh1.hora) {
                 sp = 1;
@@ -629,13 +651,13 @@
             }
             //caso en que h2 se superponga con misma hora y entre minutos en h1. mismo dia
             if (ih1.hora == fh1.hora && ih2.hora == ih1.hora) {
-                if (ih2.m >= ih1.m && fh1.m > ih2.m) {
+                if (ih2.minutos >= ih1.minutos && fh1.minutos > ih2.minutos) {
                     sp = 1;
                 }
             }
             //caso en que h1 se superponga con misma hora y entre minutos en h2. mismo dia
             if (ih2.hora == fh2.hora && ih1.hora == ih2.hora) {
-                if (ih1.m >= ih2.m && fh2.m > ih1.m) {
+                if (ih1.minutos >= ih2.minutos && fh2.minutos > ih1.minutos) {
                     sp = 1;
                 }
             }
@@ -644,7 +666,7 @@
                 if (ih2.hora >= ih1.hora) {
                     sp = 1;
                 }
-                if (fh1.hora > ih1.hora) {
+                if (fh1.hora > ih2.hora) {
                     sp = 1;
                 }
             }
@@ -652,7 +674,7 @@
                 if (ih1.hora >= ih2.hora) {
                     sp = 1;
                 }
-                if (fh2.hora > ih2.hora) {
+                if (fh2.hora > ih1.hora) {
                     sp = 1;
                 }
             }
