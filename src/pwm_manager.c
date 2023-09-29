@@ -320,7 +320,6 @@ static void pwm_manager_task(void* arg)
         }
         else
         {
-            printf()
             update_fading(&manual_fading_info);
             set_fading_status(manual_fading_info.fading_status);
 
