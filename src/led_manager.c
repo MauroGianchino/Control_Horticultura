@@ -286,8 +286,8 @@ static void set_pwm_indicator(uint8_t duty_cycle, uint8_t is_simul_day_working)
 
     pwm_time = 1.78 * (duty_cycle) + 22;
 
-    printf(" tiempo de toggle de pwm %f ms \n", pwm_time);
-    printf(" duty cycle de pwm %d \n", duty_cycle);
+    //printf(" tiempo de toggle de pwm %f ms \n", pwm_time);
+    //printf(" duty cycle de pwm %d \n", duty_cycle);
 
     if(duty_cycle < 10)
     {
