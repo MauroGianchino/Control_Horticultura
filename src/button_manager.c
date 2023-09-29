@@ -17,7 +17,7 @@
 #include "../include/global_manager.h"
 #include "../include/nv_flash_driver.h"
 #include "../include/analog_input_manager.h"
-
+#include "../include/led_manager.h"
 //--------------------MACROS Y DEFINES------------------------------------------
 //------------------------------------------------------------------------------
 #define QUEUE_ELEMENT_QUANTITY 20
@@ -31,14 +31,19 @@
 //------------------------------------------------------------------------------
 typedef enum{
     CMD_UNDEFINED,
+    STARTUP,
     DEVICE_MODE_BUTTON_PUSHED,
     TRIAC_BUTTON_PUSHED,
     VEGE_BUTTON_PUSHED,
     FABRIC_RESET,
 }cmds_t;
 
+
+
 typedef struct{
     cmds_t cmd;
+    device_mode_status_t device_mode;
+    output_mode_t triac_output_status;
 }button_events_t;
 //--------------------DECLARACION DE DATOS INTERNOS-----------------------------
 //------------------------------------------------------------------------------
@@ -178,10 +183,16 @@ static void IRAM_ATTR vege_button_interrupt(void *arg)
     }
 }
 //------------------------------------------------------------------------------
-typedef enum{
-    DEVICE_IN_MANUAL = 0,
-    DEVICE_IN_AUTOMATIC = 1,
-}device_mode_status_t;
+void button_manager_send_startup_info(device_mode_status_t device_mode, output_mode_t triac_output_status)
+{
+    button_events_t ev;
+    ev.cmd = STARTUP;
+    ev.device_mode = device_mode;
+    ev.triac_output_status = triac_output_status;
+    xQueueSend(button_manager_queue, &ev, 30 / portTICK_PERIOD_MS);
+    
+}
+
 
 void button_event_manager_task(void * pvParameters)
 {
@@ -202,9 +213,14 @@ void button_event_manager_task(void * pvParameters)
         {
             switch(button_ev.cmd)
             {
+                case STARTUP:
+                    //device_mode = button_ev.device_mode;
+                    //triac_status = button_ev.triac_output_status;
+                    break;
                 case CMD_UNDEFINED:
                     break;
                 case DEVICE_MODE_BUTTON_PUSHED:
+                    led_manager_new_update();
                     if(device_mode == DEVICE_IN_MANUAL)
                     {
                         global_manager_set_triac_mode_off(false);
@@ -223,6 +239,7 @@ void button_event_manager_task(void * pvParameters)
                     }
                     break;
                 case TRIAC_BUTTON_PUSHED:
+                    led_manager_new_update();
                     if(device_mode == DEVICE_IN_AUTOMATIC)
                     {
                         if(triac_status == MANUAL_OFF)
@@ -238,6 +255,7 @@ void button_event_manager_task(void * pvParameters)
                     }
                     break;
                 case VEGE_BUTTON_PUSHED:
+                    led_manager_new_update();
                     if(rele_vege_status == RELE_VEGE_DISABLE)
                     {
                         global_manager_set_rele_vege_status_off(false);
@@ -250,6 +268,7 @@ void button_event_manager_task(void * pvParameters)
                     }
                     break;
                 case FABRIC_RESET:
+                    led_manager_new_update();
                     nv_flash_driver_erase_flash();
                     break;
                 default:

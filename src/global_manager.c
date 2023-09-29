@@ -21,6 +21,7 @@
 #include "../include/vege_manager.h"
 #include "../include/nv_flash_manager.h"
 #include "../include/analog_input_manager.h"
+#include "../include/button_manager.h"
 
 //--------------------MACROS Y DEFINES------------------------------------------
 //------------------------------------------------------------------------------
@@ -671,6 +672,7 @@ static void global_manager_task(void *arg)
                 global_info.triac_mode = MANUAL_ON;
                 triac_manager_turn_on_triac();
                 global_info.triac_auto.output_status = TRIAC_OUTPUT_ON;
+                button_manager_send_startup_info(DEVICE_IN_MANUAL, global_info.triac_auto.output_status);
                 break;
             case TRIAC_OFF:
                 if ((global_info.triac_mode != MANUAL_OFF) && (global_ev.value_read_from_flash == false))
@@ -680,6 +682,7 @@ static void global_manager_task(void *arg)
                 global_info.triac_mode = MANUAL_OFF;
                 global_info.triac_auto.output_status = TRIAC_OUTPUT_OFF;
                 triac_manager_turn_off_triac();
+                button_manager_send_startup_info(DEVICE_IN_MANUAL, global_info.triac_auto.output_status);
                 break;
             case TRIAC_AUTO:
                 if ((global_info.triac_mode != AUTOMATIC) && (global_ev.value_read_from_flash == false))
@@ -688,7 +691,7 @@ static void global_manager_task(void *arg)
                 }
                 global_info.triac_mode = AUTOMATIC;
                 triac_auto_manager_update(&global_info.triac_auto);
-
+                button_manager_send_startup_info(DEVICE_IN_AUTOMATIC, TRIAC_OUTPUT_OFF);
                 //global_info.triac_auto.output_status = TRIAC_OUTPUT_OFF;
                 //triac_manager_turn_off_triac();
                 break;
@@ -711,7 +714,7 @@ static void global_manager_task(void *arg)
                 vege_manager_turn_off();
                 break;
             case SET_MANUAL_PWM_POWER:
-                
+
                 if ((global_info.pwm_mode == MANUAL_ON) && (global_ev.value != global_info.pwm_manual_percent_power))
                 {
                     pwm_manager_update_pwm(global_ev.value);

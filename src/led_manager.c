@@ -52,6 +52,9 @@ static esp_timer_handle_t timer_led_power_new_update;
 static bool led_power_new_update = false;
 static esp_timer_handle_t timer_pwm_status;
 static uint8_t pwm_toggle_mode = 0;
+static bool restart_timer = true;  
+static bool led_power_started = false;
+
 //------------------- DECLARACION DE FUNCIONES LOCALES -------------------------
 //------------------------------------------------------------------------------
 static void config_led_power_up(void);
@@ -93,6 +96,7 @@ static int pwm_led_green_status = LED_OFF;
 static void timer_led_power_new_update_callback(void* arg)
 {
     led_power_new_update = false;
+    led_power_started = false;
 }
 //------------------------------------------------------------------------------
 static void timer_led_toggle_pwm_status_callback(void* arg)
@@ -276,7 +280,6 @@ static void set_rele_vege_off_indicator(void)
     gpio_set_level(RELE_VEGE_STATUS_LED, LED_OFF);
 }
 //------------------------------------------------------------------------------
-static bool restart_timer = true;  
 static void set_pwm_indicator(uint8_t duty_cycle, uint8_t is_simul_day_working)
 {
     float pwm_time;
@@ -354,6 +357,12 @@ static void led_power_task(void* args)
         }
         else if(led_power_new_update == true)
         {
+            if(led_power_started == false)
+            {
+                led_power_started = true;
+                esp_timer_stop(timer_led_power_new_update);
+                esp_timer_start_once(timer_led_power_new_update, 500000);
+            }
             gpio_set_level(DEVICE_ON_LED, LED_ON);
             vTaskDelay(50 / portTICK_PERIOD_MS);
             gpio_set_level(DEVICE_ON_LED, LED_OFF);
@@ -510,8 +519,6 @@ void led_manager_send_pwm_info(uint8_t duty_cycle, uint8_t is_simul_day_working,
 //------------------------------------------------------------------------------
 void led_manager_new_update(void)
 {
-    esp_timer_stop(timer_led_power_new_update);
-    esp_timer_start_once(timer_led_power_new_update, 500000);
     led_power_new_update = true;
 }
 //---------------------------- END OF FILE -------------------------------------

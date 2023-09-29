@@ -20,6 +20,7 @@
 #include "../include/version.h"
 #include "../include/current_time_manager.h"
 #include "../include/global_manager.h"
+#include "../include/led_manager.h"
 #include <time.h>
 #include "esp_timer.h"
 
@@ -331,6 +332,7 @@ void parse_pwm(char *buff)
     }
     global_manager_update_auto_pwm_calendar(pwm_hora, pdFALSE);
     ESP_LOGI(PWM, "Salgo del parseo");
+    led_manager_new_update();
 };
 
 void parse_triac(char *buff)
@@ -372,6 +374,8 @@ void parse_triac(char *buff)
     global_manager_update_auto_triac_calendar(triac_h3, 3, false);
     global_manager_update_auto_triac_calendar(triac_h4, 4, false);
 
+    led_manager_new_update();
+
     ESP_LOGI(TRIAC, "Salgo del parseo");
 }
 
@@ -392,6 +396,7 @@ void parse_vegeflor(char *buff)
         ESP_LOGE(VEGEFLOR, "Error en parseo del MODO");
     }
     ESP_LOGI(VEGEFLOR, "Salgo del parseo");
+    led_manager_new_update();
 };
 
 void parse_red(char *buff, red_t *red)
@@ -426,6 +431,8 @@ void parse_red(char *buff, red_t *red)
     // strncpy(red->PASS, buff + secondEqualIndex + 1, len - secondEqualIndex - 1);
     esp_timer_start_once(timer_reset_esp32, 2000000);
     ESP_LOGI(TAG, "Salgo del parseo de RED");
+
+    led_manager_new_update();
 };
 
 
@@ -1133,3 +1140,4 @@ void connect_handler(void *arg, esp_event_base_t event_base, int32_t event_id, v
         *server = start_webserver();
     }
 }
+
