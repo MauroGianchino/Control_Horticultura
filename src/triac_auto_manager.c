@@ -84,23 +84,11 @@ static void triac_auto_manager_handler_per_triac(triac_auto_info_t *info, uint8_
     {
         if(info->output_status == TRIAC_OUTPUT_OFF)
         {
-            if((is_date1_grater_than_date2(info->current_time, info->triac_auto[triac_index].turn_on_time) == 1) \
-                && (is_date1_grater_than_date2(info->triac_auto[triac_index].turn_off_time, info->current_time) == 1) \
-                && (is_date1_grater_than_date2(info->triac_auto[triac_index].turn_off_time, info->triac_auto[triac_index].turn_on_time) == 1) && (triac_mark_on[triac_index] == false))
+            if(is_within_range(info->current_time, info->triac_auto[triac_index].turn_on_time, info->triac_auto[triac_index].turn_off_time))
             {
                 triac_manager_turn_on_triac();
                 info->output_status = TRIAC_OUTPUT_ON;
                 triac_mark_on[triac_index] = true;
-                printf("MARCA 1, TRIAC INDEX: %d \n", triac_index);
-            }
-            else if((is_date1_grater_than_date2(info->triac_auto[triac_index].turn_off_time, info->current_time) == 1) \
-                && (is_date1_grater_than_date2(info->triac_auto[triac_index].turn_on_time, info->current_time) == 1) \
-                && (is_date1_grater_than_date2(info->triac_auto[triac_index].turn_on_time, info->triac_auto[triac_index].turn_off_time) == 1) && (triac_mark_on[triac_index] == false))
-            {
-                triac_manager_turn_on_triac();
-                info->output_status = TRIAC_OUTPUT_ON;
-                triac_mark_on[triac_index] = true;
-                printf("MARCA 2, TRIAC INDEX: %d \n", triac_index);
             }
         }
         else if(info->output_status == TRIAC_OUTPUT_ON)
@@ -110,7 +98,6 @@ static void triac_auto_manager_handler_per_triac(triac_auto_info_t *info, uint8_
             {
                 triac_manager_turn_off_triac();
                 info->output_status = TRIAC_OUTPUT_OFF;
-                printf("MARCA 3, TRIAC INDEX: %d \n", triac_index);
                 triac_mark_on[triac_index] = false;
 
             }
@@ -121,7 +108,6 @@ static void triac_auto_manager_handler_per_triac(triac_auto_info_t *info, uint8_
                 triac_manager_turn_off_triac();
                 info->output_status = TRIAC_OUTPUT_OFF;
                 triac_mark_on[triac_index] = false;
-                printf("MARCA 4, TRIAC INDEX: %d \n", triac_index);
             }
         }
     }
