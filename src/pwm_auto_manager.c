@@ -29,6 +29,8 @@
 static uint8_t is_date1_grater_than_date2(struct tm date1, struct tm date2);
 static uint8_t is_pwm_in_fading_on_state(struct tm current_time, struct tm turn_on_time);
 static void subtract_15_minutes(struct tm *t); 
+static int is_within_range(struct tm target, struct tm start, struct tm end);
+
 //------------------- DEFINICION DE DATOS LOCALES ------------------------------
 //------------------------------------------------------------------------------
 
@@ -42,6 +44,32 @@ static void subtract_15_minutes(struct tm *t)
     time_t rawtime = mktime(t); // Convierte struct tm a time_t (segundos desde epoch)
     rawtime -= 900; // Resta 900 segundos (15 minutos)
     *t = *localtime(&rawtime); // Convierte de nuevo a struct tm
+}
+//------------------------------------------------------------------------------
+static int is_within_range(struct tm target, struct tm start, struct tm end)
+{
+    if (start.tm_hour < end.tm_hour || 
+       (start.tm_hour == end.tm_hour && start.tm_min <= end.tm_min)) {
+        // Caso normal (ejemplo: de 9:00 a 17:00)
+        if ((target.tm_hour > start.tm_hour || 
+            (target.tm_hour == start.tm_hour && target.tm_min >= start.tm_min)) &&
+            (target.tm_hour < end.tm_hour || 
+            (target.tm_hour == end.tm_hour && target.tm_min <= end.tm_min))) {
+            return 1;
+        } else {
+            return 0;
+        }
+    } else {
+        // Rango cruza la medianoche (ejemplo: de 22:00 a 2:00)
+        if ((target.tm_hour > start.tm_hour || 
+            (target.tm_hour == start.tm_hour && target.tm_min >= start.tm_min)) ||
+            (target.tm_hour < end.tm_hour || 
+            (target.tm_hour == end.tm_hour && target.tm_min <= end.tm_min))) {
+            return 1;
+        } else {
+            return 0;
+        }
+    }
 }
 //------------------------------------------------------------------------------
 static uint8_t is_date1_grater_than_date2(struct tm date1, struct tm date2)
@@ -122,37 +150,7 @@ void pwm_auto_manager_handler(pwm_auto_info_t *info, bool pwm_auto_enable)
             {
                 info->update_output_percent_power = false;
             }
-
-            if((is_date1_grater_than_date2(info->current_time, info->turn_on_time) == 1) \
-                && (is_date1_grater_than_date2(info->turn_off_time, info->current_time) == 1) \
-                && (is_date1_grater_than_date2(info->turn_off_time, info->turn_on_time) == 1))
-            {
-                #ifdef DEBUG_MODULE
-                    printf("PWM_AUTO_WORKING_PWM_ON \n");
-                #endif
-                info->output_status = PWM_OUTPUT_ON;
-                if(info->simul_day_status == true)
-                {
-                    if(is_pwm_in_fading_on_state(info->current_time, info->turn_on_time))
-                    {
-                        pwm_manager_turn_on_pwm_simul_day_on(info->percent_power);
-                        led_manager_send_pwm_info(info->percent_power, 1, true);
-                    }
-                    else
-                    {
-                        pwm_manager_turn_on_pwm(info->percent_power);
-                        led_manager_send_pwm_info(info->percent_power, 0, false);
-                    }   
-                }
-                else
-                {
-                    pwm_manager_turn_on_pwm(info->percent_power);
-                    led_manager_send_pwm_info(info->percent_power, 0, false);
-                }
-            }
-            else if((is_date1_grater_than_date2(info->turn_off_time, info->current_time) == 1) \
-                && (is_date1_grater_than_date2(info->turn_on_time, info->current_time) == 1) \
-                && (is_date1_grater_than_date2(info->turn_on_time, info->turn_off_time) == 1))
+            else if(is_within_range(info->current_time, info->turn_on_time, info->turn_off_time))
             {
                 #ifdef DEBUG_MODULE
                     printf("PWM_AUTO_WORKING_PWM_ON \n");
@@ -260,7 +258,7 @@ void pwm_auto_manager_handler(pwm_auto_info_t *info, bool pwm_auto_enable)
                         && (is_date1_grater_than_date2(info->turn_off_time, info->turn_on_time) == 1))
                     {
                         #ifdef DEBUG_MODULE
-                            printf("PWM_AUTO_WORKING_PWM_OFF \n");
+                            printf("PWM_AUTO_WORKING_PWM_OFF Toff mayor Ton \n");
                         #endif
                         info->output_status = PWM_OUTPUT_OFF;
                         is_fading_off_started = false;
@@ -280,7 +278,7 @@ void pwm_auto_manager_handler(pwm_auto_info_t *info, bool pwm_auto_enable)
                         && (is_date1_grater_than_date2(info->turn_on_time, info->turn_off_time) == 1))
                     {
                         #ifdef DEBUG_MODULE
-                            printf("PWM_AUTO_WORKING_PWM_OFF \n");
+                            printf("PWM_AUTO_WORKING_PWM_OFF Ton mayor Toff \n");
                         #endif
                         info->output_status = PWM_OUTPUT_OFF;
                         pwm_manager_turn_off_pwm();
@@ -316,7 +314,7 @@ void pwm_auto_manager_handler(pwm_auto_info_t *info, bool pwm_auto_enable)
                 && (is_date1_grater_than_date2(info->turn_off_time, info->turn_on_time) == 1))
                 {
                     #ifdef DEBUG_MODULE
-                        printf("PWM_AUTO_WORKING_PWM_OFF \n");
+                        printf("PWM_AUTO_WORKING_PWM_OFF Toff mayor Ton \n");
                     #endif
                     info->output_status = PWM_OUTPUT_OFF;
                     pwm_manager_turn_off_pwm();
@@ -334,7 +332,7 @@ void pwm_auto_manager_handler(pwm_auto_info_t *info, bool pwm_auto_enable)
                     && (is_date1_grater_than_date2(info->turn_on_time, info->turn_off_time) == 1))
                 {
                     #ifdef DEBUG_MODULE
-                        printf("PWM_AUTO_WORKING_PWM_OFF \n");
+                        printf("PWM_AUTO_WORKING_PWM_OFF Ton mayor Toff\n");
                     #endif
                     info->output_status = PWM_OUTPUT_OFF;
                     pwm_manager_turn_off_pwm();
