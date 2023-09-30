@@ -24,7 +24,6 @@
 #include <time.h>
 #include "esp_timer.h"
 
-
 static const char *TAG = "WEBSERVER";
 static const char *PWM = "PWM";
 static const char *TRIAC = "TRIAC";
@@ -33,7 +32,7 @@ static const char *VERSIONN = "VERSION";
 static const char *HORA = "HORA";
 
 static esp_timer_handle_t timer_reset_esp32;
-static void timer_reset_esp32_callback(void* arg);
+static void timer_reset_esp32_callback(void *arg);
 //---------------RED-------------------
 
 red_t red; // variable para leer el ssid y pass de la red
@@ -103,7 +102,7 @@ void analyze_token_pwm(char *token)
 {
     int dh, dm; // unidades y decenas de horas y minutos
     uint8_t inten;
-    output_mode_t triac_mode; 
+    output_mode_t triac_mode;
     triac_auto_info_t triac_auto;
     switch (token[0])
     {
@@ -141,13 +140,13 @@ void analyze_token_pwm(char *token)
         else if (token[10] == 'M')
         {
             global_manager_set_pwm_mode_manual_on();
-            if(global_manager_get_triac_info(&triac_mode, &triac_auto))
+            if (global_manager_get_triac_info(&triac_mode, &triac_auto))
             {
-                if(triac_auto.output_status == TRIAC_OUTPUT_ON)
+                if (triac_auto.output_status == TRIAC_OUTPUT_ON)
                 {
                     global_manager_set_triac_mode_manual_on(false);
                 }
-                else if(triac_auto.output_status == TRIAC_OUTPUT_OFF)
+                else if (triac_auto.output_status == TRIAC_OUTPUT_OFF)
                 {
                     global_manager_set_triac_mode_off(false);
                 }
@@ -435,15 +434,21 @@ void parse_red(char *buff, red_t *red)
     led_manager_new_update();
 };
 
-
-
 void parse_hora(char *buff, struct tm *aux)
 {
     // el & es el separador de los campos
     ESP_LOGI(HORA, "Entro al parseo de HORA");
 
     aux->tm_hour = atoi(&buff[5]);
-    aux->tm_min = atoi(&buff[10]);
+    if (buff[6] == '%')
+    {
+        aux->tm_min = atoi(&buff[9]);
+    }
+    else
+    {
+        aux->tm_min = atoi(&buff[10]);
+    }
+
     current_time_manager_set_current_time(*aux);
 
     ESP_LOGI(HORA, "Salgo del parseo HORA");
@@ -1045,7 +1050,7 @@ esp_err_t hora_data_handler(httpd_req_t *req)
 
 //---------FUNCIONES DEL WEBSERVER-------------//
 
-static void timer_reset_esp32_callback(void* arg)
+static void timer_reset_esp32_callback(void *arg)
 {
     esp_restart();
 }
@@ -1085,8 +1090,7 @@ httpd_handle_t start_webserver(void)
         esp_timer_create_args_t timer_reset_esp32_args = {
             .callback = timer_reset_esp32_callback,
             .arg = NULL,
-            .name = "timer_reset_esp32"
-        };
+            .name = "timer_reset_esp32"};
         esp_timer_create(&timer_reset_esp32_args, &timer_reset_esp32);
 
         return server;
@@ -1140,4 +1144,3 @@ void connect_handler(void *arg, esp_event_base_t event_base, int32_t event_id, v
         *server = start_webserver();
     }
 }
-
