@@ -379,12 +379,19 @@ static void nv_init_triac_mode(void)
         {
         case MANUAL_ON:
             global_manager_set_triac_mode_manual_on(true);
+            button_manager_send_startup_info(DEVICE_IN_AUTOMATIC, MANUAL_ON);
+            global_manager_set_pwm_mode_manual_on();
             break;
         case MANUAL_OFF:
             global_manager_set_triac_mode_off(true);
+            button_manager_send_startup_info(DEVICE_IN_AUTOMATIC, MANUAL_OFF);
+            global_manager_set_pwm_mode_manual_on();
             break;
         case AUTOMATIC:
             global_manager_set_triac_mode_auto(true);
+            button_manager_send_startup_info(DEVICE_IN_MANUAL, MANUAL_OFF);
+            global_manager_set_pwm_mode_auto();
+
             break;
         default:
             break;
@@ -672,7 +679,6 @@ static void global_manager_task(void *arg)
                 global_info.triac_mode = MANUAL_ON;
                 triac_manager_turn_on_triac();
                 global_info.triac_auto.output_status = TRIAC_OUTPUT_ON;
-                button_manager_send_startup_info(DEVICE_IN_MANUAL, global_info.triac_auto.output_status);
                 break;
             case TRIAC_OFF:
                 if ((global_info.triac_mode != MANUAL_OFF) && (global_ev.value_read_from_flash == false))
@@ -682,7 +688,6 @@ static void global_manager_task(void *arg)
                 global_info.triac_mode = MANUAL_OFF;
                 global_info.triac_auto.output_status = TRIAC_OUTPUT_OFF;
                 triac_manager_turn_off_triac();
-                button_manager_send_startup_info(DEVICE_IN_MANUAL, global_info.triac_auto.output_status);
                 break;
             case TRIAC_AUTO:
                 if ((global_info.triac_mode != AUTOMATIC) && (global_ev.value_read_from_flash == false))
@@ -691,7 +696,6 @@ static void global_manager_task(void *arg)
                 }
                 global_info.triac_mode = AUTOMATIC;
                 triac_auto_manager_update(&global_info.triac_auto);
-                button_manager_send_startup_info(DEVICE_IN_AUTOMATIC, TRIAC_OUTPUT_OFF);
                 //global_info.triac_auto.output_status = TRIAC_OUTPUT_OFF;
                 //triac_manager_turn_off_triac();
                 break;

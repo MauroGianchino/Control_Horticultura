@@ -214,8 +214,8 @@ void button_event_manager_task(void * pvParameters)
             switch(button_ev.cmd)
             {
                 case STARTUP:
-                    //device_mode = button_ev.device_mode;
-                    //triac_status = button_ev.triac_output_status;
+                    device_mode = button_ev.device_mode;
+                    triac_status = button_ev.triac_output_status;
                     break;
                 case CMD_UNDEFINED:
                     break;
