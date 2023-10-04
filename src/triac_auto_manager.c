@@ -55,22 +55,27 @@ static uint8_t is_date1_grater_than_date2(struct tm date1, struct tm date2)
 static int is_within_range(struct tm target, struct tm start, struct tm end)
 {
     if (start.tm_hour < end.tm_hour || 
-       (start.tm_hour == end.tm_hour && start.tm_min <= end.tm_min)) {
-        // Caso normal (ejemplo: de 9:00 a 17:00)
+       (start.tm_hour == end.tm_hour && start.tm_min < end.tm_min) ||
+       (start.tm_hour == end.tm_hour && start.tm_min == end.tm_min && start.tm_sec <= end.tm_sec)) {
+        // Caso normal (ejemplo: de 9:00:00 a 17:00:00)
         if ((target.tm_hour > start.tm_hour || 
-            (target.tm_hour == start.tm_hour && target.tm_min >= start.tm_min)) &&
+            (target.tm_hour == start.tm_hour && target.tm_min > start.tm_min) ||
+            (target.tm_hour == start.tm_hour && target.tm_min == start.tm_min && target.tm_sec >= start.tm_sec)) &&
             (target.tm_hour < end.tm_hour || 
-            (target.tm_hour == end.tm_hour && target.tm_min <= end.tm_min))) {
+            (target.tm_hour == end.tm_hour && target.tm_min < end.tm_min) ||
+            (target.tm_hour == end.tm_hour && target.tm_min == end.tm_min && target.tm_sec <= end.tm_sec))) {
             return 1;
         } else {
             return 0;
         }
     } else {
-        // Rango cruza la medianoche (ejemplo: de 22:00 a 2:00)
+        // Rango cruza la medianoche (ejemplo: de 22:00:00 a 2:00:00)
         if ((target.tm_hour > start.tm_hour || 
-            (target.tm_hour == start.tm_hour && target.tm_min >= start.tm_min)) ||
+            (target.tm_hour == start.tm_hour && target.tm_min > start.tm_min) ||
+            (target.tm_hour == start.tm_hour && target.tm_min == start.tm_min && target.tm_sec >= start.tm_sec)) ||
             (target.tm_hour < end.tm_hour || 
-            (target.tm_hour == end.tm_hour && target.tm_min <= end.tm_min))) {
+            (target.tm_hour == end.tm_hour && target.tm_min < end.tm_min) ||
+            (target.tm_hour == end.tm_hour && target.tm_min == end.tm_min && target.tm_sec <= end.tm_sec))) {
             return 1;
         } else {
             return 0;

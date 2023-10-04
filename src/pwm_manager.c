@@ -80,7 +80,7 @@ static void turn_off_pwm(void);
 static void turn_on_pwm_simul_day_on(uint8_t duty_cycle);
 static void turn_off_pwm_simul_day_on(void);
 static void init_fading_on(uint8_t duty_cycle, manual_fading_info_t *manual_fading_info);
-static void init_fading_off(manual_fading_info_t *manual_fading_info);
+static void init_fading_off(uint8_t duty_cycle, manual_fading_info_t *manual_fading_info);
 static void update_fading(manual_fading_info_t *manual_fading_info);
 static void stop_fading(manual_fading_info_t *manual_fading_info);
 void set_fading_status(fadng_status_t fading_status_aux);
@@ -122,7 +122,7 @@ static void init_fading_on(uint8_t duty_cycle, manual_fading_info_t *manual_fadi
     manual_fading_info->step_duty_cycle = (manual_fading_info->duty_cycle - 10) / manual_fading_info->max_number_of_steps;
 }
 //------------------------------------------------------------------------------
-static void init_fading_off(manual_fading_info_t *manual_fading_info)
+static void init_fading_off(uint8_t duty_cycle, manual_fading_info_t *manual_fading_info)
 {
     if(manual_fading_info->duty_cycle < 30)
     {
@@ -130,7 +130,8 @@ static void init_fading_off(manual_fading_info_t *manual_fading_info)
     }
     manual_fading_info->fading_type = DUTY_CYCLE_FADING_OFF;
     manual_fading_info->fading_status = FADING_IN_PROGRESS;
-    manual_fading_info->out_duty_cycle = manual_fading_info->duty_cycle;
+    manual_fading_info->duty_cycle = duty_cycle;
+    manual_fading_info->out_duty_cycle = duty_cycle;
     manual_fading_info->step_number = 0;
     manual_fading_info->max_number_of_steps = MAX_DUTY_CYCLE_STEPS;
     manual_fading_info->step_duty_cycle = manual_fading_info->duty_cycle / manual_fading_info->max_number_of_steps;
@@ -281,7 +282,6 @@ static void pwm_manager_task(void* arg)
 {
     pwm_event_t pwm_ev;
     manual_fading_info_t manual_fading_info;
-    manual_fading_info.duty_cycle = 50;
     manual_fading_info.fading_status = FADING_STOP;
     uint32_t update_fading_periodicity = 1000;
     
@@ -314,7 +314,7 @@ static void pwm_manager_task(void* arg)
                     break;
                 case TURN_OFF_SIMUL_DAY_ON:
                     //turn_off_pwm_simul_day_on();
-                    init_fading_off(&manual_fading_info);
+                    init_fading_off(pwm_ev.duty_cycle, &manual_fading_info);
                     break;
             }       
         }
@@ -383,11 +383,12 @@ void pwm_manager_turn_on_pwm_simul_day_on(uint8_t pwm_power_percent)
     xQueueSend(pwm_manager_queue, &ev, 10);
 }
 //------------------------------------------------------------------------------
-void pwm_manager_turn_off_pwm_simul_day_on(void)
+void pwm_manager_turn_off_pwm_simul_day_on(uint8_t duty_cycle)
 {
     pwm_event_t ev;
 
     ev.cmd = TURN_OFF_SIMUL_DAY_ON;
+    ev.duty_cycle = duty_cycle;
 
     xQueueSend(pwm_manager_queue, &ev, 10);
 }
