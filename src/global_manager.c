@@ -704,18 +704,48 @@ static void global_manager_task(void *arg)
                 {
                     nv_save_rele_vege_status(RELE_VEGE_ENABLE);
                 }
+                if((global_info.pwm_mode == MANUAL_ON) || ((global_info.pwm_mode == AUTOMATIC) && (!is_fading_in_progress())))
+                {
+                    pwm_manager_turn_off_pwm();
+                    vTaskDelay(100 / portTICK_PERIOD_MS);
+                }
                 global_info.rele_vege_status = RELE_VEGE_ENABLE;
                 led_manager_rele_vege_on();
                 vege_manager_turn_on();
+                if(global_info.pwm_mode == MANUAL_ON) 
+                {
+                    vTaskDelay(100 / portTICK_PERIOD_MS);
+                    pwm_manager_turn_on_pwm(global_info.pwm_manual_percent_power);
+                }
+                else if((global_info.pwm_mode == AUTOMATIC) && (!is_fading_in_progress()))
+                {
+                    vTaskDelay(100 / portTICK_PERIOD_MS);
+                    global_info.pwm_auto.output_status = PWM_OUTPUT_OFF;
+                }
                 break;
             case RELE_VEGE_OFF:
                 if ((global_info.rele_vege_status != RELE_VEGE_DISABLE) && (global_ev.value_read_from_flash == false))
                 {
                     nv_save_rele_vege_status(RELE_VEGE_DISABLE);
                 }
+                if((global_info.pwm_mode == MANUAL_ON) || ((global_info.pwm_mode == AUTOMATIC) && (!is_fading_in_progress())))
+                {
+                    pwm_manager_turn_off_pwm();
+                    vTaskDelay(100 / portTICK_PERIOD_MS);
+                }
                 global_info.rele_vege_status = RELE_VEGE_DISABLE;
                 led_manager_rele_vege_off();
                 vege_manager_turn_off();
+                if(global_info.pwm_mode == MANUAL_ON)
+                {
+                    vTaskDelay(100 / portTICK_PERIOD_MS);
+                    pwm_manager_turn_on_pwm(global_info.pwm_manual_percent_power);
+                }
+                else if((global_info.pwm_mode == AUTOMATIC) && (!is_fading_in_progress()))
+                {
+                    vTaskDelay(100 / portTICK_PERIOD_MS);
+                    global_info.pwm_auto.output_status = PWM_OUTPUT_OFF;
+                }
                 break;
             case SET_MANUAL_PWM_POWER:
 
