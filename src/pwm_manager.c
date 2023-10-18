@@ -39,6 +39,7 @@ typedef enum{
     UPDATE_DUTY_CYCLE = 3,
     TURN_ON_SIMUL_DAY_ON = 4,
     TURN_OFF_SIMUL_DAY_ON = 5,
+    RESUME_FADING_FUNCTION = 6,
 }pwm_event_cmds_t;
 
 typedef struct{
@@ -64,6 +65,7 @@ typedef struct{
     uint8_t step_duty_cycle;
     uint8_t step_number;
     uint8_t max_number_of_steps;
+    uint32_t target_duty_cycle;
 }manual_fading_info_t;
 //------------------- DECLARACION DE DATOS LOCALES -----------------------------
 //------------------------------------------------------------------------------
@@ -151,9 +153,9 @@ static void update_fading(manual_fading_info_t *manual_fading_info)
     {
         if(manual_fading_info->fading_status == FADING_IN_PROGRESS)
         {
-            target_duty = (((uint32_t)manual_fading_info->out_duty_cycle)*(8191)) / 100;
+            manual_fading_info->target_duty_cycle = (((uint32_t)manual_fading_info->out_duty_cycle)*(8191)) / 100;
 
-            ledc_set_fade_with_time(PWM_MODE, PWM_CHANNEL, target_duty, 10);
+            ledc_set_fade_with_time(PWM_MODE, PWM_CHANNEL, manual_fading_info->target_duty_cycle, 10);
             ledc_fade_start(PWM_MODE, PWM_CHANNEL, LEDC_FADE_NO_WAIT);
 
             manual_fading_info->step_number++;
@@ -168,9 +170,9 @@ static void update_fading(manual_fading_info_t *manual_fading_info)
             {
                 manual_fading_info->out_duty_cycle = manual_fading_info->duty_cycle;
                 led_manager_send_pwm_info(manual_fading_info->out_duty_cycle, 0, false);
-                target_duty = (((uint32_t)manual_fading_info->out_duty_cycle)*(8191)) / 100;
+                manual_fading_info->target_duty_cycle = (((uint32_t)manual_fading_info->out_duty_cycle)*(8191)) / 100;
 
-                ledc_set_fade_with_time(PWM_MODE, PWM_CHANNEL, target_duty, 10);
+                ledc_set_fade_with_time(PWM_MODE, PWM_CHANNEL, manual_fading_info->target_duty_cycle, 10);
                 ledc_fade_start(PWM_MODE, PWM_CHANNEL, LEDC_FADE_NO_WAIT);
 
                 manual_fading_info->fading_status = FADING_STOP;
@@ -181,9 +183,9 @@ static void update_fading(manual_fading_info_t *manual_fading_info)
     {
         if(manual_fading_info->fading_status == FADING_IN_PROGRESS)
         {
-            target_duty = (((uint32_t)manual_fading_info->out_duty_cycle)*(8191)) / 100;
+            manual_fading_info->target_duty_cycle = (((uint32_t)manual_fading_info->out_duty_cycle)*(8191)) / 100;
 
-            ledc_set_fade_with_time(PWM_MODE, PWM_CHANNEL, target_duty, 10);
+            ledc_set_fade_with_time(PWM_MODE, PWM_CHANNEL, manual_fading_info->target_duty_cycle, 10);
             ledc_fade_start(PWM_MODE, PWM_CHANNEL, LEDC_FADE_NO_WAIT);
 
             manual_fading_info->step_number++;
@@ -194,9 +196,9 @@ static void update_fading(manual_fading_info_t *manual_fading_info)
             {
                 manual_fading_info->out_duty_cycle = 0;
                 led_manager_send_pwm_info(manual_fading_info->out_duty_cycle, 0, false);
-                target_duty = (((uint32_t)manual_fading_info->out_duty_cycle)*(8191)) / 100;
+                manual_fading_info->target_duty_cycle = (((uint32_t)manual_fading_info->out_duty_cycle)*(8191)) / 100;
 
-                ledc_set_fade_with_time(PWM_MODE, PWM_CHANNEL, target_duty, 10);
+                ledc_set_fade_with_time(PWM_MODE, PWM_CHANNEL, manual_fading_info->target_duty_cycle, 10);
                 ledc_fade_start(PWM_MODE, PWM_CHANNEL, LEDC_FADE_NO_WAIT);
                 manual_fading_info->fading_status = FADING_STOP;
             }
@@ -316,6 +318,13 @@ static void pwm_manager_task(void* arg)
                     //turn_off_pwm_simul_day_on();
                     init_fading_off(pwm_ev.duty_cycle, &manual_fading_info);
                     break;
+                case RESUME_FADING_FUNCTION:
+                    if(manual_fading_info.fading_status == FADING_IN_PROGRESS)
+                    {
+                        ledc_set_fade_with_time(PWM_MODE, PWM_CHANNEL, manual_fading_info.target_duty_cycle, 10);
+                        ledc_fade_start(PWM_MODE, PWM_CHANNEL, LEDC_FADE_NO_WAIT);
+                    }            
+                    break;
             }       
         }
         else
@@ -389,6 +398,15 @@ void pwm_manager_turn_off_pwm_simul_day_on(uint8_t duty_cycle)
 
     ev.cmd = TURN_OFF_SIMUL_DAY_ON;
     ev.duty_cycle = duty_cycle;
+
+    xQueueSend(pwm_manager_queue, &ev, 10);
+}
+//------------------------------------------------------------------------------
+void pwm_manager_resume_fading_state_function(void)
+{
+    pwm_event_t ev;
+
+    ev.cmd = RESUME_FADING_FUNCTION;
 
     xQueueSend(pwm_manager_queue, &ev, 10);
 }

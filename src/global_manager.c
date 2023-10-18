@@ -704,7 +704,7 @@ static void global_manager_task(void *arg)
                 {
                     nv_save_rele_vege_status(RELE_VEGE_ENABLE);
                 }
-                if((global_info.pwm_mode == MANUAL_ON) || ((global_info.pwm_mode == AUTOMATIC) && (!is_fading_in_progress())))
+                if((global_info.pwm_mode == MANUAL_ON) || (global_info.pwm_mode == AUTOMATIC))
                 {
                     pwm_manager_turn_off_pwm();
                     vTaskDelay(100 / portTICK_PERIOD_MS);
@@ -717,10 +717,17 @@ static void global_manager_task(void *arg)
                     vTaskDelay(100 / portTICK_PERIOD_MS);
                     pwm_manager_turn_on_pwm(global_info.pwm_manual_percent_power);
                 }
-                else if((global_info.pwm_mode == AUTOMATIC) && (!is_fading_in_progress()))
+                else if(global_info.pwm_mode == AUTOMATIC)
                 {
                     vTaskDelay(100 / portTICK_PERIOD_MS);
-                    global_info.pwm_auto.output_status = PWM_OUTPUT_OFF;
+                    if(!is_fading_in_progress())
+                    {
+                        global_info.pwm_auto.output_status = PWM_OUTPUT_OFF;
+                    }
+                    else
+                    {
+                        pwm_manager_resume_fading_state_function();
+                    }
                 }
                 break;
             case RELE_VEGE_OFF:
@@ -728,7 +735,7 @@ static void global_manager_task(void *arg)
                 {
                     nv_save_rele_vege_status(RELE_VEGE_DISABLE);
                 }
-                if((global_info.pwm_mode == MANUAL_ON) || ((global_info.pwm_mode == AUTOMATIC) && (!is_fading_in_progress())))
+                if((global_info.pwm_mode == MANUAL_ON) || (global_info.pwm_mode == AUTOMATIC))
                 {
                     pwm_manager_turn_off_pwm();
                     vTaskDelay(100 / portTICK_PERIOD_MS);
@@ -741,10 +748,17 @@ static void global_manager_task(void *arg)
                     vTaskDelay(100 / portTICK_PERIOD_MS);
                     pwm_manager_turn_on_pwm(global_info.pwm_manual_percent_power);
                 }
-                else if((global_info.pwm_mode == AUTOMATIC) && (!is_fading_in_progress()))
+                else if(global_info.pwm_mode == AUTOMATIC)
                 {
                     vTaskDelay(100 / portTICK_PERIOD_MS);
-                    global_info.pwm_auto.output_status = PWM_OUTPUT_OFF;
+                    if(!is_fading_in_progress())
+                    {
+                        global_info.pwm_auto.output_status = PWM_OUTPUT_OFF;
+                    }
+                    else
+                    {
+                        pwm_manager_resume_fading_state_function();
+                    }
                 }
                 break;
             case SET_MANUAL_PWM_POWER:
