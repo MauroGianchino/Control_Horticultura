@@ -704,29 +704,50 @@ static void global_manager_task(void *arg)
                 {
                     nv_save_rele_vege_status(RELE_VEGE_ENABLE);
                 }
-                if((global_info.pwm_mode == MANUAL_ON) || (global_info.pwm_mode == AUTOMATIC))
+                if(global_info.pwm_mode == MANUAL_ON)
                 {
                     pwm_manager_turn_off_pwm();
-                    vTaskDelay(100 / portTICK_PERIOD_MS);
+                    vTaskDelay(200 / portTICK_PERIOD_MS);
+                }
+                else if(global_info.pwm_mode == AUTOMATIC)
+                {
+                    if(global_info.pwm_auto.simul_day_status == SIMUL_DAY_OFF)                    
+                    {
+                        pwm_manager_turn_off_pwm();
+                    }
+                    else
+                    {
+                        pwm_manager_only_turn_off_pwm();
+                    }
+                    vTaskDelay(200 / portTICK_PERIOD_MS);
                 }
                 global_info.rele_vege_status = RELE_VEGE_ENABLE;
                 led_manager_rele_vege_on();
                 vege_manager_turn_on();
                 if(global_info.pwm_mode == MANUAL_ON) 
                 {
-                    vTaskDelay(100 / portTICK_PERIOD_MS);
+                    vTaskDelay(200 / portTICK_PERIOD_MS);
                     pwm_manager_turn_on_pwm(global_info.pwm_manual_percent_power);
                 }
                 else if(global_info.pwm_mode == AUTOMATIC)
                 {
-                    vTaskDelay(100 / portTICK_PERIOD_MS);
-                    if(!is_fading_in_progress())
+                    vTaskDelay(200 / portTICK_PERIOD_MS);
+                    if(global_info.pwm_auto.simul_day_status == SIMUL_DAY_OFF)                    
                     {
+                        printf("MARCA 1 \n");
                         global_info.pwm_auto.output_status = PWM_OUTPUT_OFF;
                     }
                     else
                     {
-                        pwm_manager_resume_fading_state_function();
+                        if(!is_fading_in_progress())
+                        {   
+                            global_info.pwm_auto.output_status = PWM_OUTPUT_OFF; 
+                        }
+                        else
+                        {
+                            printf("MARCA 2 \n");
+                            pwm_manager_resume_fading_state_function();
+                        }
                     }
                 }
                 break;
@@ -735,29 +756,50 @@ static void global_manager_task(void *arg)
                 {
                     nv_save_rele_vege_status(RELE_VEGE_DISABLE);
                 }
-                if((global_info.pwm_mode == MANUAL_ON) || (global_info.pwm_mode == AUTOMATIC))
+                if(global_info.pwm_mode == MANUAL_ON)
                 {
                     pwm_manager_turn_off_pwm();
-                    vTaskDelay(100 / portTICK_PERIOD_MS);
+                    vTaskDelay(200 / portTICK_PERIOD_MS);
+                }
+                else if(global_info.pwm_mode == AUTOMATIC)
+                {
+                    if(global_info.pwm_auto.simul_day_status == SIMUL_DAY_OFF)                    
+                    {
+                        pwm_manager_turn_off_pwm();
+                    }
+                    else
+                    {
+                        pwm_manager_only_turn_off_pwm();
+                    }
+                    vTaskDelay(200 / portTICK_PERIOD_MS);
                 }
                 global_info.rele_vege_status = RELE_VEGE_DISABLE;
                 led_manager_rele_vege_off();
                 vege_manager_turn_off();
                 if(global_info.pwm_mode == MANUAL_ON)
                 {
-                    vTaskDelay(100 / portTICK_PERIOD_MS);
+                    vTaskDelay(200 / portTICK_PERIOD_MS);
                     pwm_manager_turn_on_pwm(global_info.pwm_manual_percent_power);
                 }
                 else if(global_info.pwm_mode == AUTOMATIC)
                 {
-                    vTaskDelay(100 / portTICK_PERIOD_MS);
-                    if(!is_fading_in_progress())
+                    vTaskDelay(200 / portTICK_PERIOD_MS);
+                    if(global_info.pwm_auto.simul_day_status == SIMUL_DAY_OFF)
                     {
+                        printf("MARCA 1 \n");
                         global_info.pwm_auto.output_status = PWM_OUTPUT_OFF;
                     }
                     else
                     {
-                        pwm_manager_resume_fading_state_function();
+                        if(!is_fading_in_progress())
+                        {   
+                            global_info.pwm_auto.output_status = PWM_OUTPUT_OFF; 
+                        }
+                        else
+                        {
+                            printf("MARCA 2 \n");
+                            pwm_manager_resume_fading_state_function();
+                        }
                     }
                 }
                 break;

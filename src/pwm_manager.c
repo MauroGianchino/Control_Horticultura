@@ -40,6 +40,7 @@ typedef enum{
     TURN_ON_SIMUL_DAY_ON = 4,
     TURN_OFF_SIMUL_DAY_ON = 5,
     RESUME_FADING_FUNCTION = 6,
+    ONLY_TURN_OFF_PWM = 7,
 }pwm_event_cmds_t;
 
 typedef struct{
@@ -241,7 +242,7 @@ static void turn_on_pwm(uint8_t duty_cycle)
 
     target_duty = (((uint32_t)duty_cycle)*(8191)) / 100;
 
-    ledc_set_fade_with_time(PWM_MODE, PWM_CHANNEL, target_duty, SEC_1_FADING_TIME);
+    ledc_set_fade_with_time(PWM_MODE, PWM_CHANNEL, target_duty, 10);
     ledc_fade_start(PWM_MODE, PWM_CHANNEL, LEDC_FADE_NO_WAIT);
 }
 //------------------------------------------------------------------------------
@@ -276,7 +277,7 @@ static void update_pwm(uint8_t duty_cycle)
 //------------------------------------------------------------------------------
 static void turn_off_pwm(void)
 {
-    ledc_set_fade_with_time(PWM_MODE, PWM_CHANNEL, 0, SEC_1_FADING_TIME);
+    ledc_set_fade_with_time(PWM_MODE, PWM_CHANNEL, 0, 10);
     ledc_fade_start(PWM_MODE, PWM_CHANNEL, LEDC_FADE_NO_WAIT);
 }
 //------------------------------------------------------------------------------
@@ -319,11 +320,15 @@ static void pwm_manager_task(void* arg)
                     init_fading_off(pwm_ev.duty_cycle, &manual_fading_info);
                     break;
                 case RESUME_FADING_FUNCTION:
-                    if(manual_fading_info.fading_status == FADING_IN_PROGRESS)
+                    if(manual_fading_info.fading_status != FADING_STOP)
                     {
+                        printf("RESUME FADING FUNCTION \n");
                         ledc_set_fade_with_time(PWM_MODE, PWM_CHANNEL, manual_fading_info.target_duty_cycle, 10);
                         ledc_fade_start(PWM_MODE, PWM_CHANNEL, LEDC_FADE_NO_WAIT);
                     }            
+                    break;
+                case ONLY_TURN_OFF_PWM:
+                    turn_off_pwm();
                     break;
             }       
         }
@@ -407,6 +412,15 @@ void pwm_manager_resume_fading_state_function(void)
     pwm_event_t ev;
 
     ev.cmd = RESUME_FADING_FUNCTION;
+
+    xQueueSend(pwm_manager_queue, &ev, 10);
+}
+//------------------------------------------------------------------------------
+void pwm_manager_only_turn_off_pwm(void)
+{
+    pwm_event_t ev;
+
+    ev.cmd = ONLY_TURN_OFF_PWM;
 
     xQueueSend(pwm_manager_queue, &ev, 10);
 }
