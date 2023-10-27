@@ -816,38 +816,28 @@ static void global_manager_task(void *arg)
                 global_info.pwm_manual_percent_power = global_ev.value;
                 break;
             case SET_AUTO_PWM_POWER:
-                if(!is_fading_in_progress())
+                if ((global_info.pwm_auto.percent_power != global_ev.value) && (global_ev.value_read_from_flash == false))
                 {
-                    if ((global_info.pwm_auto.percent_power != global_ev.value) && (global_ev.value_read_from_flash == false))
-                    {
-                        nv_save_auto_percent_power(global_ev.value);
-                    }
-                    global_info.pwm_auto.percent_power = global_ev.value;
+                    nv_save_auto_percent_power(global_ev.value);
                 }
+                global_info.pwm_auto.percent_power = global_ev.value;    
                 break;
             case UPDATE_SIMUL_DAY_FUNCTION_STATUS:
-                if(!is_fading_in_progress())
+                if ((global_info.pwm_auto.simul_day_status != global_ev.simul_day_function_status) && (global_ev.value_read_from_flash == false))
                 {
-                    if ((global_info.pwm_auto.simul_day_status != global_ev.simul_day_function_status) && (global_ev.value_read_from_flash == false))
-                    {
-                        nv_save_simul_day_status(global_ev.simul_day_function_status);
-                    }
-                    global_info.pwm_auto.simul_day_status = global_ev.simul_day_function_status;
+                    nv_save_simul_day_status(global_ev.simul_day_function_status);
                 }
+                global_info.pwm_auto.simul_day_status = global_ev.simul_day_function_status;  
                 break;
             case UPDATE_PWM_CALENDAR:
-                //if (((check_30_min_difference_between_hours(global_ev.pwm_turn_off_time, global_ev.pwm_turn_on_time)) && (global_info.pwm_auto.simul_day_status == SIMUL_DAY_ON)) || (global_info.pwm_auto.simul_day_status == SIMUL_DAY_OFF))
-                //{
-                    if (((global_ev.pwm_turn_on_time.tm_hour != global_info.pwm_auto.turn_on_time.tm_hour) || (global_ev.pwm_turn_on_time.tm_min != global_info.pwm_auto.turn_on_time.tm_min) || (global_ev.pwm_turn_off_time.tm_hour != global_info.pwm_auto.turn_off_time.tm_hour) || (global_ev.pwm_turn_off_time.tm_min != global_info.pwm_auto.turn_off_time.tm_min)) && (global_ev.value_read_from_flash == false))
-                    {
-                        pwm_auto_info.turn_on_time = global_ev.pwm_turn_on_time;
-                        pwm_auto_info.turn_off_time = global_ev.pwm_turn_off_time;
-                        nv_save_pwm_calendar(pwm_auto_info);
-                    }
-                    global_info.pwm_auto.turn_on_time = global_ev.pwm_turn_on_time;
-                    global_info.pwm_auto.turn_off_time = global_ev.pwm_turn_off_time;
-                //}
-
+                if (((global_ev.pwm_turn_on_time.tm_hour != global_info.pwm_auto.turn_on_time.tm_hour) || (global_ev.pwm_turn_on_time.tm_min != global_info.pwm_auto.turn_on_time.tm_min) || (global_ev.pwm_turn_off_time.tm_hour != global_info.pwm_auto.turn_off_time.tm_hour) || (global_ev.pwm_turn_off_time.tm_min != global_info.pwm_auto.turn_off_time.tm_min)) && (global_ev.value_read_from_flash == false))
+                {
+                    pwm_auto_info.turn_on_time = global_ev.pwm_turn_on_time;
+                    pwm_auto_info.turn_off_time = global_ev.pwm_turn_off_time;
+                    nv_save_pwm_calendar(pwm_auto_info);
+                }
+                global_info.pwm_auto.turn_on_time = global_ev.pwm_turn_on_time;
+                global_info.pwm_auto.turn_off_time = global_ev.pwm_turn_off_time;
 #ifdef DEBUG_MODULE
                 // printf("PWM ON calendar: %s", asctime(&global_info.pwm_auto.turn_on_time));
                 // printf("PWM OFF calendar: %s", asctime(&global_info.pwm_auto.turn_off_time));

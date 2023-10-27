@@ -95,7 +95,6 @@ void set_fading_status(fadng_status_t fading_status_aux);
 
 //------------------- DEFINICION DE FUNCIONES LOCALES --------------------------
 //------------------------------------------------------------------------------
-
 uint8_t is_fading_in_progress(void)
 {
     if(fading_status == FADING_IN_PROGRESS)
