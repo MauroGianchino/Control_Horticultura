@@ -23,6 +23,7 @@ typedef struct{
     struct tm current_time;
     pwm_output_status_t output_status;
     bool update_output_percent_power;
+    bool update_calendar; 
     struct tm turn_on_time;
     struct tm turn_off_time;
     simul_day_status_t simul_day_status;

@@ -83,8 +83,7 @@ static uint8_t is_date1_grater_than_date2(struct tm date1, struct tm date2)
         || ((date1.tm_hour == date2.tm_hour) \
         && (date1.tm_min > date2.tm_min)) \
         || ((date1.tm_hour == date2.tm_hour) \
-        && (date1.tm_min == date2.tm_min) \ 
-        && (date1.tm_sec > date2.tm_sec)))
+        && (date1.tm_min == date2.tm_min) && (date1.tm_sec > date2.tm_sec)))
     {
         return 1;
     }
@@ -185,38 +184,20 @@ void pwm_auto_manager_handler(pwm_auto_info_t *info, bool pwm_auto_enable)
         {
             if(info->simul_day_status == true) 
             {
-                if(is_fading_off_started == false)
+                if(is_within_range(info->current_time, info->turn_on_time, info->turn_off_time))
                 {
-                    toff_aux = info->turn_off_time;
-                    subtract_15_minutes(&toff_aux); 
-
-                    if((pwm_percentage_ant != info->percent_power) && (!is_fading_in_progress()))
+                    if(info->update_calendar == true)
                     {
-                        #ifdef DEBUG_MODULE
-                            printf("PWM_AUTO_POWER UPDATED \n");
-                        #endif
-                        pwm_manager_turn_on_pwm(info->percent_power);
-                        led_manager_send_pwm_info(info->percent_power, 0, false);
-                    }
+                        toff_aux = info->turn_off_time;
+                        subtract_15_minutes(&toff_aux);
 
-                    if((info->update_output_percent_power == true) && (!is_fading_in_progress()))
-                    {
-                        info->update_output_percent_power = false;
-                        #ifdef DEBUG_MODULE
-                            printf("PWM_AUTO_POWER UPDATED \n");
-                        #endif
-
-                        pwm_manager_turn_on_pwm(info->percent_power);
-                        led_manager_send_pwm_info(info->percent_power, 1, true);
-                    }
-
-                    if((is_date1_grater_than_date2(info->current_time, toff_aux) == 1) \
-                    && (is_date1_grater_than_date2(info->turn_off_time, info->turn_on_time) == 1))
-                    {
-                        #ifdef DEBUG_MODULE
-                            printf("PWM_AUTO_WORKING_PWM_OFF \n");
-                        #endif
-                        if(is_pwm_in_fading_off_state(info->current_time, toff_aux))
+                        info->update_calendar = false;
+                        if(is_pwm_in_fading_on_state(info->current_time, info->turn_on_time))
+                        {
+                            pwm_manager_turn_on_pwm_simul_day_on(info->percent_power);
+                            led_manager_send_pwm_info(info->percent_power, 1, true);
+                        }
+                        else if(is_pwm_in_fading_off_state(info->current_time, toff_aux)) 
                         {
                             pwm_manager_turn_off_pwm_simul_day_on(info->percent_power);
                             is_fading_off_started = true;
@@ -224,74 +205,129 @@ void pwm_auto_manager_handler(pwm_auto_info_t *info, bool pwm_auto_enable)
                         }
                         else
                         {
-                            pwm_manager_turn_off_pwm();
-                            led_manager_send_pwm_info(0, 0, false);
-                            info->output_status = PWM_OUTPUT_OFF;
-                        }  
+                            pwm_manager_turn_on_pwm(info->percent_power);
+                            led_manager_send_pwm_info(info->percent_power, 0, false);
+                        }
                     }
-                    else if((is_date1_grater_than_date2(info->turn_on_time, info->current_time) == 1) \
+
+                    if(is_fading_off_started == false)
+                    {
+                        toff_aux = info->turn_off_time;
+                        subtract_15_minutes(&toff_aux); 
+
+                        if((pwm_percentage_ant != info->percent_power) && (!is_fading_in_progress()))
+                        {
+                            #ifdef DEBUG_MODULE
+                                printf("PWM_AUTO_POWER UPDATED \n");
+                            #endif
+                            pwm_manager_turn_on_pwm(info->percent_power);
+                            led_manager_send_pwm_info(info->percent_power, 0, false);
+                        }
+
+                        if((info->update_output_percent_power == true) && (!is_fading_in_progress()))
+                        {
+                            info->update_output_percent_power = false;
+                            #ifdef DEBUG_MODULE
+                                printf("PWM_AUTO_POWER UPDATED \n");
+                            #endif
+
+                            pwm_manager_turn_on_pwm(info->percent_power);
+                            led_manager_send_pwm_info(info->percent_power, 1, true);
+                        }
+
+                        if((is_date1_grater_than_date2(info->current_time, toff_aux) == 1) \
                         && (is_date1_grater_than_date2(info->turn_off_time, info->turn_on_time) == 1))
-                    {
-                        info->output_status = PWM_OUTPUT_OFF;
-                        pwm_manager_turn_off_pwm();
-                        led_manager_send_pwm_info(0, 0, false);
-                    }
-                    else if((is_date1_grater_than_date2(info->current_time, toff_aux) == 1) \
-                        && (is_date1_grater_than_date2(info->turn_on_time, info->current_time) == 1) \
-                        && (is_date1_grater_than_date2(info->turn_on_time, info->turn_off_time) == 1))
-                    {
-                        #ifdef DEBUG_MODULE
-                            printf("PWM_AUTO_WORKING_PWM_OFF \n");
-                        #endif
-                        
-                        if(is_pwm_in_fading_off_state(info->current_time, toff_aux))
                         {
-                            pwm_manager_turn_off_pwm_simul_day_on(info->percent_power);
-                            is_fading_off_started = true;
-                            led_manager_send_pwm_info(info->percent_power, 1, true);
+                            #ifdef DEBUG_MODULE
+                                printf("PWM_AUTO_WORKING_PWM_OFF \n");
+                            #endif
+                            if(is_pwm_in_fading_off_state(info->current_time, toff_aux))
+                            {
+                                pwm_manager_turn_off_pwm_simul_day_on(info->percent_power);
+                                is_fading_off_started = true;
+                                led_manager_send_pwm_info(info->percent_power, 1, true);
+                            }
+                            else
+                            {
+                                pwm_manager_turn_off_pwm();
+                                led_manager_send_pwm_info(0, 0, false);
+                                info->output_status = PWM_OUTPUT_OFF;
+                            }  
                         }
-                        else
+                        else if((is_date1_grater_than_date2(info->turn_on_time, info->current_time) == 1) \
+                            && (is_date1_grater_than_date2(info->turn_off_time, info->turn_on_time) == 1))
                         {
                             info->output_status = PWM_OUTPUT_OFF;
                             pwm_manager_turn_off_pwm();
                             led_manager_send_pwm_info(0, 0, false);
                         }
+                        else if((is_date1_grater_than_date2(info->current_time, toff_aux) == 1) \
+                            && (is_date1_grater_than_date2(info->turn_on_time, info->current_time) == 1) \
+                            && (is_date1_grater_than_date2(info->turn_on_time, info->turn_off_time) == 1))
+                        {
+                            #ifdef DEBUG_MODULE
+                                printf("PWM_AUTO_WORKING_PWM_OFF \n");
+                            #endif
+                            
+                            if(is_pwm_in_fading_off_state(info->current_time, toff_aux))
+                            {
+                                pwm_manager_turn_off_pwm_simul_day_on(info->percent_power);
+                                is_fading_off_started = true;
+                                led_manager_send_pwm_info(info->percent_power, 1, true);
+                            }
+                            else
+                            {
+                                info->output_status = PWM_OUTPUT_OFF;
+                                pwm_manager_turn_off_pwm();
+                                led_manager_send_pwm_info(0, 0, false);
+                            }
+                        }
                     }
-                }
+                    else
+                    {
+                        if((is_date1_grater_than_date2(info->current_time, info->turn_off_time) == 1) \
+                            && (is_date1_grater_than_date2(info->turn_off_time, info->turn_on_time) == 1))
+                        {
+                            #ifdef DEBUG_MODULE
+                                printf("PWM_AUTO_WORKING_PWM_OFF Toff mayor Ton \n");
+                            #endif
+                            info->output_status = PWM_OUTPUT_OFF;
+                            is_fading_off_started = false;
+                            pwm_manager_turn_off_pwm();
+                            led_manager_send_pwm_info(0, 0, false);
+                        }
+                        else if((is_date1_grater_than_date2(info->turn_on_time, info->current_time) == 1) \
+                            && (is_date1_grater_than_date2(info->turn_off_time, info->turn_on_time) == 1))
+                        {
+                            info->output_status = PWM_OUTPUT_OFF;
+                            pwm_manager_turn_off_pwm();
+                            is_fading_off_started = false;
+                            led_manager_send_pwm_info(0, 0, false);
+                        }
+                        else if((is_date1_grater_than_date2(info->current_time, info->turn_off_time) == 1) \
+                            && (is_date1_grater_than_date2(info->turn_on_time, info->current_time) == 1) \
+                            && (is_date1_grater_than_date2(info->turn_on_time, info->turn_off_time) == 1))
+                        {
+                            #ifdef DEBUG_MODULE
+                                printf("PWM_AUTO_WORKING_PWM_OFF Ton mayor Toff \n");
+                            #endif
+                            info->output_status = PWM_OUTPUT_OFF;
+                            pwm_manager_turn_off_pwm();
+                            is_fading_off_started = false;
+                            led_manager_send_pwm_info(0, 0, false);
+                            
+                        }
+                    }
+                }   
                 else
                 {
-                    if((is_date1_grater_than_date2(info->current_time, info->turn_off_time) == 1) \
-                        && (is_date1_grater_than_date2(info->turn_off_time, info->turn_on_time) == 1))
-                    {
-                        #ifdef DEBUG_MODULE
-                            printf("PWM_AUTO_WORKING_PWM_OFF Toff mayor Ton \n");
-                        #endif
-                        info->output_status = PWM_OUTPUT_OFF;
-                        is_fading_off_started = false;
-                        pwm_manager_turn_off_pwm();
-                        led_manager_send_pwm_info(0, 0, false);
-                    }
-                    else if((is_date1_grater_than_date2(info->turn_on_time, info->current_time) == 1) \
-                        && (is_date1_grater_than_date2(info->turn_off_time, info->turn_on_time) == 1))
-                    {
-                        info->output_status = PWM_OUTPUT_OFF;
-                        pwm_manager_turn_off_pwm();
-                        is_fading_off_started = false;
-                        led_manager_send_pwm_info(0, 0, false);
-                    }
-                    else if((is_date1_grater_than_date2(info->current_time, info->turn_off_time) == 1) \
-                        && (is_date1_grater_than_date2(info->turn_on_time, info->current_time) == 1) \
-                        && (is_date1_grater_than_date2(info->turn_on_time, info->turn_off_time) == 1))
-                    {
-                        #ifdef DEBUG_MODULE
-                            printf("PWM_AUTO_WORKING_PWM_OFF Ton mayor Toff \n");
-                        #endif
-                        info->output_status = PWM_OUTPUT_OFF;
-                        pwm_manager_turn_off_pwm();
-                        is_fading_off_started = false;
-                        led_manager_send_pwm_info(0, 0, false);
-                        
-                    }
+                    #ifdef DEBUG_MODULE
+                        printf("PWM_AUTO_WORKING_PWM_OFF Ton mayor Toff \n");
+                    #endif
+                    info->output_status = PWM_OUTPUT_OFF;
+                    pwm_manager_turn_off_pwm();
+                    is_fading_off_started = false;
+                    led_manager_send_pwm_info(0, 0, false);
                 }
             }
             else

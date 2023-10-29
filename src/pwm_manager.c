@@ -41,6 +41,7 @@ typedef enum{
     TURN_OFF_SIMUL_DAY_ON = 5,
     RESUME_FADING_FUNCTION = 6,
     ONLY_TURN_OFF_PWM = 7,
+    GENERAL_UPDATE = 8,
 }pwm_event_cmds_t;
 
 typedef struct{
@@ -326,6 +327,9 @@ static void pwm_manager_task(void* arg)
                         ledc_fade_start(PWM_MODE, PWM_CHANNEL, LEDC_FADE_NO_WAIT);
                     }            
                     break;
+                case GENERAL_UPDATE:
+                    update_fading_periodicity = 1000;
+                    break;
                 case ONLY_TURN_OFF_PWM:
                     turn_off_pwm();
                     break;
@@ -420,6 +424,15 @@ void pwm_manager_only_turn_off_pwm(void)
     pwm_event_t ev;
 
     ev.cmd = ONLY_TURN_OFF_PWM;
+
+    xQueueSend(pwm_manager_queue, &ev, 10);
+}
+//------------------------------------------------------------------------------
+void pwm_manager_general_update(void)
+{
+    pwm_event_t ev;
+
+    ev.cmd = GENERAL_UPDATE;
 
     xQueueSend(pwm_manager_queue, &ev, 10);
 }

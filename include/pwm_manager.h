@@ -30,6 +30,7 @@ void pwm_manager_turn_off_pwm_simul_day_on(uint8_t duty_cycle);
 uint8_t is_fading_in_progress(void);
 void pwm_manager_resume_fading_state_function(void);
 void pwm_manager_only_turn_off_pwm(void);
+void pwm_manager_general_update(void);
 
 //------------------- FIN DEL ARCHIVO ------------------------------------------
 #endif /* LED_MANAGER_H__ */

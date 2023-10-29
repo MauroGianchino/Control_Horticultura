@@ -531,6 +531,7 @@ static void global_manager_task(void *arg)
     global_info.pwm_manual_percent_power = 10;
     global_info.triac_auto.output_status = TRIAC_OUTPUT_OFF;
     global_info.pwm_auto.output_status = PWM_OUTPUT_OFF;
+    global_info.pwm_auto.update_calendar = false;
 
     // INIT FROM FLASH
     nv_init_ssid_ap_wifi();
@@ -838,6 +839,9 @@ static void global_manager_task(void *arg)
                 }
                 global_info.pwm_auto.turn_on_time = global_ev.pwm_turn_on_time;
                 global_info.pwm_auto.turn_off_time = global_ev.pwm_turn_off_time;
+                pwm_manager_general_update();
+                global_info.pwm_auto.update_calendar = true;
+
 #ifdef DEBUG_MODULE
                 // printf("PWM ON calendar: %s", asctime(&global_info.pwm_auto.turn_on_time));
                 // printf("PWM OFF calendar: %s", asctime(&global_info.pwm_auto.turn_off_time));
