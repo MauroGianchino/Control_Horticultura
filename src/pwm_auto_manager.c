@@ -194,16 +194,22 @@ void pwm_auto_manager_handler(pwm_auto_info_t *info, bool pwm_auto_enable)
                         info->update_calendar = false;
                         if(is_pwm_in_fading_on_state(info->current_time, info->turn_on_time))
                         {
+                            #ifdef DEBUG_MODULE
+                                printf("FADING_ON \n");
+                            #endif
                             pwm_manager_turn_on_pwm_simul_day_on(info->percent_power);
                             led_manager_send_pwm_info(info->percent_power, 1, true);
                         }
                         else if(is_pwm_in_fading_off_state(info->current_time, toff_aux)) 
                         {
+                            #ifdef DEBUG_MODULE
+                                printf("FADING_OFF \n");
+                            #endif
                             pwm_manager_turn_off_pwm_simul_day_on(info->percent_power);
                             is_fading_off_started = true;
                             led_manager_send_pwm_info(info->percent_power, 1, true);
                         }
-                        else
+                        else if(info->update_output_percent_power == true)
                         {
                             pwm_manager_turn_on_pwm(info->percent_power);
                             led_manager_send_pwm_info(info->percent_power, 0, false);
@@ -222,17 +228,6 @@ void pwm_auto_manager_handler(pwm_auto_info_t *info, bool pwm_auto_enable)
                             #endif
                             pwm_manager_turn_on_pwm(info->percent_power);
                             led_manager_send_pwm_info(info->percent_power, 0, false);
-                        }
-
-                        if((info->update_output_percent_power == true) && (!is_fading_in_progress()))
-                        {
-                            info->update_output_percent_power = false;
-                            #ifdef DEBUG_MODULE
-                                printf("PWM_AUTO_POWER UPDATED \n");
-                            #endif
-
-                            pwm_manager_turn_on_pwm(info->percent_power);
-                            led_manager_send_pwm_info(info->percent_power, 1, true);
                         }
 
                         if((is_date1_grater_than_date2(info->current_time, toff_aux) == 1) \
