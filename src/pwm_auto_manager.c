@@ -205,7 +205,8 @@ void pwm_auto_manager_handler(pwm_auto_info_t *info, bool pwm_auto_enable)
                         #ifdef DEBUG_MODULE
                             printf("PWM_AUTO_POWER UPDATED \n");
                         #endif
-                        pwm_manager_turn_on_pwm_simul_day_on(info->percent_power);
+
+                        pwm_manager_turn_on_pwm(info->percent_power);
                         led_manager_send_pwm_info(info->percent_power, 1, true);
                     }
 
