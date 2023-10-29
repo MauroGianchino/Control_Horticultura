@@ -299,8 +299,8 @@ static void set_pwm_indicator(uint8_t duty_cycle, uint8_t is_simul_day_working)
 
     pwm_time = 1.78 * (duty_cycle) + 22;
 
-    // printf(" tiempo de toggle de pwm %f ms \n", pwm_time);
-    // printf(" duty cycle de pwm %d \n", duty_cycle);
+    printf(" tiempo de toggle de pwm %f ms \n", pwm_time);
+    printf(" duty cycle de pwm %d \n", duty_cycle);
 
     if (duty_cycle < 10)
     {
@@ -313,7 +313,7 @@ static void set_pwm_indicator(uint8_t duty_cycle, uint8_t is_simul_day_working)
     {
         if (is_simul_day_working != 1)
         {
-            if ((duty_cycle > 10) && (duty_cycle < 34))
+            if ((duty_cycle >= 10) && (duty_cycle < 34))
             {
                 pwm_toggle_mode = 1;
             }
@@ -321,7 +321,7 @@ static void set_pwm_indicator(uint8_t duty_cycle, uint8_t is_simul_day_working)
             {
                 pwm_toggle_mode = 2;
             }
-            else if ((duty_cycle >= 67) && (duty_cycle < 100))
+            else if ((duty_cycle >= 67) && (duty_cycle <= 100))
             {
                 pwm_toggle_mode = 3;
             }
