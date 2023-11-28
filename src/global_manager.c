@@ -894,10 +894,10 @@ static void global_manager_task(void *arg)
                     nv_save_pote_max_reference(global_ev.uint16_value);
                 }
                 global_info.max_pote_reference = global_ev.uint16_value;
+                analog_input_set_max_pote_reference(global_info.max_pote_reference);
 #ifdef DEBUG_MODULE
                 ESP_LOGI("GLOBALMANAGER", " MAX POTE REFERENCE %d", global_info.max_pote_reference);
 #endif
-
                 break;
             default:
                 break;

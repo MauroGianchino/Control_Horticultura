@@ -25,12 +25,14 @@
 //------------------------------------------------------------------------------
 typedef enum{
     CMD_UNDEFINED = 0,
-    CHANGE_PWM_MODE = 1
+    CHANGE_PWM_MODE = 1,
+    MAX_POTE_REFERENCE = 2,
 }adc_cmds_t;
 
 typedef struct{
     adc_cmds_t cmd;
     output_mode_t pwm_mode;
+    uint16_t max_pote_reference;
 }adc_data_t;
 //------------------- DECLARACION DE DATOS LOCALES -----------------------------
 //------------------------------------------------------------------------------
@@ -78,6 +80,7 @@ static void analog_input_manager_task(void* arg)
     int per_pwm = 0;
     adc_read_value[index] = 0;
     esp_err_t ret;
+    uint16_t max_pote_reference = CUENTAS_ADC_100_PER_PWM;
     config_analog_input();
 
     vTaskDelay(2000 / portTICK_PERIOD_MS);
@@ -91,6 +94,9 @@ static void analog_input_manager_task(void* arg)
                     break;
                 case CHANGE_PWM_MODE:
                     pwm_mode = adc_data_ev.pwm_mode;
+                    break;
+                case MAX_POTE_REFERENCE:
+                    max_pote_reference = adc_data_ev.max_pote_reference;
                     break;
             }
         }
@@ -112,7 +118,7 @@ static void analog_input_manager_task(void* arg)
                         val = val / adc_vec_length;
                         index = 0;
 
-                        per_pwm = (val*100) / CUENTAS_ADC_100_PER_PWM;
+                        per_pwm = (val*100) / max_pote_reference;
                         global_manager_set_pwm_power_value_manual((uint8_t)per_pwm);
                         //#ifdef DEBUG_MODULE
                         //    printf("Valor ADC channel 5: %d \n", val);
@@ -150,6 +156,14 @@ void analog_input_send_pwm_mode(output_mode_t pwm_mode)
     adc_data_t ev;
     ev.cmd = CHANGE_PWM_MODE;
     ev.pwm_mode = pwm_mode;
+    xQueueSend(adc_data_queue, &ev, 10);
+}
+//------------------------------------------------------------------------------
+void analog_input_set_max_pote_reference(uint16_t max_pote_reference)
+{
+    adc_data_t ev;
+    ev.cmd = MAX_POTE_REFERENCE;
+    ev.max_pote_reference = max_pote_reference;
     xQueueSend(adc_data_queue, &ev, 10);
 }
 //---------------------------- END OF FILE -------------------------------------
