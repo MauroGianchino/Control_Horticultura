@@ -75,6 +75,8 @@ static void first_time_flash(void)
     init_parameter_in_flash_uint32(TRIAC2_DATE_ENABLE, TRIAC2_DATE_ENABLE_DEFAULT);
     init_parameter_in_flash_uint32(TRIAC3_DATE_ENABLE, TRIAC3_DATE_ENABLE_DEFAULT);
     init_parameter_in_flash_uint32(TRIAC4_DATE_ENABLE, TRIAC4_DATE_ENABLE_DEFAULT);
+    
+    init_parameter_in_flash_uint32(POTE_MAX_REFERENCE_KEY, POTE_MAX_REFERENCE_DEFAULT);
 }
 //------------------- DEFINICION DE FUNCIONES EXTERNAS -------------------------
 //------------------------------------------------------------------------------

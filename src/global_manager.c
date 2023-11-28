@@ -56,6 +56,7 @@ typedef enum
     GET_CONFIG_PWM_INFO = 19,
     GET_CONFIG_TRIAC_INFO = 20,
     GET_CONFIG_RELE_VEGE_INFO = 21,
+    MAX_POTE_REFERENCE = 22,
 } global_event_cmds_t;
 
 typedef struct
@@ -63,6 +64,7 @@ typedef struct
     global_event_cmds_t cmd;
     output_mode_t output_mode;
     uint8_t value;
+    uint16_t uint16_value;
     char str_value[80];
     struct tm current_time;
     struct tm pwm_turn_on_time;
@@ -106,6 +108,9 @@ static void nv_init_ssid_ap_wifi(void);
 static void nv_save_ssid_ap_wifi(char *ssid);
 static void nv_init_password_ap_wifi(void);
 static void nv_save_password_ap_wifi(char *password);
+
+static void nv_init_pote_max_reference(void);
+static void nv_save_pote_max_reference(uint16_t pote_max_reference);
 
 static void get_net_info(void);
 static uint8_t wait_net_info_response(char *ssid, char *password);
@@ -515,6 +520,29 @@ static void nv_save_auto_percent_power(uint8_t percent_power)
     write_parameter_on_flash_uint32(PWM_PERCENT_POWER_KEY, (uint32_t)percent_power);
 }
 //------------------------------------------------------------------------------
+static void nv_init_pote_max_reference(void)
+{
+    uint32_t pote_max_reference;
+    if (read_uint32_from_flash(POTE_MAX_REFERENCE_KEY, &pote_max_reference))
+    {
+#ifdef DEBUG_MODULE
+        printf("POTE MAX REFERENE: %ld \n", pote_max_reference);
+#endif
+        global_manager_set_max_pote_reference((uint16_t)pote_max_reference, true);
+    }
+    else
+    {
+#ifdef DEBUG_MODULE
+        printf("POTE MAX REFERENE READING FAILED \n");
+#endif
+    }
+}
+//------------------------------------------------------------------------------
+static void nv_save_pote_max_reference(uint16_t pote_max_reference)
+{
+    write_parameter_on_flash_uint32(POTE_MAX_REFERENCE_KEY, (uint32_t)pote_max_reference);
+}
+//------------------------------------------------------------------------------
 // TO DO: Falta agregar la dinamica de funcionamiento del rele vege
 static void global_manager_task(void *arg)
 {
@@ -532,6 +560,7 @@ static void global_manager_task(void *arg)
     global_info.triac_auto.output_status = TRIAC_OUTPUT_OFF;
     global_info.pwm_auto.output_status = PWM_OUTPUT_OFF;
     global_info.pwm_auto.update_calendar = false;
+    global_info.max_pote_reference = POTE_MAX_REFERENCE_DEFAULT;
 
     // INIT FROM FLASH
     nv_init_ssid_ap_wifi();
@@ -547,6 +576,7 @@ static void global_manager_task(void *arg)
     nv_init_triac_calendar(2);
     nv_init_triac_calendar(3);
     nv_init_triac_calendar(4);
+    nv_init_pote_max_reference();
 
     vTaskDelay(1000 / portTICK_PERIOD_MS);
     ////////////////////////////////////////////////////////
@@ -852,9 +882,22 @@ static void global_manager_task(void *arg)
                     nv_save_triac_calendar(global_ev.triac_info, global_ev.triac_num);
                 }
                 global_info.triac_auto.triac_auto[triac_index].enable = global_ev.triac_info.enable;
+#ifdef DEBUG_MODULE
                 ESP_LOGE("GLOBALMANAGER", " EL ENABLE DEL 1 ES %d", global_ev.triac_info.enable);
+#endif
                 global_info.triac_auto.triac_auto[triac_index].turn_off_time = global_ev.triac_info.turn_off_time;
                 global_info.triac_auto.triac_auto[triac_index].turn_on_time = global_ev.triac_info.turn_on_time;
+                break;
+            case MAX_POTE_REFERENCE:
+                if((global_ev.uint16_value != global_info.max_pote_reference) && (global_ev.value_read_from_flash == false))
+                {
+                    nv_save_pote_max_reference(global_ev.uint16_value);
+                }
+                global_info.max_pote_reference = global_ev.uint16_value;
+#ifdef DEBUG_MODULE
+                ESP_LOGI("GLOBALMANAGER", " MAX POTE REFERENCE %d", global_info.max_pote_reference);
+#endif
+
                 break;
             default:
                 break;
@@ -987,6 +1030,23 @@ void global_manager_set_pwm_power_value_auto(uint8_t power_percentage_value, boo
     ev.cmd = SET_AUTO_PWM_POWER;
     ev.value_read_from_flash = read_from_flash;
     ev.value = power_percentage_value;
+    xQueueSend(global_manager_queue, &ev, 10);
+}
+//------------------------------------------------------------------------------
+void global_manager_set_max_pote_reference(uint16_t max_pote_reference, bool read_from_flash)
+{
+    global_event_t ev;
+    if(max_pote_reference >= 600)
+    {
+        max_pote_reference = 600;
+    }
+    else if(max_pote_reference < 10)
+    {
+        max_pote_reference = 0;
+    }
+    ev.cmd = MAX_POTE_REFERENCE;
+    ev.value_read_from_flash = read_from_flash;
+    ev.uint16_value = max_pote_reference;
     xQueueSend(global_manager_queue, &ev, 10);
 }
 //------------------------------------------------------------------------------

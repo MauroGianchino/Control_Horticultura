@@ -29,12 +29,14 @@
 #define TRIAC4_DATE_ON_KEY "triac4_on\0" 
 #define TRIAC4_DATE_OFF_KEY "triac4_off\0"
 #define TRIAC4_DATE_ENABLE "triac4_enable\0"
+#define POTE_MAX_REFERENCE_KEY "pote_reference"
 
 #define WIFI_AP_SSID_KEY "ssid_ap_key\0"
 #define WIFI_AP_PASSWORD_KEY "pass_ap_key\0"
 #define CURRENT_TIME_KEY "actual_time"
 
 // DEFAULT VALUES
+#define POTE_MAX_REFERENCE_DEFAULT 509
 #define WIFI_AP_SSID_DEFAULT "Lumenar01" // el tamaño maximo del ssid no debe exceder los 32 caracteres
 #define WIFI_AP_PASSWORD_DEFAULT "12345678"
 #define PWM_MODE_DEFAULT 2 // MANUAL_OFF

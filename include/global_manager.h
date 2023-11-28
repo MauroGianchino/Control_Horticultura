@@ -41,6 +41,7 @@ typedef struct{
     output_mode_t triac_mode;
     triac_auto_info_t triac_auto;
     rele_output_status_t rele_vege_status;
+    uint16_t max_pote_reference;
 }nv_info_t;
 //------------------- DECLARACION DE DATOS EXTERNOS ----------------------------
 //------------------------------------------------------------------------------
@@ -66,7 +67,7 @@ void global_manager_update_auto_pwm_calendar(calendar_auto_mode_t calendar, bool
 void global_manager_update_auto_triac_calendar(triac_config_info_t triac_info, uint8_t triac_num, bool read_from_flash);
 uint8_t global_manager_set_wifi_ssid(char* wifi_ssid, bool read_from_flash);
 uint8_t global_manager_set_wifi_password(char* wifi_password, bool read_from_flash);
-
+void global_manager_set_max_pote_reference(uint16_t max_pote_reference, bool read_from_flash);
 
 uint8_t global_manager_get_net_info(char *ssid, char *password);
 uint8_t global_manager_get_pwm_info(output_mode_t *pwm_mode, pwm_auto_info_t *pwm_auto);
