@@ -10,6 +10,8 @@
 
 #include "../include/analog_input_manager.h"
 #include "../include/board_def.h"
+#include "../include/nv_flash_manager.h"
+
 //--------------------MACROS Y DEFINES------------------------------------------
 //------------------------------------------------------------------------------
 #define DEBUG_MODULE 1
@@ -27,6 +29,7 @@ typedef enum{
     CMD_UNDEFINED = 0,
     CHANGE_PWM_MODE = 1,
     MAX_POTE_REFERENCE = 2,
+    CALIBRATE_POTE = 3,
 }adc_cmds_t;
 
 typedef struct{
@@ -81,6 +84,7 @@ static void analog_input_manager_task(void* arg)
     adc_read_value[index] = 0;
     esp_err_t ret;
     uint16_t max_pote_reference = CUENTAS_ADC_100_PER_PWM;
+    uint8_t calibrate_pote_status_on = false;
     config_analog_input();
 
     vTaskDelay(2000 / portTICK_PERIOD_MS);
@@ -98,11 +102,14 @@ static void analog_input_manager_task(void* arg)
                 case MAX_POTE_REFERENCE:
                     max_pote_reference = adc_data_ev.max_pote_reference;
                     break;
+                case CALIBRATE_POTE:
+                    calibrate_pote_status_on = true;
+                    break;
             }
         }
         else
         {
-            if(pwm_mode == MANUAL_ON)
+            if((pwm_mode == MANUAL_ON) && (calibrate_pote_status_on == false))
             {
                 ret = adc_oneshot_read(adc2_handle, ADC_POTE_INPUT, &adc_read_value[index]);
                 if(ret == ESP_OK)
@@ -123,6 +130,44 @@ static void analog_input_manager_task(void* arg)
                         //#ifdef DEBUG_MODULE
                         //    printf("Valor ADC channel 5: %d \n", val);
                         //#endif
+                    }
+                }
+                else if(ret == ESP_ERR_INVALID_ARG)
+                {
+                    #ifdef DEBUG_MODULE
+                        printf("ESP_ERR_INVALID_ARG \n");
+                    #endif
+                }
+                else if(ret == ESP_ERR_TIMEOUT)
+                {
+                    #ifdef DEBUG_MODULE
+                        printf("ESP_ERR_TIMEOUT \n");
+                    #endif
+                }
+            }
+            else if(calibrate_pote_status_on == true)
+            {
+                ret = adc_oneshot_read(adc2_handle, ADC_POTE_INPUT, &adc_read_value[index]);
+                if(ret == ESP_OK)
+                {
+                    index++;
+                    if(index == adc_vec_length)
+                    {
+
+                        for(index = 0; index < adc_vec_length; index++)
+                        {
+                            val += adc_read_value[index];
+                        }
+                        val = val / adc_vec_length;
+                        index = 0;
+
+                        write_parameter_on_flash_uint32(POTE_MAX_REFERENCE_KEY, (uint32_t)val);
+                        vTaskDelay(4000 / portTICK_PERIOD_MS);
+                        esp_restart();
+
+                        #ifdef DEBUG_MODULE
+                            printf("Nuevo valor pote al 100: %d \n", val);
+                        #endif
                     }
                 }
                 else if(ret == ESP_ERR_INVALID_ARG)
@@ -164,6 +209,13 @@ void analog_input_set_max_pote_reference(uint16_t max_pote_reference)
     adc_data_t ev;
     ev.cmd = MAX_POTE_REFERENCE;
     ev.max_pote_reference = max_pote_reference;
+    xQueueSend(adc_data_queue, &ev, 10);
+}
+//------------------------------------------------------------------------------
+void analog_input_calibrate_pote(void)
+{
+    adc_data_t ev;
+    ev.cmd = CALIBRATE_POTE;
     xQueueSend(adc_data_queue, &ev, 10);
 }
 //---------------------------- END OF FILE -------------------------------------

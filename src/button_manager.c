@@ -36,9 +36,8 @@ typedef enum{
     TRIAC_BUTTON_PUSHED,
     VEGE_BUTTON_PUSHED,
     FABRIC_RESET,
+    CALIBRATE_POTE,
 }cmds_t;
-
-
 
 typedef struct{
     cmds_t cmd;
@@ -150,6 +149,13 @@ static void IRAM_ATTR triac_button_interrupt(void *arg)
             if (diff > 30000)  // 30ms seconds expressed in microseconds
             {
                 ev.cmd = TRIAC_BUTTON_PUSHED;
+                start_time_triac = 0;
+                xQueueSendFromISR(button_manager_queue, &ev, pdFALSE);
+            }
+            if (diff > 7000000) // 7 seconds expressed in microseconds
+            {
+                ev.cmd = CALIBRATE_POTE;
+                start_time_triac = 0;
                 xQueueSendFromISR(button_manager_queue, &ev, pdFALSE);
             }
             start_time_triac = 0;
@@ -270,6 +276,10 @@ void button_event_manager_task(void * pvParameters)
                 case FABRIC_RESET:
                     led_manager_new_update();
                     nv_flash_driver_erase_flash();
+                    break;
+                case CALIBRATE_POTE:
+                    led_manager_new_update();
+                    analog_input_calibrate_pote();
                     break;
                 default:
                 break;
