@@ -30,8 +30,8 @@
 #define EXAMPLE_ESP_WIFI_CHANNEL 1
 #define EXAMPLE_MAX_STA_CONN 10
 #define TAG "WIFI AP"
-#define DEFAULT_AP_IP "192.168.1.1"
-#define DEFAULT_AP_GATEWAY "192.168.1.1"
+#define DEFAULT_AP_IP "192.168.4.2"
+#define DEFAULT_AP_GATEWAY "192.168.4.2"
 #define DEFAULT_AP_NETMASK "255.255.255.0"
 //------------------------------------------------------------------------------
 esp_netif_t *esp_netif_ap = NULL;
@@ -220,14 +220,14 @@ void wifi_init_softap(void)
     ESP_ERROR_CHECK(esp_wifi_set_config(WIFI_IF_AP, &wifi_config));
 
     /* DHCP AP configuration */
-    // esp_netif_dhcps_stop(esp_netif_ap); /* DHCP client/server must be stopped before setting new IP information. */
-    /*esp_netif_ip_info_t ap_ip_info;
+     esp_netif_dhcps_stop(esp_netif_ap); /* DHCP client/server must be stopped before setting new IP information. */
+    esp_netif_ip_info_t ap_ip_info;
     memset(&ap_ip_info, 0x00, sizeof(ap_ip_info));
     inet_pton(AF_INET, DEFAULT_AP_IP, &ap_ip_info.ip);
     inet_pton(AF_INET, DEFAULT_AP_GATEWAY, &ap_ip_info.gw);
     inet_pton(AF_INET, DEFAULT_AP_NETMASK, &ap_ip_info.netmask);
     ESP_ERROR_CHECK(esp_netif_set_ip_info(esp_netif_ap, &ap_ip_info));
-    ESP_ERROR_CHECK(esp_netif_dhcps_start(esp_netif_ap));*/
+    ESP_ERROR_CHECK(esp_netif_dhcps_start(esp_netif_ap));
 
     // 3- Fase de start de WiFi
     ESP_ERROR_CHECK(esp_wifi_start());
