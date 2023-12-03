@@ -1036,9 +1036,9 @@ void global_manager_set_pwm_power_value_auto(uint8_t power_percentage_value, boo
 void global_manager_set_max_pote_reference(uint16_t max_pote_reference, bool read_from_flash)
 {
     global_event_t ev;
-    if(max_pote_reference >= 600)
+    if(max_pote_reference >= 750)
     {
-        max_pote_reference = 600;
+        max_pote_reference = 750;
     }
     else if(max_pote_reference < 10)
     {
