@@ -30,8 +30,8 @@
 #define EXAMPLE_ESP_WIFI_CHANNEL 1
 #define EXAMPLE_MAX_STA_CONN 10
 #define TAG "WIFI AP"
-#define DEFAULT_AP_IP "192.168.4.2"
-#define DEFAULT_AP_GATEWAY "192.168.4.2"
+#define DEFAULT_AP_IP "192.164.4.1"
+#define DEFAULT_AP_GATEWAY "192.164.4.1"
 #define DEFAULT_AP_NETMASK "255.255.255.0"
 //------------------------------------------------------------------------------
 esp_netif_t *esp_netif_ap = NULL;
