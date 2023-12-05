@@ -848,7 +848,7 @@ static void global_manager_task(void *arg)
                     nv_save_auto_percent_power(global_ev.value);
                 }
                 global_info.pwm_auto.percent_power = global_ev.value; 
-                led_manager_send_pwm_info(global_ev.value, 0, global_ev.simul_day_function_status);   
+                //led_manager_send_pwm_info(global_ev.value, 0, global_ev.simul_day_function_status);   
                 break;
             case UPDATE_SIMUL_DAY_FUNCTION_STATUS:
                 if ((global_info.pwm_auto.simul_day_status != global_ev.simul_day_function_status) && (global_ev.value_read_from_flash == false))
