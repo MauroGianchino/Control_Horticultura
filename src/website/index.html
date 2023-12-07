@@ -25,9 +25,18 @@
             width: 85%;
         }
 
+        .linea {
+            border-top: 1px solid black;
+            /* Puedes ajustar el grosor, estilo y color según tus preferencias */
+            width: 100%;
+            /* Ajusta el ancho de la línea según tus necesidades */
+            margin: 5px 0;
+            /* Ajusta el margen superior e inferior para separar la línea de otros elementos */
+        }
+
         .Datos_Equipo {
-            background: rgb(244, 219, 144);
-            background: linear-gradient(150deg, rgba(244, 219, 144, 1) 35%, rgba(247, 200, 59, 1) 62%);
+            background: rgb(62, 98, 89);
+            background: linear-gradient(150deg, rgb(104, 155, 142) 35%, rgb(62, 98, 89) 70%);
             display: flex;
             flex-direction: column;
             box-shadow: 2px 1.5px 0px 0px hsl(187, 4%, 38%);
@@ -53,8 +62,8 @@
 
 
         .Potencia-Vege {
-            background: rgb(179, 151, 162);
-            background: linear-gradient(150deg, rgba(179, 151, 162, 1) 58%, rgba(113, 91, 100, 1) 92%);
+            background: rgb(155, 130, 141);
+            background: linear-gradient(150deg, rgb(172, 138, 152) 35%, rgb(122, 102, 110) 70%);
             display: flex;
             flex-direction: column;
             box-shadow: 2px 1.5px 0px 0px hsl(187, 4%, 38%);
@@ -65,6 +74,7 @@
 
         .Potencia-Vege__PotenciayModo {
             display: flex;
+
             justify-content: space-between;
             margin: 2px;
             padding: 2px;
@@ -147,20 +157,12 @@
         <img src="/logo" class="imagen">
     </div>
 
-    <div class="Datos_Equipo">
-        <div class="Datos_Equipo__NombreRedyHora">
-            <div><strong>Red/Equipo:</strong> <span id="ID">---</span></div>
-            <div><strong>Hora:</strong><span id="Hora_h">--</span>:<span id="Hora_m">--</span></div>
-        </div>
-        <div class="Datos_Equipo__ContraseniaRedyVersion">
-            <div><strong>Versión:</strong> <span id="Version">--</span></div>
-        </div>
-
-    </div>
     <div class="Potencia-Vege">
+        <div><strong>Modo:</strong> <span id="PWM_modo"> ---</span></div>
+        <div class="linea"></div>
         <div class="Potencia-Vege__PotenciayModo">
             <div><strong>Potencia:</strong><span id="PWM_Intensidad"> --</span>%</div>
-            <div><strong>Modo:</strong> <span id="PWM_modo"> ---</span></div>
+
         </div>
 
         <div class="Potencia-Vege__Horarios">
@@ -178,17 +180,9 @@
         <div class="Potencia-Vege__dia">
             <strong>Amanecer / Atardecer:</strong><span id="PWM_DIA"> ---</span>
         </div>
-        <div class="Potencia-Vege__ModoVEGE">
-            <div><strong>Etapa:</strong><strong><span id="VEGEFLOR_modo">---</span></strong></div>
-
-        </div>
-    </div>
-
-    <div class=" Triac">
-
+        <div class="linea"></div>
         <div class="Triac__modo">
-            <div><strong>Control 220V - </strong>
-                <strong>Modo:</strong><span id="TRIAC_modo">---</span>
+            <div><strong>Control 220V</strong>
             </div>
             <div class="circletext">
                 <div class="circle" id="colorCircleTriac"></div>
@@ -248,7 +242,24 @@
                 </div>
             </tr>
         </table>
+        <div class="linea"></div>
+        <div class="Potencia-Vege__ModoVEGE">
+            <div><strong>Etapa:</strong><strong><span id="VEGEFLOR_modo">---</span></strong></div>
+
+        </div>
     </div>
+
+    <div class="Datos_Equipo">
+        <div class="Datos_Equipo__NombreRedyHora">
+            <div><strong>Red/Equipo:</strong> <span id="ID">---</span></div>
+            <div><strong>Hora:</strong><span id="Hora_h">--</span>:<span id="Hora_m">--</span></div>
+        </div>
+        <div class="Datos_Equipo__ContraseniaRedyVersion">
+            <div><strong>Versión:</strong> <span id="Version">--</span></div>
+        </div>
+
+    </div>
+
 
 
     <div class="botonf">
@@ -307,7 +318,7 @@
                     return res.json()
                 }).then(data => {
                     console.log(data)
-                    document.getElementById("TRIAC_modo").textContent = data.Modo;
+                    //document.getElementById("TRIAC_modo").textContent = data.Modo;
                     if (data.cb1 == true) {
                         document.getElementById('h1d').style.display = 'none'
                         document.getElementById('h1e').style.display = 'block'

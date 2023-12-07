@@ -516,6 +516,8 @@ void parse_pwm_triac_vege(char *buff)
     ESP_LOGI(MAIN, "Testeo del MAIN parseo");
     char delim[2] = "&";
     char *token;
+    output_mode_t triac_mode;
+    triac_auto_info_t triac_auto;
     // seteo un par de cosas del triac para que ya tenga los valores de antes
     int status = global_manager_get_triac_info(&modo_triac, &triac_auto_info);
 
@@ -542,8 +544,18 @@ void parse_pwm_triac_vege(char *buff)
     // condicion para ver si se mando el modo automatico o no
     if (flag_modo == 0)
     {
-        global_manager_set_triac_mode_manual_on(false);
         global_manager_set_pwm_mode_manual_on();
+        if (global_manager_get_triac_info(&triac_mode, &triac_auto))
+        {
+            if (triac_auto.output_status == TRIAC_OUTPUT_ON)
+            {
+                global_manager_set_triac_mode_manual_on(false);
+            }
+            else if (triac_auto.output_status == TRIAC_OUTPUT_OFF)
+            {
+                global_manager_set_triac_mode_off(false);
+            }
+        }
     }
     if (triac_h1.enable != 1)
         triac_h1.enable = 0;
