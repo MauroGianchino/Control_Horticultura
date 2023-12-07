@@ -203,7 +203,7 @@
                     <th><span id="TRIAC_horarioi1_h">--</span>:<span id="TRIAC_horarioi1_m">--</span></th>
                     <th><span id="TRIAC_horariof1_h">--</span>:<span id="TRIAC_horariof1_m">--</span></th>
                     <th>
-                        <p id="h1e" style="display: none;color: green;">&#x2714</p>
+                        <p id="h1e" style="display: none;color: darkgreen;">&#x2714</p>
                         <p id="h1d" style="display: none;color: red;">X</p>
                     </th>
                 </div>
@@ -214,7 +214,7 @@
                     <th><span id="TRIAC_horarioi2_h">--</span>:<span id="TRIAC_horarioi2_m">--</span></th>
                     <th><span id="TRIAC_horariof2_h">--</span>:<span id="TRIAC_horariof2_m">--</span></th>
                     <th>
-                        <p id="h2e" style="display: none;color: green;">&#x2714</p>
+                        <p id="h2e" style="display: none;color: darkgreen;">&#x2714</p>
                         <p id="h2d" style="display: none;color: red;">X</p>
                     </th>
                 </div>
@@ -225,7 +225,7 @@
                     <th><span id="TRIAC_horarioi3_h">--</span>:<span id="TRIAC_horarioi3_m">--</span></th>
                     <th><span id="TRIAC_horariof3_h">--</span>:<span id="TRIAC_horariof3_m">--</span></th>
                     <th>
-                        <p id="h3e" style="display: none;color: green;">&#x2714</p>
+                        <p id="h3e" style="display: none;color: darkgreen;">&#x2714</p>
                         <p id="h3d" style="display: none;color: red;">X</p>
                     </th>
                 </div>
@@ -236,7 +236,7 @@
                     <th><span id="TRIAC_horarioi4_h">--</span>:<span id="TRIAC_horarioi4_m">--</span></th>
                     <th><span id="TRIAC_horariof4_h">--</span>:<span id="TRIAC_horariof4_m">--</span></th>
                     <th>
-                        <p id="h4e" style="display: none; color: green;">&#x2714</p>
+                        <p id="h4e" style="display: none; color: darkgreen;">&#x2714</p>
                         <p id="h4d" style="display: none; color: red;">X</p>
                     </th>
                 </div>
@@ -305,7 +305,7 @@
                         circleDiv.style.backgroundColor = "red";
                     }
                     else if (data.State == "ON") {
-                        circleDiv.style.backgroundColor = "green";
+                        circleDiv.style.backgroundColor = "darkgreen";
                     }
                     else {
                         circleDiv.style.backgroundColor = "orange";
@@ -372,7 +372,7 @@
                         circleDiv.style.backgroundColor = "red";
                     }
                     else if (data.State == "ON") {
-                        circleDiv.style.backgroundColor = "green";
+                        circleDiv.style.backgroundColor = "darkgreen";
                     }
                     else {
                         circleDiv.style.backgroundColor = "orange";
@@ -397,7 +397,7 @@
                     document.getElementById("VEGEFLOR_modo").textContent = data.Modo;
                     const modoveg = document.getElementById("VEGEFLOR_modo");
                     if (modoveg.textContent == "Vegetativo") {
-                        modoveg.style.color = "green";
+                        modoveg.style.color = "darkgreen";
                     }
                     else {
                         modoveg.style.color = "red";
