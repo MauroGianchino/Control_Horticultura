@@ -75,6 +75,7 @@ static void analog_input_manager_task(void* arg)
 {
     adc_data_t adc_data_ev;
     output_mode_t pwm_mode = AUTOMATIC;
+    float aux = 0;
 
     int adc_read_value[5];
     uint8_t adc_vec_length = (sizeof(adc_read_value) / sizeof(adc_read_value[0]));
@@ -125,7 +126,9 @@ static void analog_input_manager_task(void* arg)
                         val = val / adc_vec_length;
                         index = 0;
 
-                        per_pwm = (val*100) / max_pote_reference;
+                        //per_pwm = (val*100) / max_pote_reference;
+                        aux = ((90 / (max_pote_reference - 0.05))*val) + (10*max_pote_reference) - 0.5;
+                        per_pwm = (int)aux;
                         global_manager_set_pwm_power_value_manual((uint8_t)per_pwm);
                         //#ifdef DEBUG_MODULE
                         //    printf("Valor ADC channel 5: %d \n", val);
