@@ -193,7 +193,7 @@
             background: linear-gradient(150deg, rgb(172, 138, 152) 35%, rgb(122, 102, 110) 70%);
             border-radius: 15px;
             box-shadow: 2px 1.5px 0px 0px hsl(187, 4%, 38%);
-            max-height: 600px;
+            max-height: 900px;
 
         }
 
@@ -955,7 +955,18 @@
                 console.log(ih2)
                 console.log(fh2)
                 const overlap = checkOverlap(en1, en2, en3, en4, ih1, fh1, ih2, fh2, ih3, fh3, ih4, fh4);
-                if (overlap == 0) {
+                //chequeo hoarios del pwm
+                var e_pwm = 0;
+                const pwm_i = obtenerHoraYMinutos("ih_pwm");
+                const pwm_f = obtenerHoraYMinutos("fh_pwm");
+                console.log(pwm_i)
+                console.log(pwm_f)
+                if (pwm_i.hora == pwm_f.hora) {
+                    if (pwm_i.minutos == pwm_i.minutos) {
+                        e_pwm = 1;
+                    }
+                }
+                if (overlap == 0 && e_pwm == 0) {
                     console.log("Parametros aceptados")
 
                     const myForm = event.target;
@@ -970,10 +981,11 @@
                     });
                     const mensaje = "Se actualizaron los datos correctamente";
                     alert(mensaje);
+                    window.location.href = "/index";
                 }
                 else {
                     console.log("Parametros no aceptados")
-                    const mensaje = "No se actualizaron los datos de Salida 220V. Horarios iguales o superpuestos.";
+                    const mensaje = "No se actualizaron los datos. Horarios iguales o superpuestos.";
                     alert(mensaje);
                 }
             });
