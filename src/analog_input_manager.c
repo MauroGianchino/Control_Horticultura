@@ -14,7 +14,7 @@
 
 //--------------------MACROS Y DEFINES------------------------------------------
 //------------------------------------------------------------------------------
-#define DEBUG_MODULE 1
+//#define DEBUG_MODULE 1
 
 #define ADC_WIDTH       ADC_BITWIDTH_9
 #define ADC_ATTEN       ADC_ATTEN_DB_0
@@ -75,7 +75,6 @@ static void analog_input_manager_task(void* arg)
 {
     adc_data_t adc_data_ev;
     output_mode_t pwm_mode = AUTOMATIC;
-    float aux = 0;
 
     int adc_read_value[5];
     uint8_t adc_vec_length = (sizeof(adc_read_value) / sizeof(adc_read_value[0]));
@@ -127,12 +126,12 @@ static void analog_input_manager_task(void* arg)
                         index = 0;
 
                         //per_pwm = (val*100) / max_pote_reference;
-                        aux = ((90 / (max_pote_reference - 0.05))*val) + (10*max_pote_reference) - 0.5;
-                        per_pwm = (int)aux;
+                        per_pwm = ((90*(val-25)) / (max_pote_reference - 25)) + 10;
                         global_manager_set_pwm_power_value_manual((uint8_t)per_pwm);
-                        //#ifdef DEBUG_MODULE
-                        //    printf("Valor ADC channel 5: %d \n", val);
-                        //#endif
+                        #ifdef DEBUG_MODULE
+                            printf("Valor ADC channel 5: %d \n", val);
+                            printf("Valor per_pwm: %d \n", per_pwm);
+                        #endif
                     }
                 }
                 else if(ret == ESP_ERR_INVALID_ARG)
